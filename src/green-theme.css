@@ -1,0 +1,343 @@
+:root {
+  --cream: #fff;
+  --ink: #111b21;
+  --accent: #087f3d;
+  --muted: #5e5e5e;
+  --line: #e8e8e8;
+  --soft: #f5fff1;
+  --green: #25d366;
+}
+.button {
+  background: #25d366;
+  color: #111b21;
+  border: 1px solid #111b21;
+  font-weight: 500;
+}
+.button:hover {
+  background: #111b21;
+  color: white;
+}
+.button.secondary {
+  background: white;
+  color: #111b21;
+  border-color: #b6b6b6;
+}
+.button.secondary:hover {
+  background: #f3fff0;
+}
+.button.light {
+  background: #25d366;
+  color: #111b21;
+  border-color: #111b21;
+}
+.button.danger {
+  background: #111b21;
+  color: white;
+}
+.brand-symbol,
+.brand-dot {
+  color: #087f3d;
+}
+.brand {
+  color: #111b21;
+}
+.live-dot {
+  background: #25d366;
+}
+.note-icon,
+.note-icon.warm {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.badge.green {
+  background: #d9fdd3;
+  color: #075e31;
+}
+.badge.orange {
+  background: #edfce8;
+  color: #111b21;
+  border: 1px solid #a4d89b;
+}
+.badge.red {
+  background: white;
+  color: #111b21;
+  border: 1px solid #111b21;
+}
+.error {
+  background: white;
+  color: #111b21;
+  border: 1px solid #111b21;
+  border-left: 4px solid #111b21;
+}
+.notice {
+  background: #f4fff0;
+  color: #31592c;
+  border: 1px solid #d5ebcd;
+}
+.success {
+  background: #d9fdd3;
+  color: #075e31;
+}
+.marketing .hero h1 {
+  font-weight: 500;
+  letter-spacing: -3px;
+}
+.marketing .hero h1 em {
+  color: #111b21;
+  background: linear-gradient(transparent 78%, #25d366 78%, #25d366 93%, transparent 93%);
+}
+.marketing .hero-art > img {
+  border-radius: 28px;
+}
+.marketing .floating-note {
+  box-shadow: 0 5px 20px #111b2110;
+  transform: none;
+}
+.marketing .home-note {
+  border-radius: 16px 16px 0 16px;
+  background: #d9fdd3;
+}
+.marketing .rent-note {
+  border-radius: 16px 16px 16px 0;
+  border: 1px solid #e8e8e8;
+}
+.marketing .art-caption {
+  color: #31592c;
+}
+.marketing .feature-card {
+  background: white;
+  border: 1px solid #e8e8e8;
+}
+.marketing .feature-card:nth-child(2),
+.marketing .feature-card:nth-child(3) {
+  background: white;
+}
+.marketing .feature-icon {
+  color: #087f3d;
+}
+.marketing .product-preview {
+  transform: none;
+  box-shadow: none;
+}
+.marketing .distance-section {
+  background: #e5f9df;
+}
+.marketing .orbit {
+  border-color: #b5dca9;
+}
+.marketing .orbit-home {
+  color: #087f3d;
+}
+.marketing .cta-section {
+  background: white;
+  border: 1px solid #d1e8c8;
+  color: #111b21;
+}
+.marketing .cta-section em {
+  color: #087f3d;
+}
+.marketing .cta-section > div > span:last-child:not(.eyebrow) {
+  color: #5e5e5e;
+}
+.auth-story {
+  background: #f3fff0 !important;
+}
+.app-shell {
+  background: #fff !important;
+}
+.sidebar {
+  background: #fff !important;
+}
+.app-topbar {
+  background: #fff !important;
+}
+.stat-card.accent {
+  background: #d9fdd3 !important;
+  border-color: #c5edbc !important;
+}
+.sidebar nav a.active {
+  background: #d9fdd3 !important;
+  color: #075e31 !important;
+}
+.workspace-avatar,
+.avatar {
+  background: #d9fdd3 !important;
+  color: #075e31 !important;
+}
+.sidebar-note {
+  background: #f5fff1 !important;
+}
+.demo-banner {
+  background: #efffec !important;
+  color: #31592c !important;
+}
+.demo-banner button {
+  border-color: #acd49f !important;
+}
+.home-thumbnail,
+.property-art {
+  background: #e5f9df !important;
+  color: #318848 !important;
+}
+.home-thumbnail.alternate,
+.property-art.alternate {
+  background: #f3fff0 !important;
+  color: #087f3d !important;
+}
+.attention-panel {
+  background: #fff !important;
+}
+.message-list {
+  background: #f7fff4 !important;
+}
+.message-bubble.mine {
+  background: #d9fdd3 !important;
+  border-color: #c8e9bf !important;
+}
+.sidebar nav a,
+.stat-card > div:first-child,
+.stat-foot,
+.panel-heading p,
+.home-row p,
+.home-row div > span,
+.attention-item p,
+td small,
+th,
+.app-footer,
+.nav-caption,
+.activity-row,
+.ticket-location,
+.page-title .eyebrow {
+  color: #5e5e5e !important;
+}
+.progress-track {
+  background: #c5e6ba !important;
+}
+.progress-track > span {
+  background: #25d366 !important;
+}
+@media (max-width: 480px) {
+  .marketing .hero h1 {
+    font-size: 48px;
+    letter-spacing: -2px;
+  }
+}
+.sidebar nav a {
+  font-size: 13px !important;
+  min-height: 46px !important;
+}
+.workspace-label strong {
+  font-size: 12px !important;
+}
+.workspace-label div > span {
+  font-size: 11px !important;
+}
+.stat-card > div:first-child {
+  font-size: 12px !important;
+}
+.stat-foot {
+  font-size: 11px !important;
+}
+.panel-heading h2 {
+  font-size: 18px !important;
+}
+.panel-heading p {
+  font-size: 12px !important;
+}
+.panel-heading .text-link {
+  font-size: 12px !important;
+}
+.home-row h3 {
+  font-size: 14px !important;
+}
+.home-row p {
+  font-size: 12px !important;
+}
+.home-row div > span {
+  font-size: 11px !important;
+}
+table {
+  font-size: 12px !important;
+  min-width: 720px;
+}
+th {
+  font-size: 11px !important;
+}
+td strong {
+  font-size: 12px !important;
+}
+td small {
+  font-size: 11px !important;
+}
+.table-action {
+  font-size: 12px !important;
+  min-height: 36px;
+}
+.badge {
+  font-size: 11px;
+}
+.page-title p {
+  font-size: 14px !important;
+}
+.page-title .eyebrow {
+  font-size: 10px !important;
+}
+.attention-item h3 {
+  font-size: 15px !important;
+}
+.attention-item p {
+  font-size: 12px !important;
+}
+.attention-item .text-link {
+  font-size: 12px !important;
+}
+.activity-row {
+  font-size: 12px !important;
+}
+.period-bar label,
+.period-bar input,
+.period-bar select {
+  font-size: 12px !important;
+}
+.form-dialog label {
+  font-size: 13px !important;
+}
+.dialog-description {
+  font-size: 14px !important;
+}
+.icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+@media (max-width: 650px) {
+  input,
+  select,
+  textarea,
+  .form-dialog input,
+  .form-dialog select,
+  .form-dialog textarea {
+    font-size: 16px !important;
+  }
+  .period-bar input,
+  .period-bar select {
+    font-size: 13px !important;
+  }
+  .table-action {
+    min-height: 44px;
+  }
+  .stat-card > strong {
+    font-size: 27px !important;
+  }
+  .stat-foot {
+    font-size: 10px !important;
+  }
+  .message-bubble > p {
+    font-size: 14px !important;
+  }
+}
+.table-scroll {
+  position: relative;
+}
+.sr-only {
+  clip-path: inset(50%);
+}

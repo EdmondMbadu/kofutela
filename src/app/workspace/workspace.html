@@ -1,0 +1,1116 @@
+<div class="app-shell" [class.nav-open]="menu()">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/"
+      ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela.</a
+    >
+    <div class="workspace-label">
+      <span class="workspace-avatar">{{ (org()?.name || 'K').slice(0, 1) }}</span>
+      <div>
+        <strong>{{ org()?.name || 'Your portfolio' }}</strong
+        ><span>{{
+          demo ? 'Demo workspace' : owner ? 'Landlord workspace' : 'Tenant workspace'
+        }}</span>
+      </div>
+    </div>
+    @if (memberships.length > 1) {
+      <label class="sr-only" for="workspace-select">Choose portfolio</label
+      ><select id="workspace-select" [ngModel]="org()?.id" (ngModelChange)="selectOrg($event)">
+        @for (m of memberships; track m.id) {
+          <option [value]="m.id">{{ m.name }}</option>
+        }
+      </select>
+    }
+    <span class="nav-caption">YOUR SPACE</span>
+    <nav aria-label="Workspace">
+      @for (item of nav; track item.id) {
+        @if (!item.owner || owner) {
+          <a
+            [routerLink]="[base, item.id]"
+            [class.active]="section() === item.id"
+            [attr.aria-current]="section() === item.id ? 'page' : null"
+            ><kf-icon [name]="item.icon" />{{ item.label }}
+            @if (item.id === 'maintenance' && openRepairs().length) {
+              <span class="nav-count">{{ openRepairs().length }}</span>
+            }
+          </a>
+        }
+      }
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-note">
+        <span class="note-icon"><kf-icon name="shield" /></span
+        ><strong>A little peace of mind.</strong>
+        <p>Rent tracking, not payments.<br />Your money stays with you.</p>
+      </div>
+      <nav aria-label="Account">
+        <a [routerLink]="[base, 'settings']" [class.active]="section() === 'settings'"
+          ><kf-icon name="settings" />Settings</a
+        ><a [routerLink]="[base, 'support']" [class.active]="section() === 'support'"
+          ><kf-icon name="help" />Help & support</a
+        >
+        @if (cloud.session()?.platformRole) {
+          <a routerLink="/admin"><kf-icon name="shield" />Platform admin</a>
+        }
+      </nav>
+      <div class="profile">
+        <span class="avatar">{{ name().slice(0, 1) }}</span>
+        <div>
+          <strong>{{ name() }}</strong
+          ><span>{{ owner ? 'Landlord' : 'Tenant' }}</span>
+        </div>
+        @if (!demo) {
+          <button class="icon-button" aria-label="Log out" (click)="logout()">
+            <kf-icon name="logout" />
+          </button>
+        } @else {
+          <a class="icon-button" routerLink="/" aria-label="Leave demo"
+            ><kf-icon name="logout"
+          /></a>
+        }
+      </div>
+    </div>
+  </aside>
+  @if (menu()) {
+    <button class="sidebar-scrim" aria-label="Close navigation" (click)="menu.set(false)"></button>
+  }
+  <div class="app-body">
+    <header class="app-topbar">
+      <div>
+        <button
+          class="icon-button app-menu"
+          aria-label="Open navigation"
+          [attr.aria-expanded]="menu()"
+          (click)="menu.set(!menu())"
+        >
+          <kf-icon name="menu" /></button
+        ><span class="breadcrumb"
+          >Your space <span>/</span> <strong>{{ title() }}</strong></span
+        >
+      </div>
+      <div class="topbar-right">
+        <span class="pilot-badge"><span class="live-dot"></span> Early pilot</span
+        ><a routerLink="/help" class="icon-button" aria-label="Help center"
+          ><kf-icon name="help" /></a
+        ><span class="avatar small">{{ name().slice(0, 1) }}</span>
+      </div>
+    </header>
+    @if (demo) {
+      <div class="demo-banner">
+        <div>
+          <strong>A little look inside.</strong
+          ><span> Fictional data. Nothing here touches a real account.</span>
+        </div>
+        <button (click)="switchDemo()">
+          View as {{ demoTenant ? 'landlord' : 'tenant' }} <kf-icon name="refresh" /></button
+        ><a routerLink="/signup">Create your own space →</a>
+      </div>
+    }
+    <main id="main" class="workspace-main">
+      @if (error()) {
+        <div class="error" role="alert">
+          {{ error() }} <button class="inline-button" (click)="init()">Try again</button>
+        </div>
+      }
+      @if (toast()) {
+        <div class="success toast" role="status">
+          <span>{{ toast() }}</span
+          ><button class="icon-button" aria-label="Dismiss notification" (click)="toast.set('')">
+            <kf-icon name="close" />
+          </button>
+        </div>
+      }
+      @if (!ready()) {
+        <div class="loading">Opening your space…</div>
+      } @else if (!org() && section() !== 'support') {
+        <section class="onboarding">
+          <span class="note-icon"><kf-icon name="home" /></span
+          ><span class="eyebrow">A place for a fresh start</span>
+          <h1>
+            Welcome home,<br /><em>{{ name() }}.</em>
+          </h1>
+          <p>
+            Let’s give your properties a place of their own. Create a portfolio, add your first
+            home, then bring the people and details together.
+          </p>
+          <button class="button" (click)="open('createWorkspace')">
+            Create your portfolio <kf-icon name="arrow" />
+          </button>
+          <div class="notice">
+            Joining as a tenant? Open the private invitation link your landlord sent you. You do not
+            need to create a portfolio.
+          </div>
+          <a class="text-link" routerLink="/app/support">Need a hand? <kf-icon name="arrow" /></a>
+        </section>
+      } @else {
+        <section class="page-title">
+          <div>
+            <span class="eyebrow">{{
+              section() === 'dashboard'
+                ? 'A little clarity for your day'
+                : 'Everything in its place'
+            }}</span>
+            <h1>{{ section() === 'dashboard' ? 'Good to see you, ' + name() + '.' : title() }}</h1>
+            <p>
+              {{
+                section() === 'dashboard'
+                  ? 'Here’s how things are looking around home.'
+                  : section() === 'rent'
+                    ? 'A clear history of what’s due and what’s been recorded.'
+                    : section() === 'properties'
+                      ? 'Every home has a story. Keep the details together.'
+                      : section() === 'tenants'
+                        ? 'Good relationships start with a little clarity.'
+                        : section() === 'maintenance'
+                          ? 'From a small repair to a resolved request.'
+                          : section() === 'messages'
+                            ? 'A shared conversation, connected to the right home.'
+                            : section() === 'documents'
+                              ? 'The important papers, right where you need them.'
+                              : section() === 'reports'
+                                ? 'A monthly view, with currencies kept separate.'
+                                : section() === 'support'
+                                  ? 'A direct line to the platform operator.'
+                                  : 'Make your space work for you.'
+              }}
+            </p>
+          </div>
+          <div class="page-actions">
+            @if (section() === 'properties' && owner) {
+              <button class="button small" (click)="open('createProperty')">
+                <kf-icon name="plus" /> Add property
+              </button>
+            } @else if (section() === 'tenants' && owner) {
+              <button
+                class="button small"
+                (click)="open('createLease')"
+                [disabled]="!rows('units').length"
+              >
+                <kf-icon name="plus" /> Add lease
+              </button>
+            } @else if (section() === 'maintenance') {
+              <button
+                class="button small"
+                (click)="open('createMaintenance')"
+                [disabled]="!rows('leases').length"
+              >
+                <kf-icon name="plus" /> New request
+              </button>
+            } @else if (section() === 'documents' && owner) {
+              <button
+                class="button small"
+                (click)="open('uploadDocument')"
+                [disabled]="!rows('leases').length"
+              >
+                <kf-icon name="plus" /> Upload document
+              </button>
+            } @else if (section() === 'support') {
+              <button class="button small" (click)="open('createSupport')">
+                <kf-icon name="plus" /> New request
+              </button>
+            } @else if (section() === 'dashboard' && owner) {
+              <a class="button secondary small" [routerLink]="[base, 'properties']"
+                ><kf-icon name="plus" /> Add a home</a
+              >
+            }
+            <button
+              class="icon-button refresh-button"
+              aria-label="Refresh records"
+              [disabled]="loading()"
+              (click)="load()"
+            >
+              <kf-icon name="refresh" />
+            </button>
+          </div>
+        </section>
+        @if (capped) {
+          <div class="notice" role="status">
+            This pilot view has reached its 500-record limit. Totals are hidden to avoid presenting
+            an incomplete portfolio. Contact support for a larger-portfolio export and pagination
+            setup.
+          </div>
+        }
+        @if (loading()) {
+          <div class="loading">Bringing your records together…</div>
+        } @else {
+          @if (!owner && rows('leases').length > 1) {
+            <label class="lease-picker"
+              >Your lease<select [(ngModel)]="leaseId" (ngModelChange)="load()">
+                @for (l of rows('leases'); track l.id) {
+                  <option [value]="l.id">{{ l.propertyName }} · {{ l.unitLabel }}</option>
+                }
+              </select></label
+            >
+          }
+          @if (['dashboard', 'rent', 'reports'].includes(section())) {
+            <div class="period-bar">
+              <label
+                >Month<input
+                  type="month"
+                  [(ngModel)]="month"
+                  (ngModelChange)="periodChange()"
+                  required
+                  aria-label="Report month" /></label
+              ><label
+                >Currency<select [(ngModel)]="currency" aria-label="Summary currency">
+                  <option value="USD">USD</option>
+                  <option value="CDF">CDF</option>
+                </select></label
+              ><span><kf-icon name="lock" /> Recorded activity, not payment processing</span>
+            </div>
+          }
+          @if (section() === 'dashboard' || section() === 'reports') {
+            @if (!capped) {
+              <div class="stats-grid">
+                <article class="stat-card accent">
+                  <div><span>Rent recorded</span><kf-icon name="wallet" /></div>
+                  <strong>{{ money(total('receivedMinor')) }}</strong
+                  ><span class="stat-foot"
+                    >of {{ money(total('amountMinor')) }} scheduled this month</span
+                  >
+                  <div class="progress-track">
+                    <span
+                      [style.width.%]="
+                        total('amountMinor')
+                          ? (total('receivedMinor') / total('amountMinor')) * 100
+                          : 0
+                      "
+                    ></span>
+                  </div>
+                </article>
+                <article class="stat-card">
+                  <div><span>Still outstanding</span><kf-icon name="file" /></div>
+                  <strong>{{ money(total('amountMinor') - total('receivedMinor')) }}</strong
+                  ><span class="stat-foot">{{ currency }} · selected month only</span>
+                </article>
+                <article class="stat-card">
+                  <div>
+                    <span>{{ owner ? 'Occupancy' : 'Your monthly rent' }}</span
+                    ><kf-icon name="home" />
+                  </div>
+                  <strong>{{
+                    owner
+                      ? occupancy() + '%'
+                      : money(currentLease()?.rentMinor, currentLease()?.currency || currency)
+                  }}</strong
+                  ><span class="stat-foot">{{
+                    owner
+                      ? rows('units').length + ' units in your portfolio'
+                      : currentLease()?.unitLabel || 'No linked lease yet'
+                  }}</span>
+                </article>
+                <article class="stat-card">
+                  <div><span>Needs attention</span><kf-icon name="tool" /></div>
+                  <strong>{{ openRepairs().length.toString().padStart(2, '0') }}</strong
+                  ><span class="stat-foot">Open maintenance requests</span>
+                </article>
+              </div>
+            }
+            @if (section() === 'dashboard') {
+              <div class="dashboard-grid">
+                <section class="panel">
+                  <div class="panel-heading">
+                    <div>
+                      <h2>Around your homes</h2>
+                      <p>
+                        {{
+                          owner
+                            ? 'The people and places in your portfolio.'
+                            : 'The details of your home.'
+                        }}
+                      </p>
+                    </div>
+                    <a class="text-link" [routerLink]="[base, owner ? 'properties' : 'documents']"
+                      >View all <kf-icon name="arrow"
+                    /></a>
+                  </div>
+                  @if (owner) {
+                    @for (p of rows('properties').slice(0, 3); track p.id; let i = $index) {
+                      <a class="home-row" [routerLink]="[base, 'properties']"
+                        ><span class="home-thumbnail" [class.alternate]="i % 2"
+                          ><kf-icon name="building"
+                        /></span>
+                        <div>
+                          <h3>{{ p.name }}</h3>
+                          <p>{{ p.city }}</p>
+                          <span>{{ propertyUnits(p.id).length }} units · {{ p.type }}</span>
+                        </div>
+                        <kf-icon name="chevron"
+                      /></a>
+                    } @empty {
+                      <div class="empty">
+                        <kf-icon name="home" />
+                        <h3>Your first home belongs here.</h3>
+                        <p>Add a property to start bringing the details together.</p>
+                        <button class="button small" (click)="open('createProperty')">
+                          Add your first property <kf-icon name="plus" />
+                        </button>
+                      </div>
+                    }
+                  } @else {
+                    @if (currentLease(); as lease) {
+                      <div class="tenant-home">
+                        <span class="home-thumbnail"><kf-icon name="home" /></span>
+                        <h3>{{ lease.propertyName }}</h3>
+                        <p>{{ lease.unitLabel }}</p>
+                        <dl>
+                          <div>
+                            <dt>Lease dates</dt>
+                            <dd>{{ date(lease.startDate) }} — {{ date(lease.endDate) }}</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly rent</dt>
+                            <dd>{{ money(lease.rentMinor, lease.currency) }}</dd>
+                          </div>
+                          <div>
+                            <dt>Status</dt>
+                            <dd>
+                              <span class="badge">{{ lease.status }}</span>
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+                    } @else {
+                      <div class="empty">
+                        <h3>No linked lease yet.</h3>
+                        <p>Ask your landlord for a fresh invitation.</p>
+                      </div>
+                    }
+                  }
+                </section>
+                <section class="panel attention-panel">
+                  <div class="panel-heading">
+                    <div>
+                      <h2>A little attention</h2>
+                      <p>Small things, kept moving.</p>
+                    </div>
+                    <span class="note-icon"><kf-icon name="tool" /></span>
+                  </div>
+                  @for (ticket of openRepairs().slice(0, 3); track ticket.id) {
+                    <a class="attention-item" [routerLink]="[base, 'maintenance']"
+                      ><span class="badge" [class]="'badge ' + statusClass(ticket.status)">{{
+                        ticket.status.replace('_', ' ')
+                      }}</span>
+                      <h3>{{ ticket.title }}</h3>
+                      <p>{{ ticket.propertyName }} · {{ ticket.unitLabel }}</p>
+                      <span class="text-link">See request <kf-icon name="arrow" /></span
+                    ></a>
+                  } @empty {
+                    <div class="empty">
+                      <kf-icon name="check" />
+                      <h3>A calmer kind of day.</h3>
+                      <p>No open maintenance requests right now.</p>
+                    </div>
+                  }
+                </section>
+              </div>
+            } @else {
+              <section class="panel report-summary">
+                <h2>Keep a copy for your records.</h2>
+                <p>
+                  Export the selected month’s rent entries with currency, recorded amounts and
+                  outstanding balances. This report does not independently verify funds or replace
+                  accounting advice.
+                </p>
+                <button
+                  class="button secondary"
+                  [disabled]="capped || !rows('charges').length"
+                  (click)="exportCsv()"
+                >
+                  <kf-icon name="download" /> Export monthly CSV
+                </button>
+              </section>
+            }
+          }
+          @if (['dashboard', 'rent', 'reports'].includes(section())) {
+            <section class="panel rent-panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Rent at a glance</h2>
+                  <p>{{ month }} · Keep the whole picture in view.</p>
+                </div>
+                @if (section() === 'dashboard') {
+                  <a class="text-link" [routerLink]="[base, 'rent']"
+                    >All rent records <kf-icon name="arrow"
+                  /></a>
+                } @else {
+                  <button
+                    class="button secondary small"
+                    [disabled]="capped || !rows('charges').length"
+                    (click)="exportCsv()"
+                  >
+                    <kf-icon name="download" /> Export
+                  </button>
+                }
+              </div>
+              @if (rows('charges').length) {
+                <div class="table-scroll">
+                  <table>
+                    <caption class="sr-only">
+                      Monthly rent records
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th>Tenant & home</th>
+                        <th>Due date</th>
+                        <th>Scheduled</th>
+                        <th>Recorded</th>
+                        <th>Status</th>
+                        @if (owner) {
+                          <th><span class="sr-only">Actions</span></th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (c of rows('charges'); track c.id) {
+                        <tr>
+                          <td>
+                            <strong>{{ c.tenantName }}</strong
+                            ><small>{{ c.propertyName }} · {{ c.unitLabel }}</small>
+                          </td>
+                          <td>{{ date(c.dueDate) }}</td>
+                          <td>{{ money(c.amountMinor, c.currency) }}</td>
+                          <td>{{ money(c.receivedMinor, c.currency) }}</td>
+                          <td>
+                            <span [class]="'badge ' + statusClass(status(c))">{{ status(c) }}</span>
+                          </td>
+                          @if (owner) {
+                            <td>
+                              @if (!c.cancelled && c.receivedMinor < c.amountMinor) {
+                                <button class="table-action" (click)="open('recordReceipt', c)">
+                                  Record receipt <kf-icon name="plus" />
+                                </button>
+                              } @else {
+                                <span class="muted">—</span>
+                              }
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="empty">
+                  <kf-icon name="wallet" />
+                  <h3>A fresh page for your records.</h3>
+                  <p>
+                    {{
+                      owner
+                        ? 'Add a lease to schedule monthly rent, or choose another month.'
+                        : 'There are no scheduled charges for this month.'
+                    }}
+                  </p>
+                  @if (owner) {
+                    <a class="text-link" [routerLink]="[base, 'tenants']"
+                      >Manage leases <kf-icon name="arrow"
+                    /></a>
+                  }
+                </div>
+              }
+            </section>
+            @if (section() === 'rent') {
+              <section class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <h2>The receipt history</h2>
+                    <p>Corrections stay visible. Nothing is silently erased.</p>
+                  </div>
+                </div>
+                <div class="table-scroll">
+                  <table>
+                    <caption class="sr-only">
+                      Receipts for the selected month
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th>Tenant / received</th>
+                        <th>Amount</th>
+                        <th>Method & reference</th>
+                        <th>Record</th>
+                        @if (owner) {
+                          <th>Correction</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (r of rows('receipts'); track r.id) {
+                        <tr>
+                          <td>
+                            <strong>{{ r.tenantName }}</strong
+                            ><small>{{ date(r.receivedOn) }}</small>
+                          </td>
+                          <td>{{ money(r.amountMinor, r.currency) }}</td>
+                          <td>
+                            {{ r.method.replace('_', ' ')
+                            }}<small>{{ r.reference || 'No reference' }}</small>
+                          </td>
+                          <td>
+                            <span [class]="'badge ' + (r.voided ? 'red' : 'green')">{{
+                              r.voided ? 'Reversed' : 'Recorded'
+                            }}</span>
+                            @if (r.voided) {
+                              <small>{{ r.voidReason }}</small>
+                            }
+                          </td>
+                          @if (owner) {
+                            <td>
+                              @if (!r.voided) {
+                                <button class="table-action" (click)="open('voidReceipt', r)">
+                                  Correct
+                                </button>
+                              }
+                            </td>
+                          }
+                        </tr>
+                      } @empty {
+                        <tr>
+                          <td [attr.colspan]="owner ? 5 : 4" class="empty">
+                            No receipts recorded for this month.
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            }
+          }
+          @if (section() === 'properties') {
+            <div class="list-toolbar">
+              <label
+                ><span class="sr-only">Find a property</span
+                ><input
+                  type="search"
+                  [(ngModel)]="search"
+                  placeholder="Find a home by name or city…" /></label
+              ><span
+                >{{ rows('properties').length }} properties · {{ rows('units').length }} units</span
+              >
+            </div>
+            <div class="property-grid">
+              @for (p of visible('properties'); track p.id; let i = $index) {
+                <article class="property-card">
+                  <div class="property-art" [class.alternate]="i % 2">
+                    <span class="badge">{{ p.type }}</span
+                    ><kf-icon name="building" /><span class="property-art-caption"
+                      >A place to call home</span
+                    >
+                  </div>
+                  <div class="property-details">
+                    <div>
+                      <h2>{{ p.name }}</h2>
+                      <button
+                        class="icon-button"
+                        (click)="open('updateProperty', p)"
+                        [attr.aria-label]="'Edit ' + p.name"
+                      >
+                        <kf-icon name="settings" />
+                      </button>
+                    </div>
+                    <p>{{ p.address }}<br />{{ p.city }}</p>
+                    @if (p.notes) {
+                      <p class="property-notes">{{ p.notes }}</p>
+                    }
+                    <div class="unit-list">
+                      @for (u of propertyUnits(p.id); track u.id) {
+                        <div>
+                          <span
+                            ><strong>{{ u.label }}</strong
+                            ><small>{{ money(u.rentMinor, u.currency) }} / month</small></span
+                          ><span [class]="'badge ' + (u.activeLeaseId ? 'green' : '')">{{
+                            u.activeLeaseId ? 'Occupied' : 'Available'
+                          }}</span>
+                        </div>
+                      }
+                    </div>
+                    <button class="table-action" (click)="open('createUnit', { propertyId: p.id })">
+                      <kf-icon name="plus" /> Add a unit
+                    </button>
+                  </div>
+                </article>
+              } @empty {
+                <section class="panel empty">
+                  <kf-icon name="building" />
+                  <h3>
+                    {{
+                      search
+                        ? 'No homes match that search.'
+                        : 'Every portfolio starts with one home.'
+                    }}
+                  </h3>
+                  <p>
+                    {{
+                      search
+                        ? 'Try another name or city.'
+                        : 'Add a property and its rentable units to get started.'
+                    }}
+                  </p>
+                  @if (!search) {
+                    <button class="button small" (click)="open('createProperty')">
+                      Add property
+                    </button>
+                  }
+                </section>
+              }
+            </div>
+          }
+          @if (section() === 'tenants') {
+            <div class="list-toolbar">
+              <label
+                ><span class="sr-only">Find a tenant</span
+                ><input
+                  type="search"
+                  [(ngModel)]="search"
+                  placeholder="Find a tenant or home…" /></label
+              ><span>{{ rows('leases').length }} lease records</span>
+            </div>
+            <section class="panel">
+              <div class="table-scroll">
+                <table>
+                  <caption class="sr-only">
+                    Tenants and leases
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th>Tenant</th>
+                      <th>Home & term</th>
+                      <th>Monthly rent</th>
+                      <th>Connection</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (l of visible('leases'); track l.id) {
+                      <tr>
+                        <td>
+                          <strong>{{ l.tenantName }}</strong
+                          ><small>{{ l.tenantEmail }}</small>
+                        </td>
+                        <td>
+                          <strong>{{ l.propertyName }} · {{ l.unitLabel }}</strong
+                          ><small>{{ date(l.startDate) }} — {{ date(l.endDate) }}</small>
+                        </td>
+                        <td>
+                          {{ money(l.rentMinor, l.currency)
+                          }}<small>Due day {{ l.dueDay }} · {{ l.status }}</small>
+                        </td>
+                        <td>
+                          <span [class]="'badge ' + (l.tenantUid ? 'green' : '')">{{
+                            l.tenantUid ? 'Connected' : 'Not invited / pending'
+                          }}</span>
+                        </td>
+                        <td>
+                          <div class="table-actions">
+                            @if (!l.tenantUid && l.status === 'active') {
+                              <button class="table-action" [disabled]="busy()" (click)="invite(l)">
+                                Invite tenant
+                              </button>
+                            }
+                            @if (l.status === 'active') {
+                              <button class="table-action muted" (click)="open('endLease', l)">
+                                End lease
+                              </button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5">
+                          <div class="empty">
+                            <kf-icon name="people" />
+                            <h3>A place for your people.</h3>
+                            <p>Add a property first, then create a lease and invite your tenant.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+          @if (section() === 'maintenance') {
+            <div class="ticket-grid">
+              @for (t of visible('maintenance'); track t.id) {
+                <article class="panel ticket">
+                  <div class="ticket-top">
+                    <span [class]="'badge ' + statusClass(t.status)">{{
+                      t.status.replace('_', ' ')
+                    }}</span
+                    ><span [class]="'badge ' + statusClass(t.priority)">{{ t.priority }}</span>
+                  </div>
+                  <h2>{{ t.title }}</h2>
+                  <p class="ticket-location">{{ t.propertyName }} · {{ t.unitLabel }}</p>
+                  <p class="pre-line">{{ t.description }}</p>
+                  @if (t.latestNote) {
+                    <blockquote>{{ t.latestNote }}</blockquote>
+                  }
+                  <div class="ticket-bottom">
+                    <small>{{ t.tenantName }}</small>
+                    @if (canUpdate(t)) {
+                      <button class="table-action" (click)="open('updateMaintenance', t)">
+                        Update request <kf-icon name="arrow" />
+                      </button>
+                    }
+                  </div>
+                </article>
+              } @empty {
+                <section class="panel empty">
+                  <kf-icon name="tool" />
+                  <h3>Nothing needs fixing right now.</h3>
+                  <p>When something does, create a request and keep everyone in the loop.</p>
+                </section>
+              }
+            </div>
+          }
+          @if (section() === 'messages') {
+            <section class="panel message-panel">
+              <div class="message-header">
+                <label
+                  >Conversation<select [(ngModel)]="leaseId" (ngModelChange)="load()">
+                    @for (l of rows('leases'); track l.id) {
+                      <option [value]="l.id">{{ l.tenantName }} · {{ l.unitLabel }}</option>
+                    }
+                  </select></label
+                ><span class="muted">Latest 50 messages · refresh to check for replies</span>
+              </div>
+              <div class="message-list">
+                @for (m of rows('messages'); track m.id) {
+                  <article
+                    class="message-bubble"
+                    [class.mine]="
+                      m.authorUid ===
+                      (demo ? (demoTenant ? 'demo-tenant' : 'demo-owner') : cloud.user()?.uid)
+                    "
+                  >
+                    <strong>{{ m.authorName }}</strong>
+                    <p>{{ m.body }}</p>
+                  </article>
+                } @empty {
+                  <div class="empty">
+                    <kf-icon name="message" />
+                    <h3>A good conversation starts here.</h3>
+                    <p>
+                      Select a lease and send a message. Only that tenant and their landlord can
+                      access it.
+                    </p>
+                  </div>
+                }
+              </div>
+              <form class="message-compose" (ngSubmit)="sendMessage()">
+                <label
+                  ><span class="sr-only">Your message</span
+                  ><textarea
+                    name="message"
+                    [(ngModel)]="message"
+                    (ngModelChange)="messageRequest = undefined"
+                    placeholder="A little update, a quick question…"
+                    required
+                    maxlength="4000"
+                    rows="2"
+                    [disabled]="!leaseId"
+                  ></textarea></label
+                ><button
+                  class="button"
+                  type="submit"
+                  [disabled]="busy() || !message.trim() || !leaseId"
+                >
+                  Send <kf-icon name="arrow" />
+                </button>
+              </form>
+            </section>
+          }
+          @if (section() === 'documents') {
+            <div class="notice">
+              Documents are shared with the tenant on their linked lease. Avoid uploading identity
+              documents or unnecessary sensitive information during this pilot.
+            </div>
+            <section class="panel">
+              <div class="table-scroll">
+                <table>
+                  <caption class="sr-only">
+                    Private lease documents
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th>Document</th>
+                      <th>Lease</th>
+                      <th>Status</th>
+                      <th>Access</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (doc of rows('documents'); track doc.id) {
+                      <tr>
+                        <td>
+                          <strong>{{ doc.title }}</strong
+                          ><small>{{ doc.fileName }} · {{ (doc.size / 1024).toFixed(0) }} KB</small>
+                        </td>
+                        <td>{{ doc.leaseId }}</td>
+                        <td>
+                          <span [class]="'badge ' + statusClass(doc.status)">{{ doc.status }}</span>
+                        </td>
+                        <td>
+                          @if (doc.status === 'ready') {
+                            <button
+                              class="table-action"
+                              [disabled]="busy()"
+                              (click)="download(doc)"
+                            >
+                              <kf-icon name="download" /> Download
+                            </button>
+                          } @else {
+                            <small class="muted"
+                              >Upload incomplete. Upload again as a new record.</small
+                            >
+                          }
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="4">
+                          <div class="empty">
+                            <kf-icon name="file" />
+                            <h3>The right place for important papers.</h3>
+                            <p>
+                              {{
+                                owner
+                                  ? 'Add a lease, then upload a document to share privately with that tenant.'
+                                  : 'Documents shared by your landlord will appear here.'
+                              }}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+          @if (section() === 'settings') {
+            <div class="settings-grid">
+              <section class="panel settings-card">
+                <span class="note-icon"><kf-icon name="people" /></span>
+                <h2>Your profile</h2>
+                <dl>
+                  <div>
+                    <dt>Name</dt>
+                    <dd>{{ demo ? name() : cloud.session()?.profile?.displayName }}</dd>
+                  </div>
+                  <div>
+                    <dt>Email</dt>
+                    <dd>{{ demo ? 'alex@example.com' : cloud.user()?.email }}</dd>
+                  </div>
+                  <div>
+                    <dt>Account ID</dt>
+                    <dd class="break-all">
+                      {{ demo ? 'Fictional demo account' : cloud.user()?.uid }}
+                    </dd>
+                  </div>
+                </dl>
+                <button
+                  class="button secondary small"
+                  (click)="open('updateProfile')"
+                  [disabled]="demo"
+                >
+                  Edit your name</button
+                ><a class="text-link" routerLink="/reset">Reset password</a>
+              </section>
+              <section class="panel settings-card">
+                <span class="note-icon warm"><kf-icon name="home" /></span>
+                <h2>Your portfolio</h2>
+                <dl>
+                  <div>
+                    <dt>Name</dt>
+                    <dd>{{ org()?.name }}</dd>
+                  </div>
+                  <div>
+                    <dt>Role</dt>
+                    <dd>{{ owner ? 'Landlord / owner' : 'Tenant' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Time zone</dt>
+                    <dd>Africa/Kinshasa</dd>
+                  </div>
+                  <div>
+                    <dt>Currencies</dt>
+                    <dd>USD and CDF · never combined</dd>
+                  </div>
+                </dl>
+                @if (owner) {
+                  <button class="button secondary small" (click)="open('updateWorkspace')">
+                    Edit portfolio name
+                  </button>
+                }
+              </section>
+            </div>
+            <section class="panel settings-card">
+              <h2>Your data, your choices.</h2>
+              <p>
+                For account deletion, a complete data export, or privacy questions, send a support
+                request. Important financial records remain available until the operator handles
+                your request. Keep your own copies of lease and rent records.
+              </p>
+              <a class="text-link" [routerLink]="[base, 'support']"
+                >Contact support <kf-icon name="arrow"
+              /></a>
+            </section>
+          }
+          @if (section() === 'support') {
+            <div class="ticket-grid">
+              @for (ticket of rows('support'); track ticket.id) {
+                <article class="panel ticket">
+                  <span class="badge">{{ ticket.status }}</span>
+                  <h2>{{ ticket.subject }}</h2>
+                  <p class="pre-line">{{ ticket.body }}</p>
+                  @if (ticket.reply) {
+                    <blockquote>
+                      <strong>From the Kofutela team</strong>
+                      <p class="pre-line">{{ ticket.reply }}</p>
+                    </blockquote>
+                  } @else {
+                    <small class="muted"
+                      >Awaiting a reply. Refresh this page to check for updates.</small
+                    >
+                  }
+                </article>
+              } @empty {
+                <section class="panel empty">
+                  <kf-icon name="help" />
+                  <h3>We’re here to help you settle in.</h3>
+                  <p>
+                    Send a question or report an issue. Your requests and the operator’s replies
+                    will stay here.
+                  </p>
+                  <button class="button small" (click)="open('createSupport')">
+                    Start a conversation
+                  </button>
+                </section>
+              }
+            </div>
+          }
+          @if (section() === 'dashboard' && owner && rows('activity').length) {
+            <section class="panel activity-panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>The latest around here</h2>
+                  <p>A small trail of useful updates.</p>
+                </div>
+              </div>
+              @for (event of rows('activity'); track event.id) {
+                <div class="activity-row">
+                  <span class="activity-dot"></span><span>{{ event.detail }}</span>
+                </div>
+              }
+            </section>
+          }
+        }
+      }
+      <footer class="app-footer">
+        <span><kf-icon name="home" /> A little closer to home.</span>
+        <div>
+          <a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a
+          ><span>Kofutela · Pilot</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+  <dialog
+    #dialog
+    class="form-dialog"
+    aria-labelledby="dialog-title"
+    (cancel)="busy() ? $event.preventDefault() : close()"
+  >
+    <button
+      class="dialog-close icon-button"
+      aria-label="Close dialog"
+      [disabled]="busy()"
+      (click)="close()"
+    >
+      <kf-icon name="close" />
+    </button>
+    @if (spec) {
+      <span class="eyebrow">A little more together</span>
+      <h2 id="dialog-title">{{ spec.title }}</h2>
+      <p class="dialog-description">{{ spec.description }}</p>
+      @if (formError()) {
+        <div class="error" role="alert">{{ formError() }}</div>
+      }
+      @if (action === 'invite') {
+        <label
+          >Private invitation link<input
+            [value]="resultLink"
+            readonly
+            (focus)="$any($event.target).select()"
+        /></label>
+        <div class="form-actions">
+          <button class="button" (click)="copyInvite()">Copy invitation link</button>
+        </div>
+      } @else {
+        <form (ngSubmit)="submit()">
+          <div class="field-grid">
+            @for (field of spec.fields; track field.key) {
+              <label [class.full]="field.type === 'textarea' || field.type === 'file'"
+                >{{ field.label }}
+                @if (!field.required) {
+                  <span class="muted"> (optional)</span>
+                }
+                @if (field.type === 'select') {
+                  <select
+                    [name]="field.key"
+                    [(ngModel)]="form[field.key]"
+                    [required]="!!field.required"
+                  >
+                    @for (option of field.options; track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                } @else if (field.type === 'textarea') {
+                  <textarea
+                    [name]="field.key"
+                    [(ngModel)]="form[field.key]"
+                    [required]="!!field.required"
+                    [attr.minlength]="field.min"
+                    [attr.maxlength]="field.max || 2000"
+                  ></textarea>
+                } @else if (field.type === 'file') {
+                  <input
+                    type="file"
+                    name="file"
+                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    required
+                    (change)="fileChosen($event)"
+                  />
+                } @else {
+                  <input
+                    [type]="field.type || 'text'"
+                    [name]="field.key"
+                    [(ngModel)]="form[field.key]"
+                    [required]="!!field.required"
+                    [attr.min]="field.type === 'number' ? field.min : null"
+                    [attr.max]="field.type === 'number' ? field.max : null"
+                    [attr.step]="field.step"
+                    [attr.minlength]="field.type !== 'number' ? field.min : null"
+                    [attr.maxlength]="field.type !== 'number' ? field.max || 160 : null"
+                  />
+                }
+                @if (field.hint) {
+                  <small>{{ field.hint }}</small>
+                }
+              </label>
+            }
+          </div>
+          <div class="form-actions">
+            <button type="button" class="button secondary" [disabled]="busy()" (click)="close()">
+              Cancel</button
+            ><button type="submit" class="button" [disabled]="busy()">
+              {{ busy() ? 'Saving…' : spec.submit || 'Save changes' }} <kf-icon name="arrow" />
+            </button>
+          </div>
+        </form>
+      }
+    }
+  </dialog>
+</div>

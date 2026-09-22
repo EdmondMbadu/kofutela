@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function member(org) { return signedIn() && exists(/databases/$(database)/documents/organizations/$(org)/members/$(request.auth.uid)); }
+    function owner(org) { return member(org) && get(/databases/$(database)/documents/organizations/$(org)/members/$(request.auth.uid)).data.role == 'owner'; }
+    function ownLease(org, lease) { return member(org) && get(/databases/$(database)/documents/organizations/$(org)/leases/$(lease)).data.tenantUid == request.auth.uid; }
+    function leaseReader(org, lease) { return owner(org) || ownLease(org, lease); }
+    // Domain mutations are validated in callable Functions, never client-writable.
+    match /users/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      match /memberships/{org} { allow read: if signedIn() && request.auth.uid == uid; }
+    }
+    match /platformAdmins/{uid} { allow get: if signedIn() && request.auth.uid == uid; }
+    match /supportTickets/{ticket} { allow read: if signedIn() && resource.data.uid == request.auth.uid; }
+    match /organizations/{org} {
+      allow get: if member(org);
+      match /members/{uid} { allow get: if signedIn() && request.auth.uid == uid; }
+      match /properties/{id} { allow read: if owner(org); }
+      match /units/{id} { allow read: if owner(org); }
+      match /leases/{id} { allow read: if owner(org) || (member(org) && resource.data.tenantUid == request.auth.uid); }
+      match /charges/{id} { allow read: if leaseReader(org, resource.data.leaseId); }
+      match /receipts/{id} { allow read: if leaseReader(org, resource.data.leaseId); }
+      match /maintenance/{id} {
+        allow read: if leaseReader(org, resource.data.leaseId);
+        match /updates/{update} { allow read: if leaseReader(org, get(/databases/$(database)/documents/organizations/$(org)/maintenance/$(id)).data.leaseId); }
+      }
+      match /messages/{id} { allow read: if leaseReader(org, resource.data.leaseId); }
+      match /documents/{id} { allow read: if owner(org) || (resource.data.status == 'ready' && ownLease(org, resource.data.leaseId)); }
+      match /activity/{id} { allow read: if owner(org); }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

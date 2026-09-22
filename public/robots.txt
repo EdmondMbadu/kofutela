@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /super-admin
+Disallow: /demo
+Disallow: /join
+Disallow: /login
+Disallow: /signup
+Disallow: /reset
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /super-admin
+Disallow: /demo
+Disallow: /join
+Disallow: /login
+Disallow: /signup
+Disallow: /reset
+
+Sitemap: https://kofutela.web.app/sitemap.xml

@@ -1,1 +1,366 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@fontsource-variable/dm-sans';
+/* White, black typography and WhatsApp-style green: the only brand palette. */
+:root {
+  --cream: #ffffff;
+  --ink: #111b21;
+  --accent: #087f3d;
+  --muted: #5e5e5e;
+  --line: #e8e8e8;
+  --soft: #ffffff;
+  --radius: 16px;
+  font-family: 'DM Sans Variable', sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: break-word;
+}
+em {
+  font-style: normal;
+  color: var(--accent);
+}
+:focus-visible {
+  outline: 3px solid #087f3d;
+  outline-offset: 4px;
+}
+::selection {
+  background: #d9d9d9;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 9px;
+  background: #fff;
+  padding: 12px 13px;
+  color: var(--ink);
+  min-height: 46px;
+}
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+label input,
+label select,
+label textarea {
+  margin-top: 7px;
+}
+small {
+  font-size: 12px;
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: 99px;
+  min-height: 48px;
+  padding: 13px 23px;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background 0.18s,
+    transform 0.18s;
+  white-space: normal;
+  text-align: center;
+}
+.button:hover {
+  background: #087f3d;
+  transform: translateY(-1px);
+}
+.button.small {
+  padding: 10px 18px;
+  min-height: 42px;
+  font-size: 13px;
+}
+.button.secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: #d9d9d9;
+}
+.button.secondary:hover {
+  background: #ffffff;
+}
+.button.light {
+  background: var(--cream);
+  color: var(--ink);
+}
+.button.danger {
+  background: #087f3d;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #5e5e5e;
+  padding-bottom: 5px;
+}
+.text-link:hover {
+  color: var(--accent);
+}
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 50%;
+  font-size: 19px;
+  color: var(--ink);
+}
+.icon-button:hover {
+  background: #111b210a;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 29px;
+  font-weight: 650;
+  letter-spacing: -1.6px;
+}
+.brand-symbol {
+  color: var(--accent);
+  display: flex;
+  font-size: 24px;
+}
+.brand-dot {
+  color: var(--accent);
+  margin-left: -8px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.6;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+.note-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5f9df;
+  color: #087f3d;
+  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.note-icon.warm {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 5px 9px;
+  background: #ffffff;
+  color: #5e5e5e;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+.badge.green {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.badge.orange {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.badge.red {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  background: white;
+  padding: 12px;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+}
+.error,
+.notice,
+.success {
+  padding: 14px 17px;
+  border-radius: 10px;
+  line-height: 1.6;
+  font-size: 13px;
+  margin: 15px 0;
+  overflow-wrap: anywhere;
+}
+.error {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.notice {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.success {
+  background: #e5f9df;
+  color: #087f3d;
+}
+.muted {
+  color: var(--muted);
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.field-grid .full {
+  grid-column: 1/-1;
+}
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.empty {
+  padding: 45px 25px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty > kf-icon {
+  font-size: 32px;
+  color: #6b6b6b;
+  margin-bottom: 12px;
+}
+.empty h3 {
+  color: var(--ink);
+  font-weight: 500;
+  margin: 8px 0;
+}
+.empty p {
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 380px;
+  margin: 10px auto 20px;
+}
+.loading {
+  padding: 60px;
+  text-align: center;
+  color: var(--muted);
+}
+.loading::before {
+  content: '';
+  display: block;
+  margin: 0 auto 20px;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #d9d9d9;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (max-width: 560px) {
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+  .brand {
+    font-size: 26px;
+  }
+}

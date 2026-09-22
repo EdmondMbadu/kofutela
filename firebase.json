@@ -1,0 +1,70 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "us-central1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "authorizedDomains": [
+      "localhost",
+      "kofutela.web.app",
+      "kofutela.firebaseapp.com",
+      "kofutela.com",
+      "www.kofutela.com"
+    ],
+    "providers": { "emailPassword": true }
+  },
+  "storage": { "rules": "storage.rules" },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "kofutela",
+      "runtime": "nodejs22",
+      "ignore": ["node_modules", ".git", "*.log", "test"],
+      "predeploy": ["npm --prefix functions run build"]
+    }
+  ],
+  "hosting": {
+    "site": "kofutela",
+    "public": "dist/kofutela/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      { "source": "/app{,/**}", "destination": "/app/index.html" },
+      { "source": "/admin{,/**}", "destination": "/app/index.html" },
+      { "source": "/super-admin{,/**}", "destination": "/app/index.html" },
+      { "source": "/demo{,/**}", "destination": "/demo/index.html" },
+      { "source": "/join{,/**}", "destination": "/join/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+          { "key": "X-Frame-Options", "value": "DENY" }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css|woff2|svg|webp)",
+        "headers": [{ "key": "Cache-Control", "value": "public,max-age=86400" }]
+      },
+      {
+        "source": "/@(app|admin|super-admin|login|signup|join|demo){,/**}",
+        "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      }
+    ]
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8080 },
+    "functions": { "port": 5001 },
+    "storage": { "port": 9199 },
+    "hosting": { "port": 5000 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

@@ -1,0 +1,15 @@
+# Kofutela
+
+> Kofutela is a rental property management pilot for Kinshasa, DRC, and landlords living abroad. It tracks and documents rent activity. It does not process payments, hold funds, or verify that payments occurred.
+
+## Public information
+- [Features](https://kofutela.web.app/features): properties, leases, rent records, maintenance, messaging and private documents.
+- [For landlords](https://kofutela.web.app/landlords): managing properties near and far.
+- [Our story](https://kofutela.web.app/about): starting with a family’s experience in Kinshasa.
+- [Security and trust](https://kofutela.web.app/security): access boundaries and pilot limitations.
+- [Help](https://kofutela.web.app/help): supported currencies, invitations and pilot limits.
+- [Privacy](https://kofutela.web.app/privacy): current data practices.
+- [Terms](https://kofutela.web.app/terms): current pilot terms.
+
+## Boundaries
+Public marketing pages may be used for permitted search discovery. Private account, portfolio, tenant, support and administrative data require authentication and are not public sources. Demo records are fictional. AI training crawling by GPTBot is disallowed in robots.txt; permission to search is separate from permission to train. This file is informational, not an access-control mechanism or a guarantee of indexing.

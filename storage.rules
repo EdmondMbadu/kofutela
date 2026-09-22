@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function verified() { return request.auth != null && request.auth.token.email_verified == true; }
+    function owner(org) { return verified() && firestore.get(/databases/(default)/documents/organizations/$(org)/members/$(request.auth.uid)).data.role == 'owner'; }
+    match /organizations/{org}/documents/{docId}/{filename} {
+      function record() { return firestore.get(/databases/(default)/documents/organizations/$(org)/documents/$(docId)).data; }
+      allow create: if owner(org)
+        && record().uploadedBy == request.auth.uid
+        && record().status == 'uploading'
+        && record().path == 'organizations/' + org + '/documents/' + docId + '/' + filename
+        && request.resource.size == record().size
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType == record().contentType
+        && request.resource.contentType.matches('application/pdf|image/jpeg|image/png|image/webp');
+      allow get: if verified() && record().status == 'ready' && (owner(org)
+        || firestore.get(/databases/(default)/documents/organizations/$(org)/leases/$(record().leaseId)).data.tenantUid == request.auth.uid);
+      allow update, delete, list: if false;
+    }
+    match /{path=**} { allow read, write: if false; }
+  }
+}

@@ -1,0 +1,244 @@
+<div class="marketing">
+  <header class="public-header">
+    <a class="brand" routerLink="/" aria-label="Kofutela home"
+      ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela<span class="brand-dot"
+        >.</span
+      ></a
+    >
+    <nav aria-label="Main navigation" [class.open]="menu()">
+      <a routerLink="/features">The platform</a><a routerLink="/landlords">For landlords</a
+      ><a routerLink="/about">Our story</a><a routerLink="/help">Help center</a>
+    </nav>
+    <div class="header-actions">
+      <a class="login-link" routerLink="/login">Log in</a
+      ><a class="button small" routerLink="/signup">Get started <kf-icon name="arrow" /></a
+      ><button
+        class="icon-button mobile-toggle"
+        aria-label="Toggle navigation"
+        [attr.aria-expanded]="menu()"
+        (click)="menu.set(!menu())"
+      >
+        <kf-icon [name]="menu() ? 'close' : 'menu'" />
+      </button>
+    </div>
+  </header>
+  <main id="main">
+    @if (!page) {
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <span class="eyebrow"
+            ><span class="live-dot"></span> A simpler way to look after home</span
+          >
+          <h1>Close to home.<br /><em>Even from afar.</em></h1>
+          <p>
+            Your properties. Your people. A little more peace of mind. Manage rent, repairs and the
+            everyday, all in one place.
+          </p>
+          <div class="hero-actions">
+            <a class="button" routerLink="/signup">Make yourself at home <kf-icon name="arrow" /></a
+            ><a class="text-link" routerLink="/demo"
+              >Take a look inside <kf-icon name="chevron"
+            /></a>
+          </div>
+          <div class="hero-note">
+            <kf-icon name="globe" /> Built for Kinshasa. Wherever you call home.
+          </div>
+        </div>
+        <div class="hero-art">
+          <img
+            src="/home-illustration.svg"
+            alt="A sunlit terracotta home with lush plants and open windows"
+            width="660"
+            height="650"
+            fetchpriority="high"
+          />
+          <div class="floating-note rent-note">
+            <span class="note-icon"><kf-icon name="check" /></span>
+            <div><strong>A little clarity.</strong><span>Rent records, all together.</span></div>
+            <span class="tiny-spark">✳</span>
+          </div>
+          <div class="floating-note home-note">
+            <span class="note-icon warm"><kf-icon name="home" /></span>
+            <div><strong>Home feels closer.</strong><span>Even when you’re miles away.</span></div>
+          </div>
+          <span class="art-caption">Good things begin with a place to belong.</span>
+        </div>
+      </section>
+      <section class="intro-band wrap">
+        <p>Less chasing updates.<br /><span>More getting on with life.</span></p>
+        <div>
+          Looking after a property should not mean keeping everything in your head. Give the
+          important things a place of their own.
+        </div>
+      </section>
+      <section class="feature-grid wrap" aria-label="Core features">
+        @for (feature of features; track feature.title) {
+          <article class="feature-card">
+            <span class="feature-icon"><kf-icon [name]="feature.icon" /></span>
+            <h2>{{ feature.title }}</h2>
+            <p>{{ feature.text }}</p>
+            <a class="text-link" routerLink="/features">Discover more <kf-icon name="arrow" /></a>
+          </article>
+        }
+      </section>
+      <section class="story-panel wrap">
+        <div class="product-preview">
+          <div class="preview-top">
+            <span class="mini-brand">kofutela.</span><span class="badge">Illustrative preview</span>
+          </div>
+          <span class="eyebrow">YOUR PORTFOLIO, AT A GLANCE</span>
+          <h3>A clearer kind of overview.</h3>
+          <div class="preview-stats">
+            <div><span>Homes</span><strong>04</strong></div>
+            <div><span>Active leases</span><strong>03</strong></div>
+            <div><span>Open repairs</span><strong>01</strong></div>
+          </div>
+          <div class="preview-row">
+            <span class="note-icon"><kf-icon name="building" /></span>
+            <div><strong>Maison du Jardin</strong><small>Gombe, Kinshasa</small></div>
+            <span class="badge green">All together</span>
+          </div>
+          <div class="preview-row">
+            <span class="note-icon warm"><kf-icon name="file" /></span>
+            <div><strong>Lease documents</strong><small>Right where you need them</small></div>
+            <kf-icon name="check" />
+          </div>
+        </div>
+        <div class="story-copy">
+          <span class="eyebrow">A little structure. A lighter day.</span>
+          <h2>All the moving parts.<br />One calm place.</h2>
+          <p>
+            From the first lease to the next repair, keep the details connected. So you can focus on
+            the people behind the property.
+          </p>
+          <a class="text-link" routerLink="/demo">Explore the demo <kf-icon name="arrow" /></a>
+        </div>
+      </section>
+      <section class="distance-section wrap">
+        <span class="eyebrow">Home is more than an address</span>
+        <h2>Across the street.<br />Across the world.<br /><em>You’re still connected.</em></h2>
+        <p>
+          Created from a family’s experience in Kinshasa. Built for every landlord who wants to stay
+          a little closer.
+        </p>
+        <a class="text-link" routerLink="/about"
+          >The story behind Kofutela <kf-icon name="arrow" /></a
+        ><span class="orbit one"></span><span class="orbit two"></span
+        ><span class="orbit-home"><kf-icon name="home" /></span>
+      </section>
+      <section class="trust-row wrap">
+        <kf-icon name="shield" />
+        <div>
+          <h2>Your records. Your control.</h2>
+          <p>
+            Private access, clear permissions. And one important promise: we track rent, we never
+            move your money.
+          </p>
+        </div>
+        <a class="text-link" routerLink="/security"
+          >Our approach to trust <kf-icon name="arrow"
+        /></a>
+      </section>
+    } @else if (page === 'help') {
+      <section class="page-heading wrap">
+        <span class="eyebrow">Help center</span>
+        <h1>A little help.<br />A clearer next step.</h1>
+        <p>Start with the essentials. We’ll build from there.</p>
+      </section>
+      <section class="faq-list narrow">
+        @for (faq of faqs; track faq.q) {
+          <details>
+            <summary>{{ faq.q }}<span>+</span></summary>
+            <p>{{ faq.a }}</p>
+          </details>
+        }
+        <a class="button" routerLink="/contact">Still have a question? <kf-icon name="arrow" /></a>
+      </section>
+    } @else if (page === 'contact') {
+      <section class="page-heading wrap">
+        <span class="eyebrow">Contact & support</span>
+        <h1>Let’s keep<br /><em>in touch.</em></h1>
+        <p>Questions, ideas, or something not quite right? We’re listening.</p>
+      </section>
+      <section class="article-content narrow">
+        <article>
+          <h2>Already using Kofutela?</h2>
+          <p>
+            Open Support in your account to send a private request and read the operator’s reply.
+            Include what you were trying to do, but never send passwords or payment credentials.
+          </p>
+          <a class="button" routerLink="/app/support">Open support <kf-icon name="arrow" /></a>
+        </article>
+        <article>
+          <h2>Just looking around?</h2>
+          <p>
+            Explore the demo without an account, or read the help center for the current pilot’s
+            features and limits. A public pre-signup support channel will be added before broad
+            launch.
+          </p>
+          <a class="text-link" routerLink="/help">Visit the help center <kf-icon name="arrow" /></a>
+        </article>
+      </section>
+    } @else if (story) {
+      <section class="page-heading wrap">
+        <span class="eyebrow">{{ story.eyebrow }}</span>
+        <h1>{{ story.title }}</h1>
+        <p>{{ story.intro }}</p>
+      </section>
+      <section class="article-content narrow">
+        @for (section of story.sections; track section.title; let i = $index) {
+          <article>
+            <span class="section-number">0{{ i + 1 }}</span>
+            <h2>{{ section.title }}</h2>
+            <p>{{ section.body }}</p>
+          </article>
+        }
+      </section>
+    }
+    @if (page !== 'privacy' && page !== 'terms') {
+      <section class="cta-section wrap">
+        <div>
+          <span class="eyebrow">A place for a fresh start</span>
+          <h2>Make room for<br /><em>a simpler everyday.</em></h2>
+        </div>
+        <div>
+          <a class="button light" routerLink="/signup"
+            >Get started with Kofutela <kf-icon name="arrow" /></a
+          ><span>No payments processed. Just clarity.</span>
+        </div>
+      </section>
+    }
+  </main>
+  <footer class="public-footer wrap">
+    <div class="footer-top">
+      <div>
+        <a class="brand" routerLink="/"
+          ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela.</a
+        >
+        <p>A little closer to home.</p>
+      </div>
+      <div>
+        <h3>The platform</h3>
+        <a routerLink="/features">Features</a><a routerLink="/landlords">For landlords</a
+        ><a routerLink="/demo">Explore the demo</a>
+      </div>
+      <div>
+        <h3>Get to know us</h3>
+        <a routerLink="/about">Our story</a><a routerLink="/security">Security & trust</a
+        ><a routerLink="/contact">Contact</a>
+      </div>
+      <div>
+        <h3>Here to help</h3>
+        <a routerLink="/help">Help center</a><a routerLink="/login">Log in</a
+        ><a routerLink="/signup">Get started</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Kofutela · Built with care, starting in Kinshasa.</span>
+      <div>
+        <a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a
+        ><span><kf-icon name="globe" /> English</span>
+      </div>
+    </div>
+  </footer>
+</div>
