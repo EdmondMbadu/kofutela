@@ -59,7 +59,7 @@ const stories: Record<string, Story> = {
     sections: [
       {
         title: 'From one family’s experience',
-        body: 'Kofutela grew from Edmond’s father’s experience managing rental property in Kinshasa. Addresses in one place, rent updates in another, and too much important context scattered between conversations.',
+        body: 'Kofutela grew from Edmond’s father’s experience managing rental property from a distance. Addresses in one place, rent updates in another, and too much important context scattered between conversations.',
       },
       {
         title: 'Built around everyday renting',
@@ -67,7 +67,7 @@ const stories: Record<string, Story> = {
       },
       {
         title: 'Starting small, thoughtfully',
-        body: 'This is an early pilot, shaped around real landlord and tenant needs. We are building a focused tool for Kinshasa and landlords abroad, then improving it with the people who use it.',
+        body: 'This is an early pilot, shaped around real landlord and tenant needs. We are building a focused tool and improving it with the people who use it.',
       },
     ],
   },
@@ -159,23 +159,6 @@ export class Marketing {
   page = '';
   menu = signal(false);
   story?: Story;
-  readonly features = [
-    {
-      icon: 'building',
-      title: 'Every home, in view.',
-      text: 'Properties, units and leases. A little organization goes a long way.',
-    },
-    {
-      icon: 'wallet',
-      title: 'Rent, without the guesswork.',
-      text: 'What’s due. What’s recorded. A clear history of every change.',
-    },
-    {
-      icon: 'message',
-      title: 'People, kept in the loop.',
-      text: 'Messages, repairs and documents, connected to the right home.',
-    },
-  ];
   readonly faqs = [
     {
       q: 'Does Kofutela collect rent?',
@@ -183,7 +166,7 @@ export class Marketing {
     },
     {
       q: 'Can I manage my property from abroad?',
-      a: 'Yes. The web app works in a browser on your phone or computer. An internet connection is required to save changes. The pilot is designed around properties in Kinshasa and owners living locally or abroad.',
+      a: 'Yes. The web app works in a browser on your phone or computer. An internet connection is required to save changes. The current pilot supports USD and CDF for rent records.',
     },
     {
       q: 'How do tenants join?',
@@ -215,7 +198,7 @@ export class Marketing {
               ? 'Contact and support'
               : 'Close to home. Even from afar.'),
         this.story?.intro ||
-          'A simpler way to manage rental properties, track rent and stay connected to tenants. Built for Kinshasa and landlords abroad.',
+          'A simpler way to manage rental properties, track rent records and stay connected to tenants, wherever you are.',
         this.page,
       );
     });

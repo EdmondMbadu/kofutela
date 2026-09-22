@@ -1,5 +1,5 @@
 <div class="marketing">
-  <header class="public-header">
+  <header class="public-header" [class.landing-header]="!page">
     <a class="brand" routerLink="/" aria-label="Kofutela home"
       ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela<span class="brand-dot"
         >.</span
@@ -24,116 +24,172 @@
   </header>
   <main id="main">
     @if (!page) {
-      <section class="hero wrap">
-        <div class="hero-copy">
-          <span class="eyebrow"
-            ><span class="live-dot"></span> A simpler way to look after home</span
-          >
-          <h1>Close to home.<br /><em>Even from afar.</em></h1>
-          <p>
-            Your properties. Your people. A little more peace of mind. Manage rent, repairs and the
-            everyday, all in one place.
-          </p>
-          <div class="hero-actions">
-            <a class="button" routerLink="/signup">Make yourself at home <kf-icon name="arrow" /></a
-            ><a class="text-link" routerLink="/demo"
+      <section class="landing-hero" aria-labelledby="landing-title">
+        <img
+          class="landing-hero-image"
+          src="/landing-hero.webp"
+          alt="A property owner looking at an update on her phone while working from a sunlit terrace"
+          width="1680"
+          height="945"
+          fetchpriority="high"
+        />
+        <div class="landing-hero-shade" aria-hidden="true"></div>
+        <div class="landing-hero-content">
+          <span class="landing-eyebrow">A simpler way to look after home</span>
+          <h1 id="landing-title">Close to home.<br />Even from afar.</h1>
+          <p>Your properties. Your people. More peace of mind.</p>
+          <div class="landing-hero-actions">
+            <a class="button" routerLink="/signup"
+              >Make yourself at home <kf-icon name="arrow"
+            /></a>
+            <a class="landing-hero-link" routerLink="/demo"
               >Take a look inside <kf-icon name="chevron"
             /></a>
           </div>
-          <div class="hero-note">
-            <kf-icon name="globe" /> Built for Kinshasa. Wherever you call home.
-          </div>
         </div>
-        <div class="hero-art">
-          <img
-            src="/home-illustration.svg"
-            alt="An illustrated white home with green plants and open windows"
-            width="660"
-            height="650"
-            fetchpriority="high"
-          />
-          <div class="floating-note rent-note">
-            <span class="note-icon"><kf-icon name="check" /></span>
-            <div><strong>A little clarity.</strong><span>Rent records, all together.</span></div>
-            <span class="tiny-spark">✳</span>
+        <span class="landing-hero-caption">Wherever you are, stay close to what matters.</span>
+        <div class="landing-property-card" aria-label="Illustrative property preview">
+          <div class="landing-property-top">
+            <span class="landing-property-icon"><kf-icon name="home" /></span>
+            <div><small>ILLUSTRATIVE PREVIEW</small><strong>The Garden House</strong></div>
           </div>
-          <div class="floating-note home-note">
-            <span class="note-icon warm"><kf-icon name="home" /></span>
-            <div><strong>Home feels closer.</strong><span>Even when you’re miles away.</span></div>
+          <div class="landing-property-row">
+            <kf-icon name="file" /> Rent records <kf-icon name="chevron" />
           </div>
-          <span class="art-caption">Good things begin with a place to belong.</span>
+          <div class="landing-property-row">
+            <kf-icon name="tool" /> Repairs <kf-icon name="chevron" />
+          </div>
+          <div class="landing-property-row">
+            <kf-icon name="message" /> Conversations <kf-icon name="chevron" />
+          </div>
         </div>
       </section>
-      <section class="intro-band wrap">
-        <p>Less chasing updates.<br /><span>More getting on with life.</span></p>
+
+      <section class="landing-intro wrap">
         <div>
-          Looking after a property should not mean keeping everything in your head. Give the
-          important things a place of their own.
+          <span class="eyebrow">A clearer way to manage what matters</span>
+          <h2>Everything around a home,<br /><em>in one calm place.</em></h2>
         </div>
+        <p>Less chasing updates. More time for the people and places you care about.</p>
       </section>
-      <section class="feature-grid wrap" aria-label="Core features">
-        @for (feature of features; track feature.title) {
-          <article class="feature-card">
-            <span class="feature-icon"><kf-icon [name]="feature.icon" /></span>
-            <h2>{{ feature.title }}</h2>
-            <p>{{ feature.text }}</p>
-            <a class="text-link" routerLink="/features">Discover more <kf-icon name="arrow" /></a>
-          </article>
-        }
+
+      <section class="landing-gallery wrap" aria-label="How Kofutela helps">
+        <article class="landing-image-card">
+          <img
+            src="/landing-home.webp"
+            alt="A welcoming home entrance surrounded by greenery"
+            width="980"
+            height="735"
+            loading="lazy"
+          />
+          <div>
+            <h3>See the whole picture.</h3>
+            <p>Homes, leases and the details that make each one yours.</p>
+          </div>
+        </article>
+        <article class="landing-app-card">
+          <div class="landing-app-window" aria-label="Illustrative portfolio interface">
+            <div class="landing-app-sidebar">
+              <strong><kf-icon name="home" /> kofutela.</strong>
+              <span class="selected"><kf-icon name="building" /> Properties</span>
+              <span><kf-icon name="file" /> Leases</span>
+              <span><kf-icon name="wallet" /> Rent records</span>
+              <span><kf-icon name="tool" /> Repairs</span>
+            </div>
+            <div class="landing-app-main">
+              <small>ILLUSTRATIVE PREVIEW</small>
+              <h3>Your properties</h3>
+              <div class="landing-app-list">
+                <div>
+                  <span class="landing-app-list-icon"><kf-icon name="home" /></span
+                  ><span><strong>The Garden House</strong><small>Property overview</small></span
+                  ><kf-icon name="chevron" />
+                </div>
+                <div>
+                  <span class="landing-app-list-icon"><kf-icon name="building" /></span
+                  ><span><strong>Park View Apartment</strong><small>Lease and records</small></span
+                  ><kf-icon name="chevron" />
+                </div>
+                <div>
+                  <span class="landing-app-list-icon"><kf-icon name="home" /></span
+                  ><span><strong>Oak Street Studio</strong><small>Property overview</small></span
+                  ><kf-icon name="chevron" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="landing-app-card-footer">
+            <span><kf-icon name="check" /> The important details, connected.</span>
+            <a class="text-link" routerLink="/demo">Explore the demo <kf-icon name="arrow" /></a>
+          </div>
+        </article>
+        <article class="landing-people-card">
+          <img
+            src="/landing-people.webp"
+            alt="A property manager checking an update on his phone outside a home"
+            width="800"
+            height="600"
+            loading="lazy"
+          />
+          <div>
+            <h3>Stay close to your people.</h3>
+            <p>Keep conversations and repair updates with the right home.</p>
+          </div>
+        </article>
       </section>
-      <section class="story-panel wrap">
-        <div class="product-preview">
-          <div class="preview-top">
-            <span class="mini-brand">kofutela.</span><span class="badge">Illustrative preview</span>
-          </div>
-          <span class="eyebrow">YOUR PORTFOLIO, AT A GLANCE</span>
-          <h3>A clearer kind of overview.</h3>
-          <div class="preview-stats">
-            <div><span>Homes</span><strong>04</strong></div>
-            <div><span>Active leases</span><strong>03</strong></div>
-            <div><span>Open repairs</span><strong>01</strong></div>
-          </div>
-          <div class="preview-row">
-            <span class="note-icon"><kf-icon name="building" /></span>
-            <div><strong>Maison du Jardin</strong><small>Gombe, Kinshasa</small></div>
-            <span class="badge green">All together</span>
-          </div>
-          <div class="preview-row">
-            <span class="note-icon warm"><kf-icon name="file" /></span>
-            <div><strong>Lease documents</strong><small>Right where you need them</small></div>
-            <kf-icon name="check" />
-          </div>
-        </div>
-        <div class="story-copy">
+
+      <section class="landing-details wrap">
+        <div>
           <span class="eyebrow">A little structure. A lighter day.</span>
-          <h2>All the moving parts.<br />One calm place.</h2>
+          <h2>The details are handled.<br /><em>The relationships stay human.</em></h2>
           <p>
-            From the first lease to the next repair, keep the details connected. So you can focus on
-            the people behind the property.
+            From the first lease to the next repair, give every important detail a place of its own.
           </p>
-          <a class="text-link" routerLink="/demo">Explore the demo <kf-icon name="arrow" /></a>
+          <a class="text-link" routerLink="/features"
+            >Discover the platform <kf-icon name="arrow"
+          /></a>
+        </div>
+        <div class="landing-detail-list">
+          <div>
+            <span>01</span>
+            <div>
+              <h3>Know what is happening.</h3>
+              <p>Find your properties, leases and rent records together.</p>
+            </div>
+          </div>
+          <div>
+            <span>02</span>
+            <div>
+              <h3>Make the next step clearer.</h3>
+              <p>Follow repairs and keep documents where they belong.</p>
+            </div>
+          </div>
+          <div>
+            <span>03</span>
+            <div>
+              <h3>Keep people in the loop.</h3>
+              <p>Give tenants a private space for their lease and conversations.</p>
+            </div>
+          </div>
         </div>
       </section>
+
       <section class="distance-section wrap">
         <span class="eyebrow">Home is more than an address</span>
         <h2>Across the street.<br />Across the world.<br /><em>You’re still connected.</em></h2>
-        <p>
-          Created from a family’s experience in Kinshasa. Built for every landlord who wants to stay
-          a little closer.
-        </p>
+        <p>Created from a family’s experience looking after rental homes from a distance.</p>
         <a class="text-link" routerLink="/about"
-          >The story behind Kofutela <kf-icon name="arrow" /></a
-        ><span class="orbit one"></span><span class="orbit two"></span
-        ><span class="orbit-home"><kf-icon name="home" /></span>
+          >The story behind Kofutela <kf-icon name="arrow"
+        /></a>
+        <span class="orbit one" aria-hidden="true"></span
+        ><span class="orbit two" aria-hidden="true"></span>
+        <span class="orbit-home" aria-hidden="true"><kf-icon name="home" /></span>
       </section>
       <section class="trust-row wrap">
         <kf-icon name="shield" />
         <div>
           <h2>Your records. Your control.</h2>
-          <p>
-            Private access, clear permissions. And one important promise: we track rent, we never
-            move your money.
-          </p>
+          <p>Private access, clear permissions. We track rent records; we never move your money.</p>
         </div>
         <a class="text-link" routerLink="/security"
           >Our approach to trust <kf-icon name="arrow"
@@ -234,7 +290,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Kofutela · Built with care, starting in Kinshasa.</span>
+      <span>© 2026 Kofutela · Built with care for the places we call home.</span>
       <div>
         <a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a
         ><span><kf-icon name="globe" /> English</span>
