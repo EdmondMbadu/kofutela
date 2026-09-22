@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Seo } from '../core/seo';
+import { I18n, TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
 type Story = {
   eyebrow: string;
@@ -149,11 +150,12 @@ const stories: Record<string, Story> = {
 };
 @Component({
   selector: 'kf-marketing',
-  imports: [RouterLink, Icon],
+  imports: [RouterLink, Icon, TrPipe],
   templateUrl: './marketing.html',
   styleUrl: './marketing.css',
 })
 export class Marketing {
+  readonly i18n = inject(I18n);
   private route = inject(ActivatedRoute);
   private seo = inject(Seo);
   page = '';

@@ -4,140 +4,158 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Cloud, errorMessage, Row } from '../core/cloud';
 import { Seo } from '../core/seo';
+import { TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
 @Component({
   selector: 'kf-admin',
-  imports: [FormsModule, RouterLink, Icon],
+  imports: [FormsModule, RouterLink, Icon, TrPipe],
   template: ` <main id="main" class="admin-page">
     <header>
       <a class="brand" routerLink="/"
-        ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela.</a
+        ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
       ><a class="button secondary small" routerLink="/app"
-        >Back to my space <kf-icon name="arrow"
+        >{{ 'Back to my space ' | tr }}<kf-icon name="arrow"
       /></a>
     </header>
-    <span class="eyebrow">Platform operations</span>
-    <h1>A thoughtful eye on things.</h1>
+    <span class="eyebrow">{{ 'Platform operations' | tr }}</span>
+    <h1>{{ 'A thoughtful eye on things.' | tr }}</h1>
     <p>
-      Support, account access and a small, useful view of the pilot. Financial records remain in
-      their own portfolios.
+      {{
+        ' Support, account access and a small, useful view of the pilot. Financial records remain in their own portfolios. '
+          | tr
+      }}
     </p>
     @if (error()) {
-      <div class="error" role="alert">{{ error() }}</div>
+      <div class="error" role="alert">{{ error() | tr }}</div>
     }
     @if (notice()) {
-      <div class="success" role="status">{{ notice() }}</div>
+      <div class="success" role="status">{{ notice() | tr }}</div>
     }
     @if (busy() && !overview()) {
-      <div class="loading">Checking your access…</div>
+      <div class="loading">{{ 'Checking your access…' | tr }}</div>
     }
     @if (overview(); as data) {
       <div class="admin-stats">
         <article>
-          <span>Accounts</span><strong>{{ data.accounts }}</strong>
+          <span>{{ 'Accounts' | tr }}</span
+          ><strong>{{ data.accounts | tr }}</strong>
         </article>
         <article>
-          <span>Portfolios</span><strong>{{ data.portfolios }}</strong>
+          <span>{{ 'Portfolios' | tr }}</span
+          ><strong>{{ data.portfolios | tr }}</strong>
         </article>
         <article>
-          <span>Your role</span><strong class="role">{{ data.role }}</strong>
+          <span>{{ 'Your role' | tr }}</span
+          ><strong class="role">{{ data.role | tr }}</strong>
         </article>
       </div>
       <div class="section-title">
-        <h2>Support inbox</h2>
+        <h2>{{ 'Support inbox' | tr }}</h2>
         <button class="button secondary small" [disabled]="busy()" (click)="load()">
-          <kf-icon name="refresh" />Refresh
+          <kf-icon name="refresh" />{{ 'Refresh ' | tr }}
         </button>
       </div>
       <p class="muted">
-        Latest 50 requests. Replies appear in the requester’s account; no email is sent.
+        {{
+          ' Latest 50 requests. Replies appear in the requester’s account; no email is sent. ' | tr
+        }}
       </p>
       <div class="admin-tickets">
         @for (ticket of data.tickets; track ticket.id) {
           <article>
             <div class="ticket-heading">
-              <span class="badge">{{ ticket.status }}</span
-              ><small>{{ ticket.email }}</small>
+              <span class="badge">{{ ticket.status | tr }}</span
+              ><small>{{ ticket.email | tr }}</small>
             </div>
-            <h3>{{ ticket.subject }}</h3>
-            <p class="message">{{ ticket.body }}</p>
+            <h3>{{ ticket.subject | tr }}</h3>
+            <p class="message">{{ ticket.body | tr }}</p>
             <form class="form-stack" (ngSubmit)="reply(ticket)">
               <label
-                >Reply<textarea
+                >{{ 'Reply' | tr
+                }}<textarea
                   [name]="'reply-' + ticket.id"
                   [(ngModel)]="ticket.reply"
                   required
                   maxlength="4000"
                 ></textarea></label
               ><label
-                >Status<select [name]="'status-' + ticket.id" [(ngModel)]="ticket.status">
-                  <option value="open">Open</option>
-                  <option value="closed">Closed</option>
+                >{{ 'Status' | tr
+                }}<select [name]="'status-' + ticket.id" [(ngModel)]="ticket.status">
+                  <option value="open">{{ 'Open' | tr }}</option>
+                  <option value="closed">{{ 'Closed' | tr }}</option>
                 </select></label
-              ><button class="button small" [disabled]="busy()">Save reply</button>
+              ><button class="button small" [disabled]="busy()">{{ 'Save reply' | tr }}</button>
             </form>
           </article>
         } @empty {
           <div class="empty">
             <kf-icon name="check" />
-            <h3>All quiet in the inbox.</h3>
-            <p>New support requests will appear here.</p>
+            <h3>{{ 'All quiet in the inbox.' | tr }}</h3>
+            <p>{{ 'New support requests will appear here.' | tr }}</p>
           </div>
         }
       </div>
       @if (data.role === 'superadmin') {
         <section class="role-panel">
-          <span class="eyebrow">Super administrator</span>
-          <h2>Trusted access, explicitly granted.</h2>
+          <span class="eyebrow">{{ 'Super administrator' | tr }}</span>
+          <h2>{{ 'Trusted access, explicitly granted.' | tr }}</h2>
           <p>
-            Only grant access to people you trust. Administrators can read and answer support
-            requests. Super administrators can also grant and revoke platform roles. Your own role
-            cannot be changed here.
+            {{
+              ' Only grant access to people you trust. Administrators can read and answer support requests. Super administrators can also grant and revoke platform roles. Your own role cannot be changed here. '
+                | tr
+            }}
           </p>
           <form class="role-form" (ngSubmit)="grant()">
             <label
-              >Existing account ID<input
+              >{{ 'Existing account ID' | tr
+              }}<input
                 name="uid"
                 [(ngModel)]="uid"
                 required
                 pattern="[a-zA-Z0-9_-]{1,128}"
                 maxlength="128"
-                placeholder="Account ID from the user’s Settings page" /></label
+                placeholder="{{ 'Account ID from the user’s Settings page' | tr }}" /></label
             ><label
-              >Platform role<select name="role" [(ngModel)]="role">
-                <option value="admin">Administrator</option>
-                <option value="superadmin">Super administrator</option>
-                <option value="none">Revoke platform access</option>
+              >{{ 'Platform role' | tr
+              }}<select name="role" [(ngModel)]="role">
+                <option value="admin">{{ 'Administrator' | tr }}</option>
+                <option value="superadmin">{{ 'Super administrator' | tr }}</option>
+                <option value="none">{{ 'Revoke platform access' | tr }}</option>
               </select></label
             ><label class="confirm"
-              ><input type="checkbox" name="confirmed" [(ngModel)]="confirmed" required />I have
-              verified this account and intend to change its platform access.</label
-            ><button class="button small" [disabled]="busy()">Apply role change</button>
+              ><input type="checkbox" name="confirmed" [(ngModel)]="confirmed" required />{{
+                'I have verified this account and intend to change its platform access.' | tr
+              }}</label
+            ><button class="button small" [disabled]="busy()">
+              {{ 'Apply role change' | tr }}
+            </button>
           </form>
-          <h3>Current platform access</h3>
+          <h3>{{ 'Current platform access' | tr }}</h3>
           @for (admin of data.admins; track admin.id) {
             <div class="admin-row">
-              <code>{{ admin.id }}</code
-              ><span class="badge">{{ admin.role }}</span>
+              <code>{{ admin.id | tr }}</code
+              ><span class="badge">{{ admin.role | tr }}</span>
             </div>
           }
         </section>
       }
       <section class="audit">
-        <h2>Recent platform activity</h2>
+        <h2>{{ 'Recent platform activity' | tr }}</h2>
         @for (event of data.activity; track event.id) {
           <p>
-            <strong>{{ event.action }}</strong> · {{ event.entityId
-            }}<small>Actor: {{ event.actorUid }}</small>
+            <strong>{{ event.action | tr }}</strong> {{ '· ' + event.entityId | tr
+            }}<small>{{ 'Actor: ' + event.actorUid | tr }}</small>
           </p>
         } @empty {
-          <p>No platform actions recorded yet.</p>
+          <p>{{ 'No platform actions recorded yet.' | tr }}</p>
         }
       </section>
     } @else if (!busy()) {
       <div class="notice">
-        This space requires an explicitly granted platform role. Sign in with the verified
-        project-owner account to initialize the first super administrator.
+        {{
+          ' This space requires an explicitly granted platform role. Sign in with the verified project-owner account to initialize the first super administrator. '
+            | tr
+        }}
       </div>
     }
   </main>`,

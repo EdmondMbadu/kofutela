@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Cloud, errorMessage } from '../core/cloud';
 import { Seo } from '../core/seo';
+import { TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
 @Component({
   selector: 'kf-auth',
-  imports: [FormsModule, RouterLink, Icon],
+  imports: [FormsModule, RouterLink, Icon, TrPipe],
   templateUrl: './auth.html',
   styleUrl: './auth.css',
 })

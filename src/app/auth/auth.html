@@ -1,96 +1,111 @@
 <main class="auth-layout" id="main">
   <aside class="auth-story">
     <a class="brand" routerLink="/"
-      ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela.</a
+      ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
     >
     <div>
-      <span class="eyebrow">A little closer to home</span>
-      <h1>Good things<br />begin with<br /><em>a place to belong.</em></h1>
-      <p>Your properties. Your people.<br />All the everyday, in one calm place.</p>
+      <span class="eyebrow">{{ 'A little closer to home' | tr }}</span>
+      <h1>
+        {{ 'Good things' | tr }}<br />{{ 'begin with' | tr }}<br /><em>{{
+          'a place to belong.' | tr
+        }}</em>
+      </h1>
+      <p>
+        {{ 'Your properties. Your people.' | tr }}<br />{{
+          'All the everyday, in one calm place.' | tr
+        }}
+      </p>
     </div>
-    <img src="/home-illustration.svg" alt="A warm illustrated home" width="660" height="650" /><span
-      class="auth-footnote"
-      >Built for Kinshasa. Wherever you call home.</span
-    >
+    <img
+      src="/home-illustration.svg"
+      alt="{{ 'A warm illustrated home' | tr }}"
+      width="660"
+      height="650"
+    /><span class="auth-footnote">{{ 'Wherever you call home.' | tr }}</span>
   </aside>
   <section class="auth-form">
-    <a class="back-link" routerLink="/">← Back to Kofutela</a>
+    <a class="back-link" routerLink="/">{{ '← Back to Kofutela' | tr }}</a>
     <div class="auth-inner">
       @if (verification()) {
         <span class="note-icon"><kf-icon name="lock" /></span>
-        <h2>One small step<br />to a safer space.</h2>
+        <h2>{{ 'One small step' | tr }}<br />{{ 'to a safer space.' | tr }}</h2>
         <p class="muted">
-          Verify <strong>{{ cloud.user()?.email }}</strong> using the link in your inbox.
+          {{ ' Verify ' | tr }}<strong>{{ cloud.user()?.email | tr }}</strong>
+          {{ ' using the link in your inbox. ' | tr }}
         </p>
       } @else {
         <span class="eyebrow">{{
-          mode() === 'signup'
+          (mode() === 'signup'
             ? 'Your next chapter starts here'
             : mode() === 'reset'
               ? 'Let’s get you back in'
               : 'Your space is waiting'
+          ) | tr
         }}</span>
         <h2>
           {{
-            mode() === 'signup'
+            (mode() === 'signup'
               ? 'Make yourself at home.'
               : mode() === 'reset'
                 ? 'Forgot your password?'
-                : 'Welcome back.'
+                : 'Welcome back.') + '\n        ' | tr
           }}
         </h2>
         <p class="muted">
           {{
-            mode() === 'signup'
+            (mode() === 'signup'
               ? 'A few details, and you’re ready to begin.'
               : mode() === 'reset'
                 ? 'We’ll email you a link to choose a new one.'
-                : 'A clearer day starts with a simple sign-in.'
+                : 'A clearer day starts with a simple sign-in.') + '\n        ' | tr
           }}
         </p>
       }
       @if (error()) {
-        <div class="error" role="alert">{{ error() }}</div>
+        <div class="error" role="alert">{{ error() | tr }}</div>
       }
       @if (notice()) {
-        <div class="success" role="status">{{ notice() }}</div>
+        <div class="success" role="status">{{ notice() | tr }}</div>
       }
       @if (verification()) {
         <div class="form-stack">
           <button class="button" [disabled]="busy()" (click)="verify()">
-            I’ve verified my email <kf-icon name="arrow" /></button
+            {{ ' I’ve verified my email ' | tr }}<kf-icon name="arrow" /></button
           ><button class="button secondary" [disabled]="busy()" (click)="resend()">
-            Resend verification email</button
+            {{ ' Resend verification email' | tr }}</button
           ><button class="plain-button" [disabled]="busy()" (click)="switchAccount()">
-            Use a different account
+            {{ ' Use a different account ' | tr }}
           </button>
         </div>
       } @else {
         <form class="form-stack" (ngSubmit)="submit()">
           @if (mode() === 'signup') {
             <label
-              >Your name<input
+              >{{ 'Your name' | tr
+              }}<input
                 name="displayName"
                 [(ngModel)]="displayName"
                 autocomplete="name"
                 required
                 maxlength="160"
-                placeholder="How should we call you?"
+                placeholder="{{ 'How should we call you?' | tr }}"
             /></label>
           }
           <label
-            >Email address<input
+            >{{ 'Email address' | tr
+            }}<input
               name="email"
               type="email"
               [(ngModel)]="email"
               autocomplete="email"
               required
               maxlength="254"
-              placeholder="you@example.com"
+              placeholder="{{ 'you@example.com' | tr }}"
           /></label>
           @if (mode() !== 'reset') {
             <label
-              >Password<input
+              >{{ 'Password' | tr
+              }}<input
                 name="password"
                 type="password"
                 [(ngModel)]="password"
@@ -98,45 +113,50 @@
                 required
                 [minlength]="mode() === 'signup' ? 10 : 1"
                 maxlength="128"
-                placeholder="Your password"
+                placeholder="{{ 'Your password' | tr }}"
             /></label>
             @if (mode() === 'signup') {
-              <small class="muted">Use at least 10 characters and a unique password.</small
+              <small class="muted">{{
+                'Use at least 10 characters and a unique password.' | tr
+              }}</small
               ><label class="checkbox"
                 ><input type="checkbox" name="accepted" [(ngModel)]="accepted" required /><span
-                  >I understand this is a pilot and have read the
-                  <a routerLink="/terms" target="_blank">terms</a> and
-                  <a routerLink="/privacy" target="_blank">privacy notice</a>.</span
+                  >{{ 'I understand this is a pilot and have read the ' | tr
+                  }}<a routerLink="/terms" target="_blank">{{ 'terms' | tr }}</a> {{ ' and ' | tr
+                  }}<a routerLink="/privacy" target="_blank">{{ 'privacy notice' | tr }}</a
+                  >.</span
                 ></label
               >
             } @else {
-              <a class="forgot" routerLink="/reset">Forgot password?</a>
+              <a class="forgot" routerLink="/reset">{{ 'Forgot password?' | tr }}</a>
             }
           }
           <button class="button" type="submit" [disabled]="busy() || !ready()">
             {{
-              busy()
+              (busy()
                 ? 'One moment…'
                 : mode() === 'signup'
                   ? 'Create your account'
                   : mode() === 'reset'
                     ? 'Send reset link'
-                    : 'Log in'
-            }}
-            <kf-icon name="arrow" />
+                    : 'Log in') + '\n            ' | tr
+            }}<kf-icon name="arrow" />
           </button>
         </form>
         <p class="auth-switch">
-          {{ mode() === 'signup' ? 'Already have an account?' : 'New around here?' }}
-          <a
+          {{
+            (mode() === 'signup' ? 'Already have an account?' : 'New around here?') + '\n          '
+              | tr
+          }}<a
             [routerLink]="mode() === 'signup' ? '/login' : '/signup'"
             [queryParams]="{ returnTo: route.snapshot.queryParamMap.get('returnTo') }"
-            >{{ mode() === 'signup' ? 'Log in' : 'Get started' }}</a
+            >{{ (mode() === 'signup' ? 'Log in' : 'Get started') | tr }}</a
           >
         </p>
       }
       <div class="auth-trust">
-        <kf-icon name="shield" /> Your records stay private. We never move your money.
+        <kf-icon name="shield" />
+        {{ ' Your records stay private. We never move your money. ' | tr }}
       </div>
     </div>
   </section>

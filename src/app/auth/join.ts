@@ -4,57 +4,72 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Cloud, errorMessage } from '../core/cloud';
 import { Seo } from '../core/seo';
+import { TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
 @Component({
   selector: 'kf-join',
-  imports: [FormsModule, RouterLink, Icon],
+  imports: [FormsModule, RouterLink, Icon, TrPipe],
   template: ` <main id="main" class="join-page">
     <a class="brand" routerLink="/"
-      ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela.</a
+      ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
     >
     <section>
       <span class="note-icon"><kf-icon name="home" /></span
-      ><span class="eyebrow">A space of your own</span>
-      <h1>You’re invited<br />to feel at home.</h1>
-      <p>Connect with your landlord and keep your lease, rent records and updates together.</p>
+      ><span class="eyebrow">{{ 'A space of your own' | tr }}</span>
+      <h1>{{ 'You’re invited' | tr }}<br />{{ 'to feel at home.' | tr }}</h1>
+      <p>
+        {{
+          'Connect with your landlord and keep your lease, rent records and updates together.' | tr
+        }}
+      </p>
       @if (error()) {
-        <div class="error" role="alert">{{ error() }}</div>
+        <div class="error" role="alert">{{ error() | tr }}</div>
       }
       @if (!ready()) {
-        <div class="loading">Checking your account…</div>
+        <div class="loading">{{ 'Checking your account…' | tr }}</div>
       } @else if (!token) {
         <div class="notice">
-          This link is missing its invitation. Ask your landlord to share a fresh invitation link.
+          {{
+            ' This link is missing its invitation. Ask your landlord to share a fresh invitation link. '
+              | tr
+          }}
         </div>
       } @else if (!cloud.user()?.emailVerified) {
         <div class="notice">
-          Sign in and verify the exact email address your landlord invited. Then return to this
-          invitation.
+          {{
+            ' Sign in and verify the exact email address your landlord invited. Then return to this invitation. '
+              | tr
+          }}
         </div>
         <div class="form-actions">
-          <a class="button secondary" routerLink="/login" [queryParams]="{ returnTo: returnTo }"
-            >Log in</a
-          ><a class="button" routerLink="/signup" [queryParams]="{ returnTo: returnTo }"
-            >Create account</a
-          >
+          <a class="button secondary" routerLink="/login" [queryParams]="{ returnTo: returnTo }">{{
+            'Log in' | tr
+          }}</a
+          ><a class="button" routerLink="/signup" [queryParams]="{ returnTo: returnTo }">{{
+            'Create account' | tr
+          }}</a>
         </div>
       } @else {
-        <p class="account-email">Joining as {{ cloud.user()?.email }}</p>
+        <p class="account-email">{{ 'Joining as ' + cloud.user()?.email | tr }}</p>
         <form class="form-stack" (ngSubmit)="accept()">
           <label
-            >Your name<input
+            >{{ 'Your name' | tr
+            }}<input
               name="displayName"
               [(ngModel)]="displayName"
               required
               maxlength="160"
               autocomplete="name" /></label
           ><button class="button" [disabled]="busy()">
-            {{ busy() ? 'Connecting your home…' : 'Accept invitation' }} <kf-icon name="arrow" />
+            {{ (busy() ? 'Connecting your home…' : 'Accept invitation') + ' ' | tr
+            }}<kf-icon name="arrow" />
           </button>
         </form>
       }
     </section>
-    <a routerLink="/help" class="text-link">Need a little help? <kf-icon name="arrow" /></a>
+    <a routerLink="/help" class="text-link"
+      >{{ 'Need a little help? ' | tr }}<kf-icon name="arrow"
+    /></a>
   </main>`,
   styles: `
     .join-page {

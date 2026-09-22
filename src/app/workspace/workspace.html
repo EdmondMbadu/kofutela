@@ -1,36 +1,36 @@
-<div class="app-shell" [class.nav-open]="menu()">
+<div class="app-shell" [class.nav-open]="menu()" [class.french]="i18n.language() === 'fr'">
   <aside class="sidebar">
     <a class="brand" routerLink="/"
-      ><span class="brand-symbol"><kf-icon name="home" /></span>kofutela.</a
+      ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
     >
     <div class="workspace-label">
-      <span class="workspace-avatar">{{ (org()?.name || 'K').slice(0, 1) }}</span>
+      <span class="workspace-avatar">{{ (org()?.name || 'K').slice(0, 1) | tr }}</span>
       <div>
-        <strong>{{ org()?.name || 'Your portfolio' }}</strong
+        <strong>{{ org()?.name || 'Your portfolio' | tr }}</strong
         ><span>{{
-          demo ? 'Demo workspace' : owner ? 'Landlord workspace' : 'Tenant workspace'
+          (demo ? 'Demo workspace' : owner ? 'Landlord workspace' : 'Tenant workspace') | tr
         }}</span>
       </div>
     </div>
     @if (memberships.length > 1) {
-      <label class="sr-only" for="workspace-select">Choose portfolio</label
+      <label class="sr-only" for="workspace-select">{{ 'Choose portfolio' | tr }}</label
       ><select id="workspace-select" [ngModel]="org()?.id" (ngModelChange)="selectOrg($event)">
         @for (m of memberships; track m.id) {
-          <option [value]="m.id">{{ m.name }}</option>
+          <option [value]="m.id">{{ m.name | tr }}</option>
         }
       </select>
     }
-    <span class="nav-caption">YOUR SPACE</span>
-    <nav aria-label="Workspace">
+    <span class="nav-caption">{{ 'YOUR SPACE' | tr }}</span>
+    <nav aria-label="{{ 'Workspace' | tr }}">
       @for (item of nav; track item.id) {
         @if (!item.owner || owner) {
           <a
             [routerLink]="[base, item.id]"
             [class.active]="section() === item.id"
             [attr.aria-current]="section() === item.id ? 'page' : null"
-            ><kf-icon [name]="item.icon" />{{ item.label }}
+            ><kf-icon [name]="item.icon" />{{ item.label + '\n            ' | tr }}
             @if (item.id === 'maintenance' && openRepairs().length) {
-              <span class="nav-count">{{ openRepairs().length }}</span>
+              <span class="nav-count">{{ openRepairs().length | tr }}</span>
             }
           </a>
         }
@@ -39,31 +39,33 @@
     <div class="sidebar-bottom">
       <div class="sidebar-note">
         <span class="note-icon"><kf-icon name="shield" /></span
-        ><strong>A little peace of mind.</strong>
-        <p>Rent tracking, not payments.<br />Your money stays with you.</p>
+        ><strong>{{ 'A little peace of mind.' | tr }}</strong>
+        <p>
+          {{ 'Rent tracking, not payments.' | tr }}<br />{{ 'Your money stays with you.' | tr }}
+        </p>
       </div>
-      <nav aria-label="Account">
+      <nav aria-label="{{ 'Account' | tr }}">
         <a [routerLink]="[base, 'settings']" [class.active]="section() === 'settings'"
-          ><kf-icon name="settings" />Settings</a
+          ><kf-icon name="settings" />{{ 'Settings' | tr }}</a
         ><a [routerLink]="[base, 'support']" [class.active]="section() === 'support'"
-          ><kf-icon name="help" />Help & support</a
+          ><kf-icon name="help" />{{ 'Help & support' | tr }}</a
         >
         @if (cloud.session()?.platformRole) {
-          <a routerLink="/admin"><kf-icon name="shield" />Platform admin</a>
+          <a routerLink="/admin"><kf-icon name="shield" />{{ 'Platform admin' | tr }}</a>
         }
       </nav>
       <div class="profile">
-        <span class="avatar">{{ name().slice(0, 1) }}</span>
+        <span class="avatar">{{ name().slice(0, 1) | tr }}</span>
         <div>
-          <strong>{{ name() }}</strong
-          ><span>{{ owner ? 'Landlord' : 'Tenant' }}</span>
+          <strong>{{ name() | tr }}</strong
+          ><span>{{ (owner ? 'Landlord' : 'Tenant') | tr }}</span>
         </div>
         @if (!demo) {
-          <button class="icon-button" aria-label="Log out" (click)="logout()">
+          <button class="icon-button" aria-label="{{ 'Log out' | tr }}" (click)="logout()">
             <kf-icon name="logout" />
           </button>
         } @else {
-          <a class="icon-button" routerLink="/" aria-label="Leave demo"
+          <a class="icon-button" routerLink="/" aria-label="{{ 'Leave demo' | tr }}"
             ><kf-icon name="logout"
           /></a>
         }
@@ -71,88 +73,107 @@
     </div>
   </aside>
   @if (menu()) {
-    <button class="sidebar-scrim" aria-label="Close navigation" (click)="menu.set(false)"></button>
+    <button
+      class="sidebar-scrim"
+      aria-label="{{ 'Close navigation' | tr }}"
+      (click)="menu.set(false)"
+    ></button>
   }
   <div class="app-body">
     <header class="app-topbar">
       <div>
         <button
           class="icon-button app-menu"
-          aria-label="Open navigation"
+          aria-label="{{ 'Open navigation' | tr }}"
           [attr.aria-expanded]="menu()"
           (click)="menu.set(!menu())"
         >
           <kf-icon name="menu" /></button
         ><span class="breadcrumb"
-          >Your space <span>/</span> <strong>{{ title() }}</strong></span
+          >{{ 'Your space ' | tr }}<span>/</span> <strong>{{ title() | tr }}</strong></span
         >
       </div>
       <div class="topbar-right">
-        <span class="pilot-badge"><span class="live-dot"></span> Early pilot</span
-        ><a routerLink="/help" class="icon-button" aria-label="Help center"
+        <span class="pilot-badge"><span class="live-dot"></span> {{ ' Early pilot' | tr }}</span
+        ><a routerLink="/help" class="icon-button" aria-label="{{ 'Help center' | tr }}"
           ><kf-icon name="help" /></a
-        ><span class="avatar small">{{ name().slice(0, 1) }}</span>
+        ><span class="avatar small">{{ name().slice(0, 1) | tr }}</span>
       </div>
     </header>
     @if (demo) {
       <div class="demo-banner">
         <div>
-          <strong>A little look inside.</strong
-          ><span> Fictional data. Nothing here touches a real account.</span>
+          <strong>{{ 'A little look inside.' | tr }}</strong
+          ><span> {{ ' Fictional data. Nothing here touches a real account.' | tr }}</span>
         </div>
         <button (click)="switchDemo()">
-          View as {{ demoTenant ? 'landlord' : 'tenant' }} <kf-icon name="refresh" /></button
-        ><a routerLink="/signup">Create your own space →</a>
+          {{ 'View as ' + (demoTenant ? 'landlord' : 'tenant') + ' ' | tr
+          }}<kf-icon name="refresh" /></button
+        ><a routerLink="/signup">{{ 'Create your own space →' | tr }}</a>
       </div>
     }
     <main id="main" class="workspace-main">
       @if (error()) {
         <div class="error" role="alert">
-          {{ error() }} <button class="inline-button" (click)="init()">Try again</button>
+          {{ error() + ' ' | tr
+          }}<button class="inline-button" (click)="init()">{{ 'Try again' | tr }}</button>
         </div>
       }
       @if (toast()) {
         <div class="success toast" role="status">
-          <span>{{ toast() }}</span
-          ><button class="icon-button" aria-label="Dismiss notification" (click)="toast.set('')">
+          <span>{{ toast() | tr }}</span
+          ><button
+            class="icon-button"
+            aria-label="{{ 'Dismiss notification' | tr }}"
+            (click)="toast.set('')"
+          >
             <kf-icon name="close" />
           </button>
         </div>
       }
       @if (!ready()) {
-        <div class="loading">Opening your space…</div>
+        <div class="loading">{{ 'Opening your space…' | tr }}</div>
       } @else if (!org() && section() !== 'support') {
         <section class="onboarding">
           <span class="note-icon"><kf-icon name="home" /></span
-          ><span class="eyebrow">A place for a fresh start</span>
+          ><span class="eyebrow">{{ 'A place for a fresh start' | tr }}</span>
           <h1>
-            Welcome home,<br /><em>{{ name() }}.</em>
+            {{ ' Welcome home,' | tr }}<br /><em>{{ name() + '.' | tr }}</em>
           </h1>
           <p>
-            Let’s give your properties a place of their own. Create a portfolio, add your first
-            home, then bring the people and details together.
+            {{
+              ' Let’s give your properties a place of their own. Create a portfolio, add your first home, then bring the people and details together. '
+                | tr
+            }}
           </p>
           <button class="button" (click)="open('createWorkspace')">
-            Create your portfolio <kf-icon name="arrow" />
+            {{ ' Create your portfolio ' | tr }}<kf-icon name="arrow" />
           </button>
           <div class="notice">
-            Joining as a tenant? Open the private invitation link your landlord sent you. You do not
-            need to create a portfolio.
+            {{
+              ' Joining as a tenant? Open the private invitation link your landlord sent you. You do not need to create a portfolio. '
+                | tr
+            }}
           </div>
-          <a class="text-link" routerLink="/app/support">Need a hand? <kf-icon name="arrow" /></a>
+          <a class="text-link" routerLink="/app/support"
+            >{{ 'Need a hand? ' | tr }}<kf-icon name="arrow"
+          /></a>
         </section>
       } @else {
         <section class="page-title">
           <div>
             <span class="eyebrow">{{
-              section() === 'dashboard'
+              (section() === 'dashboard'
                 ? 'A little clarity for your day'
                 : 'Everything in its place'
+              ) | tr
             }}</span>
-            <h1>{{ section() === 'dashboard' ? 'Good to see you, ' + name() + '.' : title() }}</h1>
+            <h1>
+              {{ (section() === 'dashboard' ? 'Good to see you, ' + name() + '.' : title()) | tr }}
+            </h1>
             <p>
               {{
-                section() === 'dashboard'
+                (section() === 'dashboard'
                   ? 'Here’s how things are looking around home.'
                   : section() === 'rent'
                     ? 'A clear history of what’s due and what’s been recorded.'
@@ -170,14 +191,14 @@
                                 ? 'A monthly view, with currencies kept separate.'
                                 : section() === 'support'
                                   ? 'A direct line to the platform operator.'
-                                  : 'Make your space work for you.'
+                                  : 'Make your space work for you.') + '\n            ' | tr
               }}
             </p>
           </div>
           <div class="page-actions">
             @if (section() === 'properties' && owner) {
               <button class="button small" (click)="open('createProperty')">
-                <kf-icon name="plus" /> Add property
+                <kf-icon name="plus" /> {{ ' Add property ' | tr }}
               </button>
             } @else if (section() === 'tenants' && owner) {
               <button
@@ -185,7 +206,7 @@
                 (click)="open('createLease')"
                 [disabled]="!rows('units').length"
               >
-                <kf-icon name="plus" /> Add lease
+                <kf-icon name="plus" /> {{ ' Add lease ' | tr }}
               </button>
             } @else if (section() === 'maintenance') {
               <button
@@ -193,7 +214,7 @@
                 (click)="open('createMaintenance')"
                 [disabled]="!rows('leases').length"
               >
-                <kf-icon name="plus" /> New request
+                <kf-icon name="plus" /> {{ ' New request ' | tr }}
               </button>
             } @else if (section() === 'documents' && owner) {
               <button
@@ -201,20 +222,20 @@
                 (click)="open('uploadDocument')"
                 [disabled]="!rows('leases').length"
               >
-                <kf-icon name="plus" /> Upload document
+                <kf-icon name="plus" /> {{ ' Upload document ' | tr }}
               </button>
             } @else if (section() === 'support') {
               <button class="button small" (click)="open('createSupport')">
-                <kf-icon name="plus" /> New request
+                <kf-icon name="plus" /> {{ ' New request ' | tr }}
               </button>
             } @else if (section() === 'dashboard' && owner) {
               <a class="button secondary small" [routerLink]="[base, 'properties']"
-                ><kf-icon name="plus" /> Add a home</a
+                ><kf-icon name="plus" /> {{ ' Add a home' | tr }}</a
               >
             }
             <button
               class="icon-button refresh-button"
-              aria-label="Refresh records"
+              aria-label="{{ 'Refresh records' | tr }}"
               [disabled]="loading()"
               (click)="load()"
             >
@@ -224,19 +245,21 @@
         </section>
         @if (capped) {
           <div class="notice" role="status">
-            This pilot view has reached its 500-record limit. Totals are hidden to avoid presenting
-            an incomplete portfolio. Contact support for a larger-portfolio export and pagination
-            setup.
+            {{
+              ' This pilot view has reached its 500-record limit. Totals are hidden to avoid presenting an incomplete portfolio. Contact support for a larger-portfolio export and pagination setup. '
+                | tr
+            }}
           </div>
         }
         @if (loading()) {
-          <div class="loading">Bringing your records together…</div>
+          <div class="loading">{{ 'Bringing your records together…' | tr }}</div>
         } @else {
           @if (!owner && rows('leases').length > 1) {
             <label class="lease-picker"
-              >Your lease<select [(ngModel)]="leaseId" (ngModelChange)="load()">
+              >{{ 'Your lease' | tr
+              }}<select [(ngModel)]="leaseId" (ngModelChange)="load()">
                 @for (l of rows('leases'); track l.id) {
-                  <option [value]="l.id">{{ l.propertyName }} · {{ l.unitLabel }}</option>
+                  <option [value]="l.id">{{ l.propertyName + ' · ' + l.unitLabel | tr }}</option>
                 }
               </select></label
             >
@@ -244,29 +267,37 @@
           @if (['dashboard', 'rent', 'reports'].includes(section())) {
             <div class="period-bar">
               <label
-                >Month<input
+                >{{ 'Month' | tr
+                }}<input
                   type="month"
                   [(ngModel)]="month"
                   (ngModelChange)="periodChange()"
                   required
-                  aria-label="Report month" /></label
+                  aria-label="{{ 'Report month' | tr }}" /></label
               ><label
-                >Currency<select [(ngModel)]="currency" aria-label="Summary currency">
-                  <option value="USD">USD</option>
-                  <option value="CDF">CDF</option>
+                >{{ 'Currency' | tr
+                }}<select [(ngModel)]="currency" aria-label="{{ 'Summary currency' | tr }}">
+                  <option value="USD">{{ 'USD' | tr }}</option>
+                  <option value="CDF">{{ 'CDF' | tr }}</option>
                 </select></label
-              ><span><kf-icon name="lock" /> Recorded activity, not payment processing</span>
+              ><span
+                ><kf-icon name="lock" />
+                {{ ' Recorded activity, not payment processing' | tr }}</span
+              >
             </div>
           }
           @if (section() === 'dashboard' || section() === 'reports') {
             @if (!capped) {
               <div class="stats-grid">
                 <article class="stat-card accent">
-                  <div><span>Rent recorded</span><kf-icon name="wallet" /></div>
-                  <strong>{{ money(total('receivedMinor')) }}</strong
-                  ><span class="stat-foot"
-                    >of {{ money(total('amountMinor')) }} scheduled this month</span
-                  >
+                  <div>
+                    <span>{{ 'Rent recorded' | tr }}</span
+                    ><kf-icon name="wallet" />
+                  </div>
+                  <strong>{{ money(total('receivedMinor')) | tr }}</strong
+                  ><span class="stat-foot">{{
+                    'of ' + money(total('amountMinor')) + ' scheduled this month' | tr
+                  }}</span>
                   <div class="progress-track">
                     <span
                       [style.width.%]="
@@ -278,30 +309,38 @@
                   </div>
                 </article>
                 <article class="stat-card">
-                  <div><span>Still outstanding</span><kf-icon name="file" /></div>
-                  <strong>{{ money(total('amountMinor') - total('receivedMinor')) }}</strong
-                  ><span class="stat-foot">{{ currency }} · selected month only</span>
+                  <div>
+                    <span>{{ 'Still outstanding' | tr }}</span
+                    ><kf-icon name="file" />
+                  </div>
+                  <strong>{{ money(total('amountMinor') - total('receivedMinor')) | tr }}</strong
+                  ><span class="stat-foot">{{ currency + ' · selected month only' | tr }}</span>
                 </article>
                 <article class="stat-card">
                   <div>
-                    <span>{{ owner ? 'Occupancy' : 'Your monthly rent' }}</span
+                    <span>{{ (owner ? 'Occupancy' : 'Your monthly rent') | tr }}</span
                     ><kf-icon name="home" />
                   </div>
                   <strong>{{
-                    owner
+                    (owner
                       ? occupancy() + '%'
                       : money(currentLease()?.rentMinor, currentLease()?.currency || currency)
+                    ) | tr
                   }}</strong
                   ><span class="stat-foot">{{
-                    owner
+                    (owner
                       ? rows('units').length + ' units in your portfolio'
                       : currentLease()?.unitLabel || 'No linked lease yet'
+                    ) | tr
                   }}</span>
                 </article>
                 <article class="stat-card">
-                  <div><span>Needs attention</span><kf-icon name="tool" /></div>
-                  <strong>{{ openRepairs().length.toString().padStart(2, '0') }}</strong
-                  ><span class="stat-foot">Open maintenance requests</span>
+                  <div>
+                    <span>{{ 'Needs attention' | tr }}</span
+                    ><kf-icon name="tool" />
+                  </div>
+                  <strong>{{ openRepairs().length.toString().padStart(2, '0') | tr }}</strong
+                  ><span class="stat-foot">{{ 'Open maintenance requests' | tr }}</span>
                 </article>
               </div>
             }
@@ -310,17 +349,17 @@
                 <section class="panel">
                   <div class="panel-heading">
                     <div>
-                      <h2>Around your homes</h2>
+                      <h2>{{ 'Around your homes' | tr }}</h2>
                       <p>
                         {{
-                          owner
+                          (owner
                             ? 'The people and places in your portfolio.'
-                            : 'The details of your home.'
+                            : 'The details of your home.') + '\n                      ' | tr
                         }}
                       </p>
                     </div>
                     <a class="text-link" [routerLink]="[base, owner ? 'properties' : 'documents']"
-                      >View all <kf-icon name="arrow"
+                      >{{ 'View all ' | tr }}<kf-icon name="arrow"
                     /></a>
                   </div>
                   @if (owner) {
@@ -330,19 +369,19 @@
                           ><kf-icon name="building"
                         /></span>
                         <div>
-                          <h3>{{ p.name }}</h3>
-                          <p>{{ p.city }}</p>
-                          <span>{{ propertyUnits(p.id).length }} units · {{ p.type }}</span>
+                          <h3>{{ p.name | tr }}</h3>
+                          <p>{{ p.city | tr }}</p>
+                          <span>{{ propertyUnits(p.id).length + ' units · ' + p.type | tr }}</span>
                         </div>
                         <kf-icon name="chevron"
                       /></a>
                     } @empty {
                       <div class="empty">
                         <kf-icon name="home" />
-                        <h3>Your first home belongs here.</h3>
-                        <p>Add a property to start bringing the details together.</p>
+                        <h3>{{ 'Your first home belongs here.' | tr }}</h3>
+                        <p>{{ 'Add a property to start bringing the details together.' | tr }}</p>
                         <button class="button small" (click)="open('createProperty')">
-                          Add your first property <kf-icon name="plus" />
+                          {{ ' Add your first property ' | tr }}<kf-icon name="plus" />
                         </button>
                       </div>
                     }
@@ -350,29 +389,29 @@
                     @if (currentLease(); as lease) {
                       <div class="tenant-home">
                         <span class="home-thumbnail"><kf-icon name="home" /></span>
-                        <h3>{{ lease.propertyName }}</h3>
-                        <p>{{ lease.unitLabel }}</p>
+                        <h3>{{ lease.propertyName | tr }}</h3>
+                        <p>{{ lease.unitLabel | tr }}</p>
                         <dl>
                           <div>
-                            <dt>Lease dates</dt>
-                            <dd>{{ date(lease.startDate) }} — {{ date(lease.endDate) }}</dd>
+                            <dt>{{ 'Lease dates' | tr }}</dt>
+                            <dd>{{ date(lease.startDate) + ' — ' + date(lease.endDate) | tr }}</dd>
                           </div>
                           <div>
-                            <dt>Monthly rent</dt>
-                            <dd>{{ money(lease.rentMinor, lease.currency) }}</dd>
+                            <dt>{{ 'Monthly rent' | tr }}</dt>
+                            <dd>{{ money(lease.rentMinor, lease.currency) | tr }}</dd>
                           </div>
                           <div>
-                            <dt>Status</dt>
+                            <dt>{{ 'Status' | tr }}</dt>
                             <dd>
-                              <span class="badge">{{ lease.status }}</span>
+                              <span class="badge">{{ lease.status | tr }}</span>
                             </dd>
                           </div>
                         </dl>
                       </div>
                     } @else {
                       <div class="empty">
-                        <h3>No linked lease yet.</h3>
-                        <p>Ask your landlord for a fresh invitation.</p>
+                        <h3>{{ 'No linked lease yet.' | tr }}</h3>
+                        <p>{{ 'Ask your landlord for a fresh invitation.' | tr }}</p>
                       </div>
                     }
                   }
@@ -380,43 +419,45 @@
                 <section class="panel attention-panel">
                   <div class="panel-heading">
                     <div>
-                      <h2>A little attention</h2>
-                      <p>Small things, kept moving.</p>
+                      <h2>{{ 'A little attention' | tr }}</h2>
+                      <p>{{ 'Small things, kept moving.' | tr }}</p>
                     </div>
                     <span class="note-icon"><kf-icon name="tool" /></span>
                   </div>
                   @for (ticket of openRepairs().slice(0, 3); track ticket.id) {
                     <a class="attention-item" [routerLink]="[base, 'maintenance']"
                       ><span class="badge" [class]="'badge ' + statusClass(ticket.status)">{{
-                        ticket.status.replace('_', ' ')
+                        ticket.status.replace('_', ' ') | tr
                       }}</span>
-                      <h3>{{ ticket.title }}</h3>
-                      <p>{{ ticket.propertyName }} · {{ ticket.unitLabel }}</p>
-                      <span class="text-link">See request <kf-icon name="arrow" /></span
+                      <h3>{{ ticket.title | tr }}</h3>
+                      <p>{{ ticket.propertyName + ' · ' + ticket.unitLabel | tr }}</p>
+                      <span class="text-link"
+                        >{{ 'See request ' | tr }}<kf-icon name="arrow" /></span
                     ></a>
                   } @empty {
                     <div class="empty">
                       <kf-icon name="check" />
-                      <h3>A calmer kind of day.</h3>
-                      <p>No open maintenance requests right now.</p>
+                      <h3>{{ 'A calmer kind of day.' | tr }}</h3>
+                      <p>{{ 'No open maintenance requests right now.' | tr }}</p>
                     </div>
                   }
                 </section>
               </div>
             } @else {
               <section class="panel report-summary">
-                <h2>Keep a copy for your records.</h2>
+                <h2>{{ 'Keep a copy for your records.' | tr }}</h2>
                 <p>
-                  Export the selected month’s rent entries with currency, recorded amounts and
-                  outstanding balances. This report does not independently verify funds or replace
-                  accounting advice.
+                  {{
+                    ' Export the selected month’s rent entries with currency, recorded amounts and outstanding balances. This report does not independently verify funds or replace accounting advice. '
+                      | tr
+                  }}
                 </p>
                 <button
                   class="button secondary"
                   [disabled]="capped || !rows('charges').length"
                   (click)="exportCsv()"
                 >
-                  <kf-icon name="download" /> Export monthly CSV
+                  <kf-icon name="download" /> {{ ' Export monthly CSV ' | tr }}
                 </button>
               </section>
             }
@@ -425,12 +466,12 @@
             <section class="panel rent-panel">
               <div class="panel-heading">
                 <div>
-                  <h2>Rent at a glance</h2>
-                  <p>{{ month }} · Keep the whole picture in view.</p>
+                  <h2>{{ 'Rent at a glance' | tr }}</h2>
+                  <p>{{ month + ' · Keep the whole picture in view.' | tr }}</p>
                 </div>
                 @if (section() === 'dashboard') {
                   <a class="text-link" [routerLink]="[base, 'rent']"
-                    >All rent records <kf-icon name="arrow"
+                    >{{ 'All rent records ' | tr }}<kf-icon name="arrow"
                   /></a>
                 } @else {
                   <button
@@ -438,7 +479,7 @@
                     [disabled]="capped || !rows('charges').length"
                     (click)="exportCsv()"
                   >
-                    <kf-icon name="download" /> Export
+                    <kf-icon name="download" /> {{ ' Export ' | tr }}
                   </button>
                 }
               </div>
@@ -446,17 +487,21 @@
                 <div class="table-scroll">
                   <table>
                     <caption class="sr-only">
-                      Monthly rent records
+                      {{
+                        ' Monthly rent records ' | tr
+                      }}
                     </caption>
                     <thead>
                       <tr>
-                        <th>Tenant & home</th>
-                        <th>Due date</th>
-                        <th>Scheduled</th>
-                        <th>Recorded</th>
-                        <th>Status</th>
+                        <th>{{ 'Tenant & home' | tr }}</th>
+                        <th>{{ 'Due date' | tr }}</th>
+                        <th>{{ 'Scheduled' | tr }}</th>
+                        <th>{{ 'Recorded' | tr }}</th>
+                        <th>{{ 'Status' | tr }}</th>
                         @if (owner) {
-                          <th><span class="sr-only">Actions</span></th>
+                          <th>
+                            <span class="sr-only">{{ 'Actions' | tr }}</span>
+                          </th>
                         }
                       </tr>
                     </thead>
@@ -464,20 +509,22 @@
                       @for (c of rows('charges'); track c.id) {
                         <tr>
                           <td>
-                            <strong>{{ c.tenantName }}</strong
-                            ><small>{{ c.propertyName }} · {{ c.unitLabel }}</small>
+                            <strong>{{ c.tenantName | tr }}</strong
+                            ><small>{{ c.propertyName + ' · ' + c.unitLabel | tr }}</small>
                           </td>
-                          <td>{{ date(c.dueDate) }}</td>
-                          <td>{{ money(c.amountMinor, c.currency) }}</td>
-                          <td>{{ money(c.receivedMinor, c.currency) }}</td>
+                          <td>{{ date(c.dueDate) | tr }}</td>
+                          <td>{{ money(c.amountMinor, c.currency) | tr }}</td>
+                          <td>{{ money(c.receivedMinor, c.currency) | tr }}</td>
                           <td>
-                            <span [class]="'badge ' + statusClass(status(c))">{{ status(c) }}</span>
+                            <span [class]="'badge ' + statusClass(status(c))">{{
+                              status(c) | tr
+                            }}</span>
                           </td>
                           @if (owner) {
                             <td>
                               @if (!c.cancelled && c.receivedMinor < c.amountMinor) {
                                 <button class="table-action" (click)="open('recordReceipt', c)">
-                                  Record receipt <kf-icon name="plus" />
+                                  {{ ' Record receipt ' | tr }}<kf-icon name="plus" />
                                 </button>
                               } @else {
                                 <span class="muted">—</span>
@@ -492,17 +539,18 @@
               } @else {
                 <div class="empty">
                   <kf-icon name="wallet" />
-                  <h3>A fresh page for your records.</h3>
+                  <h3>{{ 'A fresh page for your records.' | tr }}</h3>
                   <p>
                     {{
-                      owner
+                      (owner
                         ? 'Add a lease to schedule monthly rent, or choose another month.'
-                        : 'There are no scheduled charges for this month.'
+                        : 'There are no scheduled charges for this month.') + '\n                  '
+                        | tr
                     }}
                   </p>
                   @if (owner) {
                     <a class="text-link" [routerLink]="[base, 'tenants']"
-                      >Manage leases <kf-icon name="arrow"
+                      >{{ 'Manage leases ' | tr }}<kf-icon name="arrow"
                     /></a>
                   }
                 </div>
@@ -512,23 +560,25 @@
               <section class="panel">
                 <div class="panel-heading">
                   <div>
-                    <h2>The receipt history</h2>
-                    <p>Corrections stay visible. Nothing is silently erased.</p>
+                    <h2>{{ 'The receipt history' | tr }}</h2>
+                    <p>{{ 'Corrections stay visible. Nothing is silently erased.' | tr }}</p>
                   </div>
                 </div>
                 <div class="table-scroll">
                   <table>
                     <caption class="sr-only">
-                      Receipts for the selected month
+                      {{
+                        ' Receipts for the selected month ' | tr
+                      }}
                     </caption>
                     <thead>
                       <tr>
-                        <th>Tenant / received</th>
-                        <th>Amount</th>
-                        <th>Method & reference</th>
-                        <th>Record</th>
+                        <th>{{ 'Tenant / received' | tr }}</th>
+                        <th>{{ 'Amount' | tr }}</th>
+                        <th>{{ 'Method & reference' | tr }}</th>
+                        <th>{{ 'Record' | tr }}</th>
                         @if (owner) {
-                          <th>Correction</th>
+                          <th>{{ 'Correction' | tr }}</th>
                         }
                       </tr>
                     </thead>
@@ -536,27 +586,27 @@
                       @for (r of rows('receipts'); track r.id) {
                         <tr>
                           <td>
-                            <strong>{{ r.tenantName }}</strong
-                            ><small>{{ date(r.receivedOn) }}</small>
+                            <strong>{{ r.tenantName | tr }}</strong
+                            ><small>{{ date(r.receivedOn) | tr }}</small>
                           </td>
-                          <td>{{ money(r.amountMinor, r.currency) }}</td>
+                          <td>{{ money(r.amountMinor, r.currency) | tr }}</td>
                           <td>
-                            {{ r.method.replace('_', ' ')
-                            }}<small>{{ r.reference || 'No reference' }}</small>
+                            {{ r.method.replace('_', ' ') | tr
+                            }}<small>{{ r.reference || 'No reference' | tr }}</small>
                           </td>
                           <td>
                             <span [class]="'badge ' + (r.voided ? 'red' : 'green')">{{
-                              r.voided ? 'Reversed' : 'Recorded'
+                              (r.voided ? 'Reversed' : 'Recorded') | tr
                             }}</span>
                             @if (r.voided) {
-                              <small>{{ r.voidReason }}</small>
+                              <small>{{ r.voidReason | tr }}</small>
                             }
                           </td>
                           @if (owner) {
                             <td>
                               @if (!r.voided) {
                                 <button class="table-action" (click)="open('voidReceipt', r)">
-                                  Correct
+                                  {{ ' Correct ' | tr }}
                                 </button>
                               }
                             </td>
@@ -565,7 +615,7 @@
                       } @empty {
                         <tr>
                           <td [attr.colspan]="owner ? 5 : 4" class="empty">
-                            No receipts recorded for this month.
+                            {{ ' No receipts recorded for this month. ' | tr }}
                           </td>
                         </tr>
                       }
@@ -578,27 +628,27 @@
           @if (section() === 'properties') {
             <div class="list-toolbar">
               <label
-                ><span class="sr-only">Find a property</span
+                ><span class="sr-only">{{ 'Find a property' | tr }}</span
                 ><input
                   type="search"
                   [(ngModel)]="search"
-                  placeholder="Find a home by name or city…" /></label
-              ><span
-                >{{ rows('properties').length }} properties · {{ rows('units').length }} units</span
-              >
+                  placeholder="{{ 'Find a home by name or city…' | tr }}" /></label
+              ><span>{{
+                rows('properties').length + ' properties · ' + rows('units').length + ' units' | tr
+              }}</span>
             </div>
             <div class="property-grid">
               @for (p of visible('properties'); track p.id; let i = $index) {
                 <article class="property-card">
                   <div class="property-art" [class.alternate]="i % 2">
-                    <span class="badge">{{ p.type }}</span
-                    ><kf-icon name="building" /><span class="property-art-caption"
-                      >A place to call home</span
-                    >
+                    <span class="badge">{{ p.type | tr }}</span
+                    ><kf-icon name="building" /><span class="property-art-caption">{{
+                      'A place to call home' | tr
+                    }}</span>
                   </div>
                   <div class="property-details">
                     <div>
-                      <h2>{{ p.name }}</h2>
+                      <h2>{{ p.name | tr }}</h2>
                       <button
                         class="icon-button"
                         (click)="open('updateProperty', p)"
@@ -607,24 +657,26 @@
                         <kf-icon name="settings" />
                       </button>
                     </div>
-                    <p>{{ p.address }}<br />{{ p.city }}</p>
+                    <p>{{ p.address | tr }}<br />{{ p.city | tr }}</p>
                     @if (p.notes) {
-                      <p class="property-notes">{{ p.notes }}</p>
+                      <p class="property-notes">{{ p.notes | tr }}</p>
                     }
                     <div class="unit-list">
                       @for (u of propertyUnits(p.id); track u.id) {
                         <div>
                           <span
-                            ><strong>{{ u.label }}</strong
-                            ><small>{{ money(u.rentMinor, u.currency) }} / month</small></span
+                            ><strong>{{ u.label | tr }}</strong
+                            ><small>{{
+                              money(u.rentMinor, u.currency) + ' / month' | tr
+                            }}</small></span
                           ><span [class]="'badge ' + (u.activeLeaseId ? 'green' : '')">{{
-                            u.activeLeaseId ? 'Occupied' : 'Available'
+                            (u.activeLeaseId ? 'Occupied' : 'Available') | tr
                           }}</span>
                         </div>
                       }
                     </div>
                     <button class="table-action" (click)="open('createUnit', { propertyId: p.id })">
-                      <kf-icon name="plus" /> Add a unit
+                      <kf-icon name="plus" /> {{ ' Add a unit ' | tr }}
                     </button>
                   </div>
                 </article>
@@ -633,21 +685,22 @@
                   <kf-icon name="building" />
                   <h3>
                     {{
-                      search
+                      (search
                         ? 'No homes match that search.'
-                        : 'Every portfolio starts with one home.'
+                        : 'Every portfolio starts with one home.') + '\n                  ' | tr
                     }}
                   </h3>
                   <p>
                     {{
-                      search
+                      (search
                         ? 'Try another name or city.'
-                        : 'Add a property and its rentable units to get started.'
+                        : 'Add a property and its rentable units to get started.') +
+                        '\n                  ' | tr
                     }}
                   </p>
                   @if (!search) {
                     <button class="button small" (click)="open('createProperty')">
-                      Add property
+                      {{ ' Add property ' | tr }}
                     </button>
                   }
                 </section>
@@ -657,58 +710,60 @@
           @if (section() === 'tenants') {
             <div class="list-toolbar">
               <label
-                ><span class="sr-only">Find a tenant</span
+                ><span class="sr-only">{{ 'Find a tenant' | tr }}</span
                 ><input
                   type="search"
                   [(ngModel)]="search"
-                  placeholder="Find a tenant or home…" /></label
-              ><span>{{ rows('leases').length }} lease records</span>
+                  placeholder="{{ 'Find a tenant or home…' | tr }}" /></label
+              ><span>{{ rows('leases').length + ' lease records' | tr }}</span>
             </div>
             <section class="panel">
               <div class="table-scroll">
                 <table>
                   <caption class="sr-only">
-                    Tenants and leases
+                    {{
+                      ' Tenants and leases ' | tr
+                    }}
                   </caption>
                   <thead>
                     <tr>
-                      <th>Tenant</th>
-                      <th>Home & term</th>
-                      <th>Monthly rent</th>
-                      <th>Connection</th>
-                      <th>Actions</th>
+                      <th>{{ 'Tenant' | tr }}</th>
+                      <th>{{ 'Home & term' | tr }}</th>
+                      <th>{{ 'Monthly rent' | tr }}</th>
+                      <th>{{ 'Connection' | tr }}</th>
+                      <th>{{ 'Actions' | tr }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (l of visible('leases'); track l.id) {
                       <tr>
                         <td>
-                          <strong>{{ l.tenantName }}</strong
-                          ><small>{{ l.tenantEmail }}</small>
+                          <strong>{{ l.tenantName | tr }}</strong
+                          ><small>{{ l.tenantEmail | tr }}</small>
                         </td>
                         <td>
-                          <strong>{{ l.propertyName }} · {{ l.unitLabel }}</strong
-                          ><small>{{ date(l.startDate) }} — {{ date(l.endDate) }}</small>
+                          <strong>{{ l.propertyName + ' · ' + l.unitLabel | tr }}</strong
+                          ><small>{{ date(l.startDate) + ' — ' + date(l.endDate) | tr }}</small>
                         </td>
                         <td>
-                          {{ money(l.rentMinor, l.currency)
-                          }}<small>Due day {{ l.dueDay }} · {{ l.status }}</small>
+                          {{ money(l.rentMinor, l.currency) | tr
+                          }}<small>{{ 'Due day ' + l.dueDay + ' · ' + l.status | tr }}</small>
                         </td>
                         <td>
                           <span [class]="'badge ' + (l.tenantUid ? 'green' : '')">{{
-                            l.tenantUid ? 'Connected' : 'Not invited / pending'
+                            (l.tenantUid ? 'Connected' : 'Not invited / pending') | tr
                           }}</span>
                         </td>
                         <td>
                           <div class="table-actions">
                             @if (!l.tenantUid && l.status === 'active') {
                               <button class="table-action" [disabled]="busy()" (click)="invite(l)">
-                                Invite tenant
+                                {{ ' Invite tenant ' | tr }}
                               </button>
                             }
                             @if (l.status === 'active') {
                               <button class="table-action muted" (click)="open('endLease', l)">
-                                End lease
+                                {{ ' End lease ' | tr }}
                               </button>
                             }
                           </div>
@@ -719,8 +774,13 @@
                         <td colspan="5">
                           <div class="empty">
                             <kf-icon name="people" />
-                            <h3>A place for your people.</h3>
-                            <p>Add a property first, then create a lease and invite your tenant.</p>
+                            <h3>{{ 'A place for your people.' | tr }}</h3>
+                            <p>
+                              {{
+                                'Add a property first, then create a lease and invite your tenant.'
+                                  | tr
+                              }}
+                            </p>
                           </div>
                         </td>
                       </tr>
@@ -736,21 +796,21 @@
                 <article class="panel ticket">
                   <div class="ticket-top">
                     <span [class]="'badge ' + statusClass(t.status)">{{
-                      t.status.replace('_', ' ')
+                      t.status.replace('_', ' ') | tr
                     }}</span
-                    ><span [class]="'badge ' + statusClass(t.priority)">{{ t.priority }}</span>
+                    ><span [class]="'badge ' + statusClass(t.priority)">{{ t.priority | tr }}</span>
                   </div>
-                  <h2>{{ t.title }}</h2>
-                  <p class="ticket-location">{{ t.propertyName }} · {{ t.unitLabel }}</p>
-                  <p class="pre-line">{{ t.description }}</p>
+                  <h2>{{ t.title | tr }}</h2>
+                  <p class="ticket-location">{{ t.propertyName + ' · ' + t.unitLabel | tr }}</p>
+                  <p class="pre-line">{{ t.description | tr }}</p>
                   @if (t.latestNote) {
-                    <blockquote>{{ t.latestNote }}</blockquote>
+                    <blockquote>{{ t.latestNote | tr }}</blockquote>
                   }
                   <div class="ticket-bottom">
-                    <small>{{ t.tenantName }}</small>
+                    <small>{{ t.tenantName | tr }}</small>
                     @if (canUpdate(t)) {
                       <button class="table-action" (click)="open('updateMaintenance', t)">
-                        Update request <kf-icon name="arrow" />
+                        {{ ' Update request ' | tr }}<kf-icon name="arrow" />
                       </button>
                     }
                   </div>
@@ -758,8 +818,12 @@
               } @empty {
                 <section class="panel empty">
                   <kf-icon name="tool" />
-                  <h3>Nothing needs fixing right now.</h3>
-                  <p>When something does, create a request and keep everyone in the loop.</p>
+                  <h3>{{ 'Nothing needs fixing right now.' | tr }}</h3>
+                  <p>
+                    {{
+                      'When something does, create a request and keep everyone in the loop.' | tr
+                    }}
+                  </p>
                 </section>
               }
             </div>
@@ -768,12 +832,15 @@
             <section class="panel message-panel">
               <div class="message-header">
                 <label
-                  >Conversation<select [(ngModel)]="leaseId" (ngModelChange)="load()">
+                  >{{ 'Conversation' | tr
+                  }}<select [(ngModel)]="leaseId" (ngModelChange)="load()">
                     @for (l of rows('leases'); track l.id) {
-                      <option [value]="l.id">{{ l.tenantName }} · {{ l.unitLabel }}</option>
+                      <option [value]="l.id">{{ l.tenantName + ' · ' + l.unitLabel | tr }}</option>
                     }
                   </select></label
-                ><span class="muted">Latest 50 messages · refresh to check for replies</span>
+                ><span class="muted">{{
+                  'Latest 50 messages · refresh to check for replies' | tr
+                }}</span>
               </div>
               <div class="message-list">
                 @for (m of rows('messages'); track m.id) {
@@ -784,28 +851,30 @@
                       (demo ? (demoTenant ? 'demo-tenant' : 'demo-owner') : cloud.user()?.uid)
                     "
                   >
-                    <strong>{{ m.authorName }}</strong>
-                    <p>{{ m.body }}</p>
+                    <strong>{{ m.authorName | tr }}</strong>
+                    <p>{{ m.body | tr }}</p>
                   </article>
                 } @empty {
                   <div class="empty">
                     <kf-icon name="message" />
-                    <h3>A good conversation starts here.</h3>
+                    <h3>{{ 'A good conversation starts here.' | tr }}</h3>
                     <p>
-                      Select a lease and send a message. Only that tenant and their landlord can
-                      access it.
+                      {{
+                        ' Select a lease and send a message. Only that tenant and their landlord can access it. '
+                          | tr
+                      }}
                     </p>
                   </div>
                 }
               </div>
               <form class="message-compose" (ngSubmit)="sendMessage()">
                 <label
-                  ><span class="sr-only">Your message</span
+                  ><span class="sr-only">{{ 'Your message' | tr }}</span
                   ><textarea
                     name="message"
                     [(ngModel)]="message"
                     (ngModelChange)="messageRequest = undefined"
-                    placeholder="A little update, a quick question…"
+                    placeholder="{{ 'A little update, a quick question…' | tr }}"
                     required
                     maxlength="4000"
                     rows="2"
@@ -816,40 +885,48 @@
                   type="submit"
                   [disabled]="busy() || !message.trim() || !leaseId"
                 >
-                  Send <kf-icon name="arrow" />
+                  {{ ' Send ' | tr }}<kf-icon name="arrow" />
                 </button>
               </form>
             </section>
           }
           @if (section() === 'documents') {
             <div class="notice">
-              Documents are shared with the tenant on their linked lease. Avoid uploading identity
-              documents or unnecessary sensitive information during this pilot.
+              {{
+                ' Documents are shared with the tenant on their linked lease. Avoid uploading identity documents or unnecessary sensitive information during this pilot. '
+                  | tr
+              }}
             </div>
             <section class="panel">
               <div class="table-scroll">
                 <table>
                   <caption class="sr-only">
-                    Private lease documents
+                    {{
+                      ' Private lease documents ' | tr
+                    }}
                   </caption>
                   <thead>
                     <tr>
-                      <th>Document</th>
-                      <th>Lease</th>
-                      <th>Status</th>
-                      <th>Access</th>
+                      <th>{{ 'Document' | tr }}</th>
+                      <th>{{ 'Lease' | tr }}</th>
+                      <th>{{ 'Status' | tr }}</th>
+                      <th>{{ 'Access' | tr }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (doc of rows('documents'); track doc.id) {
                       <tr>
                         <td>
-                          <strong>{{ doc.title }}</strong
-                          ><small>{{ doc.fileName }} · {{ (doc.size / 1024).toFixed(0) }} KB</small>
+                          <strong>{{ doc.title | tr }}</strong
+                          ><small>{{
+                            doc.fileName + ' · ' + (doc.size / 1024).toFixed(0) + ' KB' | tr
+                          }}</small>
                         </td>
-                        <td>{{ doc.leaseId }}</td>
+                        <td>{{ doc.leaseId | tr }}</td>
                         <td>
-                          <span [class]="'badge ' + statusClass(doc.status)">{{ doc.status }}</span>
+                          <span [class]="'badge ' + statusClass(doc.status)">{{
+                            doc.status | tr
+                          }}</span>
                         </td>
                         <td>
                           @if (doc.status === 'ready') {
@@ -858,12 +935,12 @@
                               [disabled]="busy()"
                               (click)="download(doc)"
                             >
-                              <kf-icon name="download" /> Download
+                              <kf-icon name="download" /> {{ ' Download ' | tr }}
                             </button>
                           } @else {
-                            <small class="muted"
-                              >Upload incomplete. Upload again as a new record.</small
-                            >
+                            <small class="muted">{{
+                              'Upload incomplete. Upload again as a new record.' | tr
+                            }}</small>
                           }
                         </td>
                       </tr>
@@ -872,12 +949,13 @@
                         <td colspan="4">
                           <div class="empty">
                             <kf-icon name="file" />
-                            <h3>The right place for important papers.</h3>
+                            <h3>{{ 'The right place for important papers.' | tr }}</h3>
                             <p>
                               {{
-                                owner
+                                (owner
                                   ? 'Add a lease, then upload a document to share privately with that tenant.'
-                                  : 'Documents shared by your landlord will appear here.'
+                                  : 'Documents shared by your landlord will appear here.') +
+                                  '\n                            ' | tr
                               }}
                             </p>
                           </div>
@@ -893,20 +971,23 @@
             <div class="settings-grid">
               <section class="panel settings-card">
                 <span class="note-icon"><kf-icon name="people" /></span>
-                <h2>Your profile</h2>
+                <h2>{{ 'Your profile' | tr }}</h2>
                 <dl>
                   <div>
-                    <dt>Name</dt>
-                    <dd>{{ demo ? name() : cloud.session()?.profile?.displayName }}</dd>
+                    <dt>{{ 'Name' | tr }}</dt>
+                    <dd>{{ (demo ? name() : cloud.session()?.profile?.displayName) | tr }}</dd>
                   </div>
                   <div>
-                    <dt>Email</dt>
-                    <dd>{{ demo ? 'alex@example.com' : cloud.user()?.email }}</dd>
+                    <dt>{{ 'Email' | tr }}</dt>
+                    <dd>{{ (demo ? 'alex@example.com' : cloud.user()?.email) | tr }}</dd>
                   </div>
                   <div>
-                    <dt>Account ID</dt>
+                    <dt>{{ 'Account ID' | tr }}</dt>
                     <dd class="break-all">
-                      {{ demo ? 'Fictional demo account' : cloud.user()?.uid }}
+                      {{
+                        (demo ? 'Fictional demo account' : cloud.user()?.uid) +
+                          '\n                    ' | tr
+                      }}
                     </dd>
                   </div>
                 </dl>
@@ -915,46 +996,47 @@
                   (click)="open('updateProfile')"
                   [disabled]="demo"
                 >
-                  Edit your name</button
-                ><a class="text-link" routerLink="/reset">Reset password</a>
+                  {{ ' Edit your name' | tr }}</button
+                ><a class="text-link" routerLink="/reset">{{ 'Reset password' | tr }}</a>
               </section>
               <section class="panel settings-card">
                 <span class="note-icon warm"><kf-icon name="home" /></span>
-                <h2>Your portfolio</h2>
+                <h2>{{ 'Your portfolio' | tr }}</h2>
                 <dl>
                   <div>
-                    <dt>Name</dt>
-                    <dd>{{ org()?.name }}</dd>
+                    <dt>{{ 'Name' | tr }}</dt>
+                    <dd>{{ org()?.name | tr }}</dd>
                   </div>
                   <div>
-                    <dt>Role</dt>
-                    <dd>{{ owner ? 'Landlord / owner' : 'Tenant' }}</dd>
+                    <dt>{{ 'Role' | tr }}</dt>
+                    <dd>{{ (owner ? 'Landlord / owner' : 'Tenant') | tr }}</dd>
                   </div>
                   <div>
-                    <dt>Time zone</dt>
-                    <dd>Africa/Kinshasa</dd>
+                    <dt>{{ 'Time zone' | tr }}</dt>
+                    <dd>{{ 'Africa/Kinshasa' | tr }}</dd>
                   </div>
                   <div>
-                    <dt>Currencies</dt>
-                    <dd>USD and CDF · never combined</dd>
+                    <dt>{{ 'Currencies' | tr }}</dt>
+                    <dd>{{ 'USD and CDF · never combined' | tr }}</dd>
                   </div>
                 </dl>
                 @if (owner) {
                   <button class="button secondary small" (click)="open('updateWorkspace')">
-                    Edit portfolio name
+                    {{ ' Edit portfolio name ' | tr }}
                   </button>
                 }
               </section>
             </div>
             <section class="panel settings-card">
-              <h2>Your data, your choices.</h2>
+              <h2>{{ 'Your data, your choices.' | tr }}</h2>
               <p>
-                For account deletion, a complete data export, or privacy questions, send a support
-                request. Important financial records remain available until the operator handles
-                your request. Keep your own copies of lease and rent records.
+                {{
+                  ' For account deletion, a complete data export, or privacy questions, send a support request. Important financial records remain available until the operator handles your request. Keep your own copies of lease and rent records. '
+                    | tr
+                }}
               </p>
               <a class="text-link" [routerLink]="[base, 'support']"
-                >Contact support <kf-icon name="arrow"
+                >{{ 'Contact support ' | tr }}<kf-icon name="arrow"
               /></a>
             </section>
           }
@@ -962,30 +1044,32 @@
             <div class="ticket-grid">
               @for (ticket of rows('support'); track ticket.id) {
                 <article class="panel ticket">
-                  <span class="badge">{{ ticket.status }}</span>
-                  <h2>{{ ticket.subject }}</h2>
-                  <p class="pre-line">{{ ticket.body }}</p>
+                  <span class="badge">{{ ticket.status | tr }}</span>
+                  <h2>{{ ticket.subject | tr }}</h2>
+                  <p class="pre-line">{{ ticket.body | tr }}</p>
                   @if (ticket.reply) {
                     <blockquote>
-                      <strong>From the Kofutela team</strong>
-                      <p class="pre-line">{{ ticket.reply }}</p>
+                      <strong>{{ 'From the Kofutela team' | tr }}</strong>
+                      <p class="pre-line">{{ ticket.reply | tr }}</p>
                     </blockquote>
                   } @else {
-                    <small class="muted"
-                      >Awaiting a reply. Refresh this page to check for updates.</small
-                    >
+                    <small class="muted">{{
+                      'Awaiting a reply. Refresh this page to check for updates.' | tr
+                    }}</small>
                   }
                 </article>
               } @empty {
                 <section class="panel empty">
                   <kf-icon name="help" />
-                  <h3>We’re here to help you settle in.</h3>
+                  <h3>{{ 'We’re here to help you settle in.' | tr }}</h3>
                   <p>
-                    Send a question or report an issue. Your requests and the operator’s replies
-                    will stay here.
+                    {{
+                      ' Send a question or report an issue. Your requests and the operator’s replies will stay here. '
+                        | tr
+                    }}
                   </p>
                   <button class="button small" (click)="open('createSupport')">
-                    Start a conversation
+                    {{ ' Start a conversation ' | tr }}
                   </button>
                 </section>
               }
@@ -995,13 +1079,13 @@
             <section class="panel activity-panel">
               <div class="panel-heading">
                 <div>
-                  <h2>The latest around here</h2>
-                  <p>A small trail of useful updates.</p>
+                  <h2>{{ 'The latest around here' | tr }}</h2>
+                  <p>{{ 'A small trail of useful updates.' | tr }}</p>
                 </div>
               </div>
               @for (event of rows('activity'); track event.id) {
                 <div class="activity-row">
-                  <span class="activity-dot"></span><span>{{ event.detail }}</span>
+                  <span class="activity-dot"></span><span>{{ event.detail | tr }}</span>
                 </div>
               }
             </section>
@@ -1009,10 +1093,11 @@
         }
       }
       <footer class="app-footer">
-        <span><kf-icon name="home" /> A little closer to home.</span>
+        <span><kf-icon name="home" /> {{ ' A little closer to home.' | tr }}</span>
         <div>
-          <a routerLink="/privacy">Privacy</a><a routerLink="/terms">Terms</a
-          ><span>Kofutela · Pilot</span>
+          <a routerLink="/privacy">{{ 'Privacy' | tr }}</a
+          ><a routerLink="/terms">{{ 'Terms' | tr }}</a
+          ><span>{{ 'Kofutela · Pilot' | tr }}</span>
         </div>
       </footer>
     </main>
@@ -1025,37 +1110,35 @@
   >
     <button
       class="dialog-close icon-button"
-      aria-label="Close dialog"
+      aria-label="{{ 'Close dialog' | tr }}"
       [disabled]="busy()"
       (click)="close()"
     >
       <kf-icon name="close" />
     </button>
     @if (spec) {
-      <span class="eyebrow">A little more together</span>
-      <h2 id="dialog-title">{{ spec.title }}</h2>
-      <p class="dialog-description">{{ spec.description }}</p>
+      <span class="eyebrow">{{ 'A little more together' | tr }}</span>
+      <h2 id="dialog-title">{{ spec.title | tr }}</h2>
+      <p class="dialog-description">{{ spec.description | tr }}</p>
       @if (formError()) {
-        <div class="error" role="alert">{{ formError() }}</div>
+        <div class="error" role="alert">{{ formError() | tr }}</div>
       }
       @if (action === 'invite') {
         <label
-          >Private invitation link<input
-            [value]="resultLink"
-            readonly
-            (focus)="$any($event.target).select()"
+          >{{ 'Private invitation link' | tr
+          }}<input [value]="resultLink" readonly (focus)="$any($event.target).select()"
         /></label>
         <div class="form-actions">
-          <button class="button" (click)="copyInvite()">Copy invitation link</button>
+          <button class="button" (click)="copyInvite()">{{ 'Copy invitation link' | tr }}</button>
         </div>
       } @else {
         <form (ngSubmit)="submit()">
           <div class="field-grid">
             @for (field of spec.fields; track field.key) {
               <label [class.full]="field.type === 'textarea' || field.type === 'file'"
-                >{{ field.label }}
+                >{{ field.label + '\n                ' | tr }}
                 @if (!field.required) {
-                  <span class="muted"> (optional)</span>
+                  <span class="muted"> {{ ' (optional)' | tr }}</span>
                 }
                 @if (field.type === 'select') {
                   <select
@@ -1064,7 +1147,7 @@
                     [required]="!!field.required"
                   >
                     @for (option of field.options; track option.value) {
-                      <option [value]="option.value">{{ option.label }}</option>
+                      <option [value]="option.value">{{ option.label | tr }}</option>
                     }
                   </select>
                 } @else if (field.type === 'textarea') {
@@ -1097,16 +1180,17 @@
                   />
                 }
                 @if (field.hint) {
-                  <small>{{ field.hint }}</small>
+                  <small>{{ field.hint | tr }}</small>
                 }
               </label>
             }
           </div>
           <div class="form-actions">
             <button type="button" class="button secondary" [disabled]="busy()" (click)="close()">
-              Cancel</button
+              {{ ' Cancel' | tr }}</button
             ><button type="submit" class="button" [disabled]="busy()">
-              {{ busy() ? 'Saving…' : spec.submit || 'Save changes' }} <kf-icon name="arrow" />
+              {{ (busy() ? 'Saving…' : spec.submit || 'Save changes') + ' ' | tr
+              }}<kf-icon name="arrow" />
             </button>
           </div>
         </form>

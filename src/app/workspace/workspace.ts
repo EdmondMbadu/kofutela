@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Cloud, errorMessage, Row } from '../core/cloud';
 import { Seo } from '../core/seo';
+import { I18n, TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
 import { demoData, DemoSession } from './demo';
 import { FormSpec, formSpec } from './forms';
@@ -29,7 +30,7 @@ export const SECTIONS = [
 ];
 @Component({
   selector: 'kf-workspace',
-  imports: [FormsModule, RouterLink, Icon],
+  imports: [FormsModule, RouterLink, Icon, TrPipe],
   templateUrl: './workspace.html',
   styleUrl: './workspace.css',
 })
@@ -38,6 +39,7 @@ export class Workspace implements OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private seo = inject(Seo);
+  readonly i18n = inject(I18n);
   private demoSession = inject(DemoSession);
   @ViewChild('dialog') dialog?: ElementRef<HTMLDialogElement>;
   readonly nav = [
@@ -149,7 +151,7 @@ export class Workspace implements OnDestroy {
         ).split(' ')[0];
   }
   money(value: number, currency = this.currency) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(this.i18n.language() === 'fr' ? 'fr-FR' : 'en-US', {
       style: 'currency',
       currency,
       maximumFractionDigits: currency === 'CDF' ? 2 : 2,
@@ -157,7 +159,7 @@ export class Workspace implements OnDestroy {
   }
   date(value: string) {
     return value
-      ? new Intl.DateTimeFormat('en-GB', {
+      ? new Intl.DateTimeFormat(this.i18n.language() === 'fr' ? 'fr-FR' : 'en-GB', {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
