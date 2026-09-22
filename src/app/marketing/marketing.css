@@ -543,7 +543,6 @@
     display: block;
     border-top: 1px solid var(--line);
     padding-top: 20px;
-    margin-top: 4px;
     font-weight: 600;
   }
   .mobile-toggle {
