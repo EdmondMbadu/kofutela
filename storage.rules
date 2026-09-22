@@ -13,7 +13,9 @@ service firebase.storage {
         && request.resource.size <= 10 * 1024 * 1024
         && request.resource.contentType == record().contentType
         && request.resource.contentType.matches('application/pdf|image/jpeg|image/png|image/webp');
-      allow get: if verified() && record().status == 'ready' && (owner(org)
+      // At most two distinct Firestore document reads per Storage evaluation.
+      // ownerUid is stamped by the server; ownership transfer is not supported.
+      allow get: if verified() && record().status == 'ready' && (record().ownerUid == request.auth.uid
         || firestore.get(/databases/(default)/documents/organizations/$(org)/leases/$(record().leaseId)).data.tenantUid == request.auth.uid);
       allow update, delete, list: if false;
     }

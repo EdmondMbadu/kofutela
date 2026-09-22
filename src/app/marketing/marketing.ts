@@ -208,7 +208,7 @@ export class Marketing {
       this.story = stories[this.page];
       this.menu.set(false);
       this.seo.set(
-        this.story?.title || 'Close to home. Even from afar.',
+        this.story?.title || (this.page === 'help' ? 'Help center: a clearer next step' : this.page === 'contact' ? 'Contact and support' : 'Close to home. Even from afar.'),
         this.story?.intro ||
           'A simpler way to manage rental properties, track rent and stay connected to tenants. Built for Kinshasa and landlords abroad.',
         this.page,

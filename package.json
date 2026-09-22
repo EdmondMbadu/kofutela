@@ -4,10 +4,15 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "node scripts/social-card.mjs && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:kofutela": "node dist/kofutela/server/server.mjs"
+    "test:domain": "npm --prefix functions test",
+    "test:rules": "node --test test/rules.test.mjs",
+    "test:workflows": "node --test test/workflows.test.mjs",
+    "test:seo": "node --test test/seo.test.mjs",
+    "emulators": "npx -y firebase-tools@latest emulators:start --only auth,firestore,functions,storage --project demo-kofutela",
+    "deploy": "npx -y firebase-tools@latest deploy --project kofutela"
   },
   "prettier": {
     "printWidth": 100,

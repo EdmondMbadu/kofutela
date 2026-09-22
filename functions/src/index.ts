@@ -642,7 +642,7 @@ async function perform(
       const ref = org.collection('documents').doc();
       const safeName = p.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
       const path = `organizations/${org.id}/documents/${ref.id}/${safeName}`;
-      tx.create(ref, { ...p, path, status: 'uploading', uploadedBy: who.uid, createdAt: now() });
+      tx.create(ref, { ...p, path, status: 'uploading', ownerUid: ctx.data['ownerUid'], uploadedBy: who.uid, createdAt: now() });
       entityId = ref.id;
       detail = 'Document upload prepared';
       result = { id: ref.id, path };

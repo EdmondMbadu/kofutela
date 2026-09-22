@@ -49,6 +49,7 @@ before(async () => {
       'organizations/one/maintenance/ticket': { leaseId: 'lease' },
       'organizations/one/messages/message': { leaseId: 'lease', body: 'Private message' },
       'organizations/one/documents/file': {
+        ownerUid: 'owner',
         leaseId: 'lease',
         status: 'ready',
         path: 'organizations/one/documents/file/lease.pdf',

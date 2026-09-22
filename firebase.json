@@ -26,6 +26,7 @@
     }
   ],
   "hosting": {
+    "predeploy": ["npm run build", "npm run test:seo"],
     "site": "kofutela",
     "public": "dist/kofutela/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -53,7 +54,7 @@
         "headers": [{ "key": "Cache-Control", "value": "public,max-age=86400" }]
       },
       {
-        "source": "/@(app|admin|super-admin|login|signup|join|demo){,/**}",
+        "source": "/@(app|admin|super-admin|login|signup|reset|join|demo){,/**}",
         "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
       }
     ]

@@ -412,7 +412,7 @@ export class Workspace implements OnDestroy {
       const payload: Row = Object.fromEntries(
         this.spec.fields
           .filter((f) => f.type !== 'file')
-          .map((f) => [f.key, this.form[f.key] ?? '']),
+          .map((f) => [f.key, f.type === 'number' ? Number(this.form[f.key]) : this.form[f.key] ?? '']),
       );
       for (const key of ['propertyId', 'chargeId', 'receiptId', 'ticketId', 'leaseId'])
         if (this.form[key]) payload[key] = this.form[key];
