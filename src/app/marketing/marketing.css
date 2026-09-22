@@ -24,6 +24,9 @@
   gap: 30px;
   font-size: 14px;
 }
+.public-header nav .mobile-login {
+  display: none;
+}
 .public-header nav a:hover,
 .login-link:hover {
   color: var(--accent);
@@ -65,14 +68,6 @@
 }
 .hero-actions .text-link {
   font-size: 14px;
-}
-.hero-note {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 32px;
 }
 .hero-art {
   position: relative;
@@ -544,6 +539,13 @@
     display: flex;
     flex-direction: column;
   }
+  .public-header nav .mobile-login {
+    display: block;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    margin-top: 4px;
+    font-weight: 600;
+  }
   .mobile-toggle {
     display: inline-flex;
   }
@@ -719,9 +721,6 @@
   }
   .preview-row .badge {
     display: none;
-  }
-  .hero-note {
-    font-size: 10px;
   }
   .eyebrow {
     font-size: 10px;
@@ -1316,6 +1315,9 @@
   .landing-header {
     height: 72px;
     padding-inline: 20px;
+  }
+  .landing-header nav {
+    top: 72px;
   }
   .landing-hero {
     height: auto;
