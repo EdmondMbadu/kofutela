@@ -109,13 +109,6 @@
   margin-top: auto;
   padding-top: 38px;
 }
-.sidebar-language {
-  display: flex;
-  padding: 16px 3px;
-}
-.sidebar-language kf-language-switcher {
-  width: 100%;
-}
 .sidebar-note {
   background: #e8e8e8;
   border-radius: 12px;

@@ -7,7 +7,7 @@ import { LanguageSwitcher } from './language-switcher';
   selector: 'kf-not-found',
   imports: [RouterLink, TrPipe, LanguageSwitcher],
   template: `<div style="display:flex;justify-content:flex-end;padding:20px">
-      <kf-language-switcher variant="compact" />
+      <kf-language-switcher />
     </div>
     <main id="main" style="max-width:550px;margin:15vh auto;padding:30px;text-align:center">
       <span class="eyebrow">{{ '404 · A little off the path' | tr }}</span>

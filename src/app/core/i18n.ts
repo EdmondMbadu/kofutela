@@ -18,7 +18,6 @@ export class I18n {
   private readonly document = inject(DOCUMENT);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly language = signal<Language>('en');
-  readonly choiceNeeded = signal(false);
 
   initialize() {
     if (!this.browser) return;
@@ -34,13 +33,11 @@ export class I18n {
     }
     const preferred = navigator.languages?.[0] || navigator.language;
     if (/^fr(-|$)/i.test(preferred)) this.use('fr', false);
-    else if (/^en(-|$)/i.test(preferred)) this.use('en', false);
-    else this.choiceNeeded.set(true);
+    else this.use('en', false);
   }
 
   use(language: Language, remember = true) {
     this.language.set(language);
-    this.choiceNeeded.set(false);
     this.document.documentElement.lang = language;
     if (remember && this.browser) {
       try {

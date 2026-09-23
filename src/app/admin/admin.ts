@@ -16,9 +16,7 @@ import { LanguageSwitcher } from '../shared/language-switcher';
         ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
       >
       <div class="admin-header-actions">
-        <kf-language-switcher variant="compact" /><a
-          class="button secondary small"
-          routerLink="/app"
+        <kf-language-switcher /><a class="button secondary small" routerLink="/app"
           >{{ 'Back to my space ' | tr }}<kf-icon name="arrow"
         /></a>
       </div>

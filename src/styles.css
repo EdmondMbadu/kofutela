@@ -1,14 +1,6 @@
 @import '@fontsource-variable/dm-sans';
-.public-header nav .mobile-signup,
-.public-header nav .mobile-language {
+.public-header nav .mobile-signup {
   display: none;
-}
-@media (max-width: 1200px) {
-  .public-header nav .mobile-language {
-    display: flex;
-    border-top: 1px solid var(--line);
-    padding-top: 18px;
-  }
 }
 @media (max-width: 480px) {
   .public-header nav .mobile-signup {

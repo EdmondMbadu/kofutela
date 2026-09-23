@@ -14,7 +14,7 @@ import { LanguageSwitcher } from '../shared/language-switcher';
     <div class="join-header">
       <a class="brand" routerLink="/"
         ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
-      ><kf-language-switcher variant="compact" />
+      ><kf-language-switcher />
     </div>
     <section>
       <span class="note-icon"><kf-icon name="home" /></span
