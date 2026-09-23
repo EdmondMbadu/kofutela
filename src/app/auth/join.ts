@@ -6,13 +6,16 @@ import { Cloud, errorMessage } from '../core/cloud';
 import { Seo } from '../core/seo';
 import { TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
+import { LanguageSwitcher } from '../shared/language-switcher';
 @Component({
   selector: 'kf-join',
-  imports: [FormsModule, RouterLink, Icon, TrPipe],
+  imports: [FormsModule, RouterLink, Icon, TrPipe, LanguageSwitcher],
   template: ` <main id="main" class="join-page">
-    <a class="brand" routerLink="/"
-      ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
-    >
+    <div class="join-header">
+      <a class="brand" routerLink="/"
+        ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
+      ><kf-language-switcher variant="compact" />
+    </div>
     <section>
       <span class="note-icon"><kf-icon name="home" /></span
       ><span class="eyebrow">{{ 'A space of your own' | tr }}</span>
@@ -77,6 +80,11 @@ import { Icon } from '../shared/icon';
       margin: 40px auto;
       padding: 0 24px;
       text-align: center;
+    }
+    .join-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .join-page > section {
       margin: 65px 0 40px;

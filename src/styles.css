@@ -1,4 +1,21 @@
 @import '@fontsource-variable/dm-sans';
+.public-header nav .mobile-signup,
+.public-header nav .mobile-language {
+  display: none;
+}
+@media (max-width: 1200px) {
+  .public-header nav .mobile-language {
+    display: flex;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+}
+@media (max-width: 480px) {
+  .public-header nav .mobile-signup {
+    display: block;
+    font-weight: 600;
+  }
+}
 /* White, black typography and WhatsApp-style green: the only brand palette. */
 :root {
   --cream: #ffffff;

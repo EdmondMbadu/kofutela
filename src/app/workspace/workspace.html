@@ -54,6 +54,7 @@
           <a routerLink="/admin"><kf-icon name="shield" />{{ 'Platform admin' | tr }}</a>
         }
       </nav>
+      <div class="sidebar-language"><kf-language-switcher variant="menu" /></div>
       <div class="profile">
         <span class="avatar">{{ name().slice(0, 1) | tr }}</span>
         <div>
@@ -94,6 +95,7 @@
         >
       </div>
       <div class="topbar-right">
+        <kf-language-switcher variant="compact" />
         <span class="pilot-badge"><span class="live-dot"></span> {{ ' Early pilot' | tr }}</span
         ><a routerLink="/help" class="icon-button" aria-label="{{ 'Help center' | tr }}"
           ><kf-icon name="help" /></a

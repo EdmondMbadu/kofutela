@@ -6,16 +6,22 @@ import { Cloud, errorMessage, Row } from '../core/cloud';
 import { Seo } from '../core/seo';
 import { TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
+import { LanguageSwitcher } from '../shared/language-switcher';
 @Component({
   selector: 'kf-admin',
-  imports: [FormsModule, RouterLink, Icon, TrPipe],
+  imports: [FormsModule, RouterLink, Icon, TrPipe, LanguageSwitcher],
   template: ` <main id="main" class="admin-page">
     <header>
       <a class="brand" routerLink="/"
         ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela.' | tr }}</a
-      ><a class="button secondary small" routerLink="/app"
-        >{{ 'Back to my space ' | tr }}<kf-icon name="arrow"
-      /></a>
+      >
+      <div class="admin-header-actions">
+        <kf-language-switcher variant="compact" /><a
+          class="button secondary small"
+          routerLink="/app"
+          >{{ 'Back to my space ' | tr }}<kf-icon name="arrow"
+        /></a>
+      </div>
     </header>
     <span class="eyebrow">{{ 'Platform operations' | tr }}</span>
     <h1>{{ 'A thoughtful eye on things.' | tr }}</h1>

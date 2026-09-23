@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   position: fixed;
-  inset: 46px auto 0 0;
+  inset: 0 auto 0 0;
   z-index: 20;
   overflow-y: auto;
 }
@@ -108,6 +108,13 @@
 .sidebar-bottom {
   margin-top: auto;
   padding-top: 38px;
+}
+.sidebar-language {
+  display: flex;
+  padding: 16px 3px;
+}
+.sidebar-language kf-language-switcher {
+  width: 100%;
 }
 .sidebar-note {
   background: #e8e8e8;
@@ -1193,6 +1200,9 @@ dd {
   }
   .pilot-badge {
     font-size: 9px;
+  }
+  .topbar-right .pilot-badge {
+    display: none;
   }
   .page-title {
     flex-wrap: wrap;

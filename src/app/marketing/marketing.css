@@ -520,14 +520,14 @@
     margin-left: 68px;
   }
 }
-@media (max-width: 1050px) {
+@media (max-width: 1200px) {
   .public-header {
     height: 80px;
   }
   .public-header nav {
     display: none;
     position: absolute;
-    top: 126px;
+    top: 80px;
     left: 0;
     right: 0;
     background: var(--cream);
@@ -671,10 +671,6 @@
     font-size: 16px;
   }
   .header-actions .button {
-    padding: 10px 14px;
-    font-size: 12px;
-  }
-  .header-actions .button kf-icon {
     display: none;
   }
   .hero h1 {
@@ -1318,7 +1314,7 @@
     padding-inline: 20px;
   }
   .landing-header nav {
-    top: 118px;
+    top: 72px;
   }
   .landing-hero {
     height: auto;

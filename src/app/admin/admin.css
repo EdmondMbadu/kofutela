@@ -10,6 +10,11 @@
   gap: 20px;
   margin-bottom: 65px;
 }
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .admin-page h1 {
   font-size: 43px;
   letter-spacing: -1.5px;

@@ -6,9 +6,10 @@ import { Cloud, errorMessage } from '../core/cloud';
 import { Seo } from '../core/seo';
 import { TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
+import { LanguageSwitcher } from '../shared/language-switcher';
 @Component({
   selector: 'kf-auth',
-  imports: [FormsModule, RouterLink, Icon, TrPipe],
+  imports: [FormsModule, RouterLink, Icon, TrPipe, LanguageSwitcher],
   templateUrl: './auth.html',
   styleUrl: './auth.css',
 })

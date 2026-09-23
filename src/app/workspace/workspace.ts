@@ -14,6 +14,7 @@ import { Cloud, errorMessage, Row } from '../core/cloud';
 import { Seo } from '../core/seo';
 import { I18n, TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
+import { LanguageSwitcher } from '../shared/language-switcher';
 import { demoData, DemoSession } from './demo';
 import { FormSpec, formSpec } from './forms';
 export const SECTIONS = [
@@ -30,7 +31,7 @@ export const SECTIONS = [
 ];
 @Component({
   selector: 'kf-workspace',
-  imports: [FormsModule, RouterLink, Icon, TrPipe],
+  imports: [FormsModule, RouterLink, Icon, TrPipe, LanguageSwitcher],
   templateUrl: './workspace.html',
   styleUrl: './workspace.css',
 })

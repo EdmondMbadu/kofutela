@@ -52,6 +52,12 @@
   padding: 44px 60px;
   background: var(--cream);
 }
+.auth-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 .back-link {
   font-size: 12px;
   color: var(--muted);

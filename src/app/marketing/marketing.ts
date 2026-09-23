@@ -3,6 +3,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Seo } from '../core/seo';
 import { I18n, TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
+import { LanguageSwitcher } from '../shared/language-switcher';
 type Story = {
   eyebrow: string;
   title: string;
@@ -150,7 +151,7 @@ const stories: Record<string, Story> = {
 };
 @Component({
   selector: 'kf-marketing',
-  imports: [RouterLink, Icon, TrPipe],
+  imports: [RouterLink, Icon, TrPipe, LanguageSwitcher],
   templateUrl: './marketing.html',
   styleUrl: './marketing.css',
 })

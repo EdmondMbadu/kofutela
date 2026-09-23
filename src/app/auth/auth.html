@@ -24,7 +24,10 @@
     /><span class="auth-footnote">{{ 'Wherever you call home.' | tr }}</span>
   </aside>
   <section class="auth-form">
-    <a class="back-link" routerLink="/">{{ '← Back to Kofutela' | tr }}</a>
+    <div class="auth-form-header">
+      <a class="back-link" routerLink="/">{{ '← Back to Kofutela' | tr }}</a
+      ><kf-language-switcher variant="compact" />
+    </div>
     <div class="auth-inner">
       @if (verification()) {
         <span class="note-icon"><kf-icon name="lock" /></span>
