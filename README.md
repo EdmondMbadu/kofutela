@@ -34,17 +34,30 @@ npm start
 
 Open `http://localhost:4200/login?emulator=1` to explicitly opt into the local demo Firebase project. The flag persists for that browser tab and is ignored on non-loopback hosts. Without it, login connects to the real Firebase project. The `/demo` visual sandbox is separate and needs no Firebase services.
 
+## Account creation and setup
+
+1. `/signup`: enter a name, valid email, unique password of at least 10 characters, and acknowledge the pilot terms/privacy notice. The account is saved before the verification email is sent; a failed email can be resent without creating another account.
+2. Email verification: Firebase's hosted email-action page validates the email link. The original Kofutela tab checks every five seconds while visible and on focus; the manual verification button also refreshes the ID token before entering the app. Resends have a 60-second cooldown. Expired links can be replaced with a resend.
+3. `/app`: a new owner creates a named portfolio in USD or CDF. A saved five-step checklist then opens the existing property, lease, and invitation forms in order. Vacant properties can stop before adding a lease. Setup progress comes from saved records and survives reloads.
+4. Tenant path: `/join?token=…` carries its invitation through signup, verification, login and password recovery. The tenant signs in with the invited email and accepts the invitation instead of creating a portfolio. A different account can be selected without losing the invitation. Invitations expire after seven days and are email-bound and single-use.
+5. Returning users: verified login/signup sessions resume the requested private route automatically. Password recovery remains accessible even when the current account is unverified. External redirect destinations are rejected.
+
+Verification and recovery links return to the originating host, including the development port. Authorized hosts are `localhost`, `127.0.0.1`, `kofutela.web.app`, `kofutela.firebaseapp.com`, `kofutela.com`, and `www.kofutela.com`. Hostnames have no protocol, port, slash, or trailing dot. Authorizing a custom domain does not configure its DNS or Hosting certificate.
+
+`firebase-tools` 15.8 deploys Auth providers but **ignores** `auth.authorizedDomains`. The Auth predeploy hook runs `npm run auth:domains` to merge the configured hosts into the live allowlist, preserve other existing hosts, and read back the result. It reuses the installed CLI's existing authenticated client (or application default credentials); it never prints tokens. Run `npm run auth:domains` independently to repair or verify live domains. The helper uses internal CLI APIs, so verify it when upgrading `firebase-tools`.
+
 ## Verification
 
 ```sh
 npm run test:domain
 npm run test:rules
 npm run test:workflows
+npm run test:accounts
 npm run build
 npm run test:seo
 ```
 
-Rules and workflow tests require running emulators. They use **only** `demo-kofutela` and fictional `@example.test` accounts. The workflow suite replaces only its test owner's emulator portfolio on reruns. Do not point tests at production. Rule tests intentionally generate permission-denied logs. The test platform bootstrap uses `platform@example.test`; export that environment variable when starting emulators. `npm test -- --watch=false --browsers=ChromeHeadless` runs the Angular component smoke tests when Chrome is available.
+Rules, workflow, and account tests require running emulators. They use **only** `demo-kofutela` and fictional `@example.test` accounts. The workflow suite replaces only its test owner's emulator portfolio on reruns. Do not point tests at production. Rule tests intentionally generate permission-denied logs. The account suite exercises signup, email action links, verification/token refresh, portfolio persistence, and password recovery. The test platform bootstrap uses `platform@example.test`; export that environment variable when starting emulators. `npm test -- --watch=false --browsers=ChromeHeadless` runs the Angular component, account-flow, and setup regression tests when Chrome is available.
 
 ## Access and integrity
 

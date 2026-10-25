@@ -29,12 +29,32 @@
       ><kf-language-switcher />
     </div>
     <div class="auth-inner">
+      @if (mode() === 'signup' || verification()) {
+        <ol class="account-steps" aria-label="{{ 'Account setup' | tr }}">
+          <li
+            [class.complete]="verification()"
+            [attr.aria-current]="!verification() ? 'step' : null"
+          >
+            {{ '1. Account' | tr }}
+          </li>
+          <li [class.active]="verification()" [attr.aria-current]="verification() ? 'step' : null">
+            {{ '2. Verify email' | tr }}
+          </li>
+          <li>{{ '3. Your space' | tr }}</li>
+        </ol>
+      }
       @if (verification()) {
         <span class="note-icon"><kf-icon name="lock" /></span>
         <h2>{{ 'One small step' | tr }}<br />{{ 'to a safer space.' | tr }}</h2>
         <p class="muted">
-          {{ ' Verify ' | tr }}<strong>{{ cloud.user()?.email | tr }}</strong>
+          {{ ' Verify ' | tr }}<strong>{{ cloud.user()?.email }}</strong>
           {{ ' using the link in your inbox. ' | tr }}
+        </p>
+        <p class="muted">
+          {{
+            'Check your spam folder too. This page will continue automatically after verification.'
+              | tr
+          }}
         </p>
       } @else {
         <span class="eyebrow">{{
@@ -74,14 +94,27 @@
         <div class="form-stack">
           <button class="button" [disabled]="busy()" (click)="verify()">
             {{ ' I’ve verified my email ' | tr }}<kf-icon name="arrow" /></button
-          ><button class="button secondary" [disabled]="busy()" (click)="resend()">
-            {{ ' Resend verification email' | tr }}</button
+          ><button
+            class="button secondary"
+            [disabled]="busy() || resendSeconds() > 0"
+            (click)="resend()"
+          >
+            {{ 'Resend verification email' | tr }}
+            @if (resendSeconds()) {
+              <span> ({{ resendSeconds() }}s)</span>
+            }</button
           ><button class="plain-button" [disabled]="busy()" (click)="switchAccount()">
             {{ ' Use a different account ' | tr }}
           </button>
         </div>
       } @else {
-        <form class="form-stack" (ngSubmit)="submit()">
+        <form
+          class="form-stack"
+          ngNativeValidate
+          #authForm="ngForm"
+          (ngSubmit)="authForm.valid && submit()"
+          [attr.aria-busy]="busy()"
+        >
           @if (mode() === 'signup') {
             <label
               >{{ 'Your name' | tr
@@ -131,7 +164,9 @@
                 ></label
               >
             } @else {
-              <a class="forgot" routerLink="/reset">{{ 'Forgot password?' | tr }}</a>
+              <a class="forgot" routerLink="/reset" [queryParams]="{ returnTo: returnTo }">{{
+                'Forgot password?' | tr
+              }}</a>
             }
           }
           <button class="button" type="submit" [disabled]="busy() || !ready()">
@@ -152,10 +187,17 @@
               | tr
           }}<a
             [routerLink]="mode() === 'signup' ? '/login' : '/signup'"
-            [queryParams]="{ returnTo: route.snapshot.queryParamMap.get('returnTo') }"
+            [queryParams]="{ returnTo: returnTo }"
             >{{ (mode() === 'signup' ? 'Log in' : 'Get started') | tr }}</a
           >
         </p>
+        @if (mode() === 'reset') {
+          <p class="auth-switch">
+            <a routerLink="/login" [queryParams]="{ returnTo: returnTo }">{{
+              'Back to log in' | tr
+            }}</a>
+          </p>
+        }
       }
       <div class="auth-trust">
         <kf-icon name="shield" />

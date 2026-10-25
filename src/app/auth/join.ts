@@ -54,7 +54,12 @@ import { LanguageSwitcher } from '../shared/language-switcher';
         </div>
       } @else {
         <p class="account-email">{{ 'Joining as ' + cloud.user()?.email | tr }}</p>
-        <form class="form-stack" (ngSubmit)="accept()">
+        <form
+          class="form-stack"
+          ngNativeValidate
+          #joinForm="ngForm"
+          (ngSubmit)="joinForm.valid && accept()"
+        >
           <label
             >{{ 'Your name' | tr
             }}<input
@@ -68,6 +73,9 @@ import { LanguageSwitcher } from '../shared/language-switcher';
             }}<kf-icon name="arrow" />
           </button>
         </form>
+        <button class="plain-button" [disabled]="busy()" (click)="switchAccount()">
+          {{ 'Use a different account' | tr }}
+        </button>
       }
     </section>
     <a routerLink="/help" class="text-link"
@@ -120,6 +128,14 @@ import { LanguageSwitcher } from '../shared/language-switcher';
     .join-page > .text-link {
       font-size: 12px;
     }
+    .plain-button {
+      margin-top: 18px;
+      border: 0;
+      padding: 10px;
+      background: transparent;
+      color: var(--muted);
+      text-decoration: underline;
+    }
   `,
 })
 export class Join {
@@ -151,6 +167,7 @@ export class Join {
     }
   }
   async accept() {
+    if (this.busy()) return;
     this.busy.set(true);
     this.error.set('');
     try {
@@ -162,6 +179,19 @@ export class Join {
       );
       localStorage.setItem('kf-workspace', result.id);
       await this.router.navigate(['/app']);
+    } catch (e) {
+      this.error.set(errorMessage(e));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+  async switchAccount() {
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      await this.cloud.logout();
+      await this.router.navigate(['/login'], { queryParams: { returnTo: this.returnTo } });
     } catch (e) {
       this.error.set(errorMessage(e));
     } finally {

@@ -85,6 +85,38 @@ export class Workspace implements OnDestroy {
   private requestId = '';
   private generation = 0;
   messageRequest?: string;
+  setupSteps() {
+    return [
+      { label: 'Verify your email', done: !!this.cloud.user()?.emailVerified },
+      { label: 'Create your portfolio', done: !!this.org() },
+      { label: 'Add your first property', done: this.rows('properties').length > 0 },
+      { label: 'Add a tenant and lease', done: this.rows('leases').length > 0 },
+      {
+        label: 'Invite your tenant',
+        done: this.rows('leases').some((lease) => !!lease.inviteHash || !!lease.tenantUid),
+      },
+    ];
+  }
+  setupComplete() {
+    return this.setupSteps().filter((step) => step.done).length;
+  }
+  nextSetupLabel() {
+    return !this.rows('properties').length
+      ? 'Add your first property'
+      : !this.rows('leases').some((lease) => lease.status === 'active')
+        ? 'Add a tenant and lease'
+        : 'Invite your tenant';
+  }
+  async nextSetupStep() {
+    if (this.busy()) return;
+    if (!this.rows('properties').length) this.open('createProperty');
+    else if (!this.rows('leases').some((lease) => lease.status === 'active'))
+      this.open('createLease');
+    else {
+      const lease = this.rows('leases').find((row) => row.status === 'active' && !row.tenantUid);
+      if (lease) await this.invite(lease);
+    }
+  }
   constructor() {
     this.demo = this.route.snapshot.data['demo'] === true;
     this.route.paramMap.subscribe((p) => {
@@ -465,7 +497,8 @@ export class Workspace implements OnDestroy {
       method: 'cash',
       priority: 'normal',
       leaseId: this.leaseId,
-      displayName: this.cloud.session()?.profile?.displayName || '',
+      displayName:
+        this.cloud.session()?.profile?.displayName || this.cloud.user()?.displayName || '',
       name: action === 'updateWorkspace' ? this.org()?.name : '',
       receivedOn: new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kinshasa' }).format(
         new Date(),
@@ -553,6 +586,7 @@ export class Workspace implements OnDestroy {
     }
   }
   async invite(lease: Row) {
+    if (this.busy()) return;
     this.error.set('');
     if (this.demo) {
       this.toast.set(
@@ -571,6 +605,7 @@ export class Workspace implements OnDestroy {
       };
       this.action = 'invite';
       this.dialog?.nativeElement.showModal();
+      await this.load();
     } catch (e) {
       this.error.set(errorMessage(e));
     } finally {

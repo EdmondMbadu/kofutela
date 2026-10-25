@@ -6,8 +6,10 @@
     "indexes": "firestore.indexes.json"
   },
   "auth": {
+    "predeploy": ["npm run auth:domains"],
     "authorizedDomains": [
       "localhost",
+      "127.0.0.1",
       "kofutela.web.app",
       "kofutela.firebaseapp.com",
       "kofutela.com",

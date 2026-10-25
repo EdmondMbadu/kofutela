@@ -3,6 +3,7 @@ import type { User, Auth } from 'firebase/auth';
 import type { Firestore, QueryConstraint } from 'firebase/firestore';
 import type { Functions } from 'firebase/functions';
 import type { FirebaseStorage } from 'firebase/storage';
+import { accountContinueUrl } from './auth-flow';
 export type Row = any;
 export const firebaseConfig = {
   projectId: 'kofutela',
@@ -22,6 +23,13 @@ export function errorMessage(e: unknown): string {
     'auth/network-request-failed':
       'Unable to connect. Check your internet connection and try again.',
     'auth/invalid-email': 'Enter a valid email address.',
+    'auth/unauthorized-continue-uri':
+      'Email links are not configured for this address yet. Please contact support.',
+    'auth/unauthorized-domain':
+      'Sign-in is not configured for this address yet. Please contact support.',
+    'auth/user-disabled': 'This account has been disabled. Please contact support.',
+    'auth/user-token-expired': 'Your session has expired. Please sign in again.',
+    'auth/requires-recent-login': 'Please sign in again to continue.',
     'permission-denied': 'You do not have access to these records.',
     unavailable: 'The service is temporarily unavailable. Please try again.',
   };
@@ -114,20 +122,24 @@ export class Cloud {
   }
   async login(email: string, password: string) {
     const a = await import('firebase/auth');
-    const r = await a.signInWithEmailAndPassword(this.auth, email, password);
+    const r = await a.signInWithEmailAndPassword(this.auth, email.trim(), password);
     this.user.set(r.user);
   }
-  async signup(email: string, password: string, displayName: string) {
+  async signup(email: string, password: string, displayName: string, returnTo?: string) {
+    if (!displayName.trim()) throw new Error('Please enter your name.');
+    if (password.length < 10) throw new Error('Use at least 10 characters for your password.');
     const a = await import('firebase/auth');
-    const r = await a.createUserWithEmailAndPassword(this.auth, email, password);
-    await a.updateProfile(r.user, { displayName });
+    const r = await a.createUserWithEmailAndPassword(this.auth, email.trim(), password);
+    await a.updateProfile(r.user, { displayName: displayName.trim() });
     this.user.set(r.user);
-    await this.sendVerification();
+    await this.sendVerification(returnTo);
   }
-  async sendVerification() {
+  async sendVerification(returnTo?: string) {
     const a = await import('firebase/auth');
-    if (this.auth.currentUser)
-      await a.sendEmailVerification(this.auth.currentUser, { url: `${location.origin}/login` });
+    if (!this.auth.currentUser) throw new Error('Please sign in again to verify your email.');
+    await a.sendEmailVerification(this.auth.currentUser, {
+      url: accountContinueUrl(location.origin, returnTo),
+    });
   }
   async checkVerification() {
     const a = await import('firebase/auth');
@@ -138,14 +150,22 @@ export class Cloud {
     }
     return this.auth.currentUser?.emailVerified;
   }
-  async reset(email: string) {
+  async reset(email: string, returnTo?: string) {
     const a = await import('firebase/auth');
-    await a.sendPasswordResetEmail(this.auth, email, { url: `${location.origin}/login` });
+    try {
+      await a.sendPasswordResetEmail(this.auth, email.trim(), {
+        url: accountContinueUrl(location.origin, returnTo),
+      });
+    } catch (e) {
+      if ((e as { code?: string }).code !== 'auth/user-not-found') throw e;
+    }
   }
   async logout() {
     const a = await import('firebase/auth');
     await a.signOut(this.auth);
+    this.user.set(null);
     this.session.set(null);
+    localStorage.removeItem('kf-workspace');
   }
   async rows(
     path: string,

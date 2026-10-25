@@ -84,6 +84,28 @@
 .auth-inner .button {
   width: 100%;
 }
+.account-steps {
+  display: flex;
+  gap: 14px;
+  padding: 0;
+  margin: 0 0 30px;
+  list-style: none;
+  color: var(--muted);
+  font-size: 11px;
+}
+.account-steps li {
+  flex: 1;
+  border-top: 2px solid var(--line);
+  padding-top: 10px;
+}
+.account-steps [aria-current],
+.account-steps .complete {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.auth-inner strong {
+  overflow-wrap: anywhere;
+}
 .forgot {
   font-size: 12px;
   text-align: right;

@@ -37,13 +37,6 @@
       }
     </nav>
     <div class="sidebar-bottom">
-      <div class="sidebar-note">
-        <span class="note-icon"><kf-icon name="shield" /></span
-        ><strong>{{ 'A little peace of mind.' | tr }}</strong>
-        <p>
-          {{ 'Rent tracking, not payments.' | tr }}<br />{{ 'Your money stays with you.' | tr }}
-        </p>
-      </div>
       <nav aria-label="{{ 'Account' | tr }}">
         <a [routerLink]="[base, 'settings']" [class.active]="section() === 'settings'"
           ><kf-icon name="settings" />{{ 'Settings' | tr }}</a
@@ -285,6 +278,44 @@
         @if (loading()) {
           <div class="loading">{{ 'Bringing your records together…' | tr }}</div>
         } @else {
+          @if (section() === 'dashboard' && owner && !demo && !capped && setupComplete() < 5) {
+            <section class="setup-card" aria-labelledby="setup-title">
+              <div class="setup-heading">
+                <div>
+                  <span class="eyebrow">{{ 'A little more settled' | tr }}</span>
+                  <h2 id="setup-title">{{ 'Set up your space' | tr }}</h2>
+                </div>
+                <span>{{ setupComplete() }} / 5</span>
+              </div>
+              <p>
+                {{
+                  'Start with one home. Your progress is saved as you go, so you can come back anytime.'
+                    | tr
+                }}
+              </p>
+              <progress
+                [value]="setupComplete()"
+                max="5"
+                aria-label="{{ 'Setup progress' | tr }}"
+              ></progress>
+              <ol>
+                @for (step of setupSteps(); track step.label) {
+                  <li [class.complete]="step.done">
+                    <kf-icon [name]="step.done ? 'check' : 'arrow'" /><span>{{
+                      step.label | tr
+                    }}</span
+                    ><small>{{ (step.done ? 'Complete' : 'To do') | tr }}</small>
+                  </li>
+                }
+              </ol>
+              <button class="button small" [disabled]="busy()" (click)="nextSetupStep()">
+                {{ nextSetupLabel() | tr }}<kf-icon name="arrow" />
+              </button>
+              <p class="setup-note">
+                {{ 'Have a vacant property? You can add the lease and invitation later.' | tr }}
+              </p>
+            </section>
+          }
           @if (!owner && rows('leases').length > 1) {
             <label class="lease-picker"
               >{{ 'Your lease' | tr
@@ -1218,7 +1249,7 @@
           <button class="button" (click)="copyInvite()">{{ 'Copy invitation link' | tr }}</button>
         </div>
       } @else {
-        <form (ngSubmit)="submit()">
+        <form ngNativeValidate #workspaceForm="ngForm" (ngSubmit)="workspaceForm.valid && submit()">
           <div class="field-grid">
             @for (field of spec.fields; track field.key) {
               <label [class.full]="field.type === 'textarea' || field.type === 'file'"

@@ -1,6 +1,41 @@
 // English source text is the lookup key so existing routes and stored records stay unchanged.
 // Keep this catalog limited to interface copy; user-entered property data is never translated.
 export const FRENCH: Record<string, string> = {
+  'Account setup': 'Création du compte',
+  '1. Account': '1. Compte',
+  '2. Verify email': '2. Vérification',
+  '3. Your space': '3. Votre espace',
+  'Check your spam folder too. This page will continue automatically after verification.':
+    'Pensez aussi aux courriers indésirables. Cette page continuera automatiquement après la vérification.',
+  'Your account is saved. Use “Resend verification email” to request a new link.':
+    'Votre compte est enregistré. Cliquez sur « Renvoyer l’e-mail de vérification » pour demander un nouveau lien.',
+  'Back to log in': 'Retour à la connexion',
+  'Please enter your name.': 'Veuillez saisir votre nom.',
+  'Use at least 10 characters for your password.':
+    'Utilisez au moins 10 caractères pour votre mot de passe.',
+  'Please sign in again to verify your email.':
+    'Reconnectez-vous pour vérifier votre adresse e-mail.',
+  'Email links are not configured for this address yet. Please contact support.':
+    'Les liens par e-mail ne sont pas encore configurés pour cette adresse. Contactez l’assistance.',
+  'Sign-in is not configured for this address yet. Please contact support.':
+    'La connexion n’est pas encore configurée pour cette adresse. Contactez l’assistance.',
+  'This account has been disabled. Please contact support.':
+    'Ce compte a été désactivé. Contactez l’assistance.',
+  'Your session has expired. Please sign in again.':
+    'Votre session a expiré. Veuillez vous reconnecter.',
+  'Please sign in again to continue.': 'Veuillez vous reconnecter pour continuer.',
+  'A little more settled': 'Un peu plus chez vous',
+  'Set up your space': 'Préparez votre espace',
+  'Start with one home. Your progress is saved as you go, so you can come back anytime.':
+    'Commencez par un logement. Votre progression est enregistrée : vous pouvez revenir à tout moment.',
+  'Setup progress': 'Progression de la configuration',
+  'Verify your email': 'Vérifiez votre adresse e-mail',
+  'Add a tenant and lease': 'Ajoutez un locataire et son bail',
+  'Invite your tenant': 'Invitez votre locataire',
+  Complete: 'Terminé',
+  'To do': 'À faire',
+  'Have a vacant property? You can add the lease and invitation later.':
+    'Votre bien est vacant ? Vous pourrez ajouter le bail et l’invitation plus tard.',
   'Skip to content': 'Aller au contenu',
   'Kofutela home': 'Accueil Kofutela',
   'Main navigation': 'Navigation principale',

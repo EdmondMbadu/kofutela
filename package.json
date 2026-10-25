@@ -10,7 +10,9 @@
     "test:domain": "npm --prefix functions test",
     "test:rules": "node --test test/rules.test.mjs",
     "test:workflows": "node --test test/workflows.test.mjs",
+    "test:accounts": "node --test test/account-flow.test.mjs",
     "test:seo": "node --test test/seo.test.mjs",
+    "auth:domains": "node scripts/auth-domains.cjs",
     "emulators": "npx -y firebase-tools@latest emulators:start --only auth,firestore,functions,storage --project demo-kofutela",
     "deploy": "npx -y firebase-tools@latest deploy --project kofutela"
   },
@@ -50,6 +52,7 @@
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
+    "firebase-tools": "^15.8.0",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
