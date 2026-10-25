@@ -561,63 +561,6 @@
               </div>
             </div>
           } @else if (section() === 'reports') {
-            @if (!capped) {
-              <div class="stats-grid">
-                <article class="stat-card accent">
-                  <div>
-                    <span>{{ 'Rent recorded' | tr }}</span
-                    ><kf-icon name="wallet" />
-                  </div>
-                  <strong>{{ money(total('receivedMinor')) | tr }}</strong
-                  ><span class="stat-foot">{{
-                    'of ' + money(total('amountMinor')) + ' scheduled this month' | tr
-                  }}</span>
-                  <div class="progress-track">
-                    <span
-                      [style.width.%]="
-                        total('amountMinor')
-                          ? (total('receivedMinor') / total('amountMinor')) * 100
-                          : 0
-                      "
-                    ></span>
-                  </div>
-                </article>
-                <article class="stat-card">
-                  <div>
-                    <span>{{ 'Still outstanding' | tr }}</span
-                    ><kf-icon name="file" />
-                  </div>
-                  <strong>{{ money(total('amountMinor') - total('receivedMinor')) | tr }}</strong
-                  ><span class="stat-foot">{{ currency + ' · selected month only' | tr }}</span>
-                </article>
-                <article class="stat-card">
-                  <div>
-                    <span>{{ (owner ? 'Occupancy' : 'Your monthly rent') | tr }}</span
-                    ><kf-icon name="home" />
-                  </div>
-                  <strong>{{
-                    (owner
-                      ? occupancy() + '%'
-                      : money(currentLease()?.rentMinor, currentLease()?.currency || currency)
-                    ) | tr
-                  }}</strong
-                  ><span class="stat-foot">{{
-                    (owner
-                      ? rows('units').length + ' units in your portfolio'
-                      : currentLease()?.unitLabel || 'No linked lease yet'
-                    ) | tr
-                  }}</span>
-                </article>
-                <article class="stat-card">
-                  <div>
-                    <span>{{ 'Needs attention' | tr }}</span
-                    ><kf-icon name="tool" />
-                  </div>
-                  <strong>{{ openRepairs().length.toString().padStart(2, '0') | tr }}</strong
-                  ><span class="stat-foot">{{ 'Open maintenance requests' | tr }}</span>
-                </article>
-              </div>
-            }
             <section class="panel report-summary">
               <h2>{{ 'Keep a copy for your records.' | tr }}</h2>
               <p>
@@ -640,75 +583,67 @@
               <div class="panel-heading">
                 <div>
                   <h2>{{ 'Rent at a glance' | tr }}</h2>
-                  <p>{{ month + ' · Keep the whole picture in view.' | tr }}</p>
+                  <p class="cap">{{ monthLabel() }}</p>
                 </div>
-                @if (section() === 'dashboard') {
-                  <a class="text-link" [routerLink]="[base, 'rent']"
-                    >{{ 'All rent records ' | tr }}<kf-icon name="arrow"
-                  /></a>
-                } @else {
-                  <button
-                    class="button secondary small"
-                    [disabled]="capped || !rows('charges').length"
-                    (click)="exportCsv()"
-                  >
-                    <kf-icon name="download" /> {{ ' Export ' | tr }}
-                  </button>
-                }
+                <button
+                  class="button secondary small"
+                  [disabled]="capped || !rows('charges').length"
+                  (click)="exportCsv()"
+                >
+                  <kf-icon name="download" /> {{ ' Export ' | tr }}
+                </button>
               </div>
-              @if (rows('charges').length) {
-                <div class="table-scroll">
-                  <table>
-                    <caption class="sr-only">
-                      {{
-                        ' Monthly rent records ' | tr
-                      }}
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th>{{ 'Tenant & home' | tr }}</th>
-                        <th>{{ 'Due date' | tr }}</th>
-                        <th>{{ 'Scheduled' | tr }}</th>
-                        <th>{{ 'Recorded' | tr }}</th>
-                        <th>{{ 'Status' | tr }}</th>
-                        @if (owner) {
-                          <th>
-                            <span class="sr-only">{{ 'Actions' | tr }}</span>
-                          </th>
-                        }
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (c of rows('charges'); track c.id) {
-                        <tr>
-                          <td>
-                            <strong>{{ c.tenantName | tr }}</strong
-                            ><small>{{ c.propertyName + ' · ' + c.unitLabel | tr }}</small>
-                          </td>
-                          <td>{{ date(c.dueDate) | tr }}</td>
-                          <td>{{ money(c.amountMinor, c.currency) | tr }}</td>
-                          <td>{{ money(c.receivedMinor, c.currency) | tr }}</td>
-                          <td>
-                            <span [class]="'badge ' + statusClass(status(c))">{{
-                              status(c) | tr
-                            }}</span>
-                          </td>
-                          @if (owner) {
-                            <td>
-                              @if (!c.cancelled && c.receivedMinor < c.amountMinor) {
-                                <button class="table-action" (click)="open('recordReceipt', c)">
-                                  {{ ' Record receipt ' | tr }}<kf-icon name="plus" />
-                                </button>
-                              } @else {
-                                <span class="muted">—</span>
-                              }
-                            </td>
-                          }
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
+              @if (!capped) {
+                <div class="kpi-row">
+                  <div>
+                    <small>{{ 'Rent recorded' | tr }}</small
+                    ><strong>{{ money(total('receivedMinor')) }}</strong>
+                  </div>
+                  <div>
+                    <small>{{ 'Still outstanding' | tr }}</small
+                    ><strong>{{ money(total('amountMinor') - total('receivedMinor')) }}</strong>
+                  </div>
+                  <div>
+                    <small>{{ 'Collected' | tr }}</small
+                    ><strong>{{ collected() }}%</strong>
+                    <span class="mini-bar"><i [style.width.%]="collected()"></i></span>
+                  </div>
                 </div>
+              }
+              @if (rows('charges').length) {
+                <ul class="list">
+                  @for (c of rows('charges'); track c.id) {
+                    <li class="list-item">
+                      <span [class]="'li-icon ' + status(c)"><kf-icon name="wallet" /></span>
+                      <span class="li-text"
+                        ><strong>{{ (owner ? c.tenantName : c.unitLabel) | tr }}</strong
+                        ><small
+                          >{{ c.propertyName + ' · ' + c.unitLabel | tr }} · {{ 'Due' | tr }}
+                          {{ date(c.dueDate) }}</small
+                        ></span
+                      >
+                      <span class="li-amount"
+                        ><strong>{{ money(c.receivedMinor, c.currency) }}</strong
+                        ><small>{{ 'of' | tr }} {{ money(c.amountMinor, c.currency) }}</small
+                        ><span class="mini-bar"><i [style.width.%]="fill(c)"></i></span
+                      ></span>
+                      <span class="li-status"
+                        ><span [class]="'badge ' + statusClass(status(c))">{{
+                          status(c) | tr
+                        }}</span></span
+                      >
+                      @if (owner) {
+                        <span class="li-action">
+                          @if (!c.cancelled && c.receivedMinor < c.amountMinor) {
+                            <button class="table-action" (click)="open('recordReceipt', c)">
+                              <kf-icon name="plus" /> {{ ' Record receipt ' | tr }}
+                            </button>
+                          }
+                        </span>
+                      }
+                    </li>
+                  }
+                </ul>
               } @else {
                 <div class="empty">
                   <kf-icon name="wallet" />
@@ -737,64 +672,44 @@
                     <p>{{ 'Corrections stay visible. Nothing is silently erased.' | tr }}</p>
                   </div>
                 </div>
-                <div class="table-scroll">
-                  <table>
-                    <caption class="sr-only">
-                      {{
-                        ' Receipts for the selected month ' | tr
-                      }}
-                    </caption>
-                    <thead>
-                      <tr>
-                        <th>{{ 'Tenant / received' | tr }}</th>
-                        <th>{{ 'Amount' | tr }}</th>
-                        <th>{{ 'Method & reference' | tr }}</th>
-                        <th>{{ 'Record' | tr }}</th>
-                        @if (owner) {
-                          <th>{{ 'Correction' | tr }}</th>
+                <ul class="list">
+                  @for (r of rows('receipts'); track r.id) {
+                    <li class="list-item" [class.voided]="r.voided">
+                      <span class="li-icon"
+                        ><kf-icon [name]="r.voided ? 'refresh' : 'check'"
+                      /></span>
+                      <span class="li-text"
+                        ><strong>{{ r.tenantName | tr }}</strong
+                        ><small
+                          >{{ date(r.receivedOn) }} · {{ r.method.replace('_', ' ') | tr }} ·
+                          {{ r.reference || 'No reference' | tr }}</small
+                        >
+                        @if (r.voided) {
+                          <small class="void-reason">{{ r.voidReason | tr }}</small>
                         }
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (r of rows('receipts'); track r.id) {
-                        <tr>
-                          <td>
-                            <strong>{{ r.tenantName | tr }}</strong
-                            ><small>{{ date(r.receivedOn) | tr }}</small>
-                          </td>
-                          <td>{{ money(r.amountMinor, r.currency) | tr }}</td>
-                          <td>
-                            {{ r.method.replace('_', ' ') | tr
-                            }}<small>{{ r.reference || 'No reference' | tr }}</small>
-                          </td>
-                          <td>
-                            <span [class]="'badge ' + (r.voided ? 'red' : 'green')">{{
-                              (r.voided ? 'Reversed' : 'Recorded') | tr
-                            }}</span>
-                            @if (r.voided) {
-                              <small>{{ r.voidReason | tr }}</small>
-                            }
-                          </td>
-                          @if (owner) {
-                            <td>
-                              @if (!r.voided) {
-                                <button class="table-action" (click)="open('voidReceipt', r)">
-                                  {{ ' Correct ' | tr }}
-                                </button>
-                              }
-                            </td>
+                      </span>
+                      <span class="li-amount"
+                        ><strong>{{ money(r.amountMinor, r.currency) }}</strong></span
+                      >
+                      <span class="li-status"
+                        ><span [class]="'badge ' + (r.voided ? 'red' : 'green')">{{
+                          (r.voided ? 'Reversed' : 'Recorded') | tr
+                        }}</span></span
+                      >
+                      @if (owner) {
+                        <span class="li-action">
+                          @if (!r.voided) {
+                            <button class="table-action muted" (click)="open('voidReceipt', r)">
+                              {{ ' Correct ' | tr }}
+                            </button>
                           }
-                        </tr>
-                      } @empty {
-                        <tr>
-                          <td [attr.colspan]="owner ? 5 : 4" class="empty">
-                            {{ ' No receipts recorded for this month. ' | tr }}
-                          </td>
-                        </tr>
+                        </span>
                       }
-                    </tbody>
-                  </table>
-                </div>
+                    </li>
+                  } @empty {
+                    <li class="list-empty">{{ ' No receipts recorded for this month. ' | tr }}</li>
+                  }
+                </ul>
               </section>
             }
           }
@@ -805,53 +720,67 @@
                 ><input
                   type="search"
                   [(ngModel)]="search"
-                  placeholder="{{ 'Find a home by name or city…' | tr }}" /></label
-              ><span>{{
-                rows('properties').length + ' properties · ' + rows('units').length + ' units' | tr
-              }}</span>
+                  placeholder="{{ 'Find a home by name or city…' | tr }}"
+              /></label>
+            </div>
+            <div class="kpi-row standalone">
+              <div>
+                <small>{{ 'Properties' | tr }}</small
+                ><strong>{{ rows('properties').length }}</strong>
+              </div>
+              <div>
+                <small>{{ 'Units' | tr }}</small
+                ><strong>{{ rows('units').length }}</strong>
+              </div>
+              <div>
+                <small>{{ 'Occupied' | tr }}</small
+                ><strong>{{ occupiedUnits() }}</strong>
+              </div>
+              <div>
+                <small>{{ 'Available' | tr }}</small
+                ><strong>{{ rows('units').length - occupiedUnits() }}</strong>
+              </div>
             </div>
             <div class="property-grid">
-              @for (p of visible('properties'); track p.id; let i = $index) {
-                <article class="property-card">
-                  <div class="property-art" [class.alternate]="i % 2">
-                    <span class="badge">{{ p.type | tr }}</span
-                    ><kf-icon name="building" /><span class="property-art-caption">{{
-                      'A place to call home' | tr
-                    }}</span>
-                  </div>
-                  <div class="property-details">
-                    <div>
-                      <h2>{{ p.name | tr }}</h2>
-                      <button
-                        class="icon-button"
-                        (click)="open('updateProperty', p)"
-                        [attr.aria-label]="'Edit ' + p.name"
-                      >
-                        <kf-icon name="settings" />
-                      </button>
-                    </div>
-                    <p>{{ p.address | tr }}<br />{{ p.city | tr }}</p>
-                    @if (p.notes) {
-                      <p class="property-notes">{{ p.notes | tr }}</p>
-                    }
-                    <div class="unit-list">
-                      @for (u of propertyUnits(p.id); track u.id) {
-                        <div>
-                          <span
-                            ><strong>{{ u.label | tr }}</strong
-                            ><small>{{
-                              money(u.rentMinor, u.currency) + ' / month' | tr
-                            }}</small></span
-                          ><span [class]="'badge ' + (u.activeLeaseId ? 'green' : '')">{{
-                            (u.activeLeaseId ? 'Occupied' : 'Available') | tr
-                          }}</span>
-                        </div>
-                      }
-                    </div>
-                    <button class="table-action" (click)="open('createUnit', { propertyId: p.id })">
-                      <kf-icon name="plus" /> {{ ' Add a unit ' | tr }}
+              @for (p of visible('properties'); track p.id) {
+                <article class="panel prop-card">
+                  <div class="prop-head">
+                    <span class="li-icon"><kf-icon name="building" /></span>
+                    <span class="li-text"
+                      ><strong>{{ p.name | tr }}</strong
+                      ><small>{{ p.address | tr }} · {{ p.city | tr }}</small></span
+                    >
+                    <span class="badge">{{ p.type | tr }}</span>
+                    <button
+                      class="icon-button"
+                      (click)="open('updateProperty', p)"
+                      [attr.aria-label]="'Edit ' + p.name"
+                    >
+                      <kf-icon name="settings" />
                     </button>
                   </div>
+                  @if (p.notes) {
+                    <p class="prop-notes">{{ p.notes | tr }}</p>
+                  }
+                  <ul class="list">
+                    @for (u of propertyUnits(p.id); track u.id) {
+                      <li class="list-item">
+                        <span class="li-icon soft"><kf-icon name="home" /></span>
+                        <span class="li-text"
+                          ><strong>{{ u.label | tr }}</strong
+                          ><small
+                            >{{ money(u.rentMinor, u.currency) }} {{ '/ month' | tr }}</small
+                          ></span
+                        >
+                        <span [class]="'badge ' + (u.activeLeaseId ? 'green' : '')">{{
+                          (u.activeLeaseId ? 'Occupied' : 'Available') | tr
+                        }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <button class="add-line" (click)="open('createUnit', { propertyId: p.id })">
+                    <kf-icon name="plus" /> {{ ' Add a unit ' | tr }}
+                  </button>
                 </article>
               } @empty {
                 <section class="panel empty">
@@ -887,100 +816,116 @@
                 ><input
                   type="search"
                   [(ngModel)]="search"
-                  placeholder="{{ 'Find a tenant or home…' | tr }}" /></label
-              ><span>{{ rows('leases').length + ' lease records' | tr }}</span>
+                  placeholder="{{ 'Find a tenant or home…' | tr }}"
+              /></label>
+            </div>
+            <div class="kpi-row standalone three">
+              <div>
+                <small>{{ 'Active leases' | tr }}</small
+                ><strong>{{ activeLeases().length }}</strong>
+              </div>
+              <div>
+                <small>{{ 'Connected' | tr }}</small
+                ><strong>{{ rows('leases').filter(connected).length }}</strong>
+              </div>
+              <div>
+                <small>{{ 'Waiting for invitation' | tr }}</small
+                ><strong>{{
+                  rows('leases').length - rows('leases').filter(connected).length
+                }}</strong>
+              </div>
             </div>
             <section class="panel">
-              <div class="table-scroll">
-                <table>
-                  <caption class="sr-only">
-                    {{
-                      ' Tenants and leases ' | tr
-                    }}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th>{{ 'Tenant' | tr }}</th>
-                      <th>{{ 'Home & term' | tr }}</th>
-                      <th>{{ 'Monthly rent' | tr }}</th>
-                      <th>{{ 'Connection' | tr }}</th>
-                      <th>{{ 'Actions' | tr }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (l of visible('leases'); track l.id) {
-                      <tr>
-                        <td>
-                          <strong>{{ l.tenantName | tr }}</strong
-                          ><small>{{ l.tenantEmail | tr }}</small>
-                        </td>
-                        <td>
-                          <strong>{{ l.propertyName + ' · ' + l.unitLabel | tr }}</strong
-                          ><small>{{ date(l.startDate) + ' — ' + date(l.endDate) | tr }}</small>
-                        </td>
-                        <td>
-                          {{ money(l.rentMinor, l.currency) | tr
-                          }}<small>{{ 'Due day ' + l.dueDay + ' · ' + l.status | tr }}</small>
-                        </td>
-                        <td>
-                          <span [class]="'badge ' + (l.tenantUid ? 'green' : '')">{{
-                            (l.tenantUid ? 'Connected' : 'Not invited / pending') | tr
-                          }}</span>
-                        </td>
-                        <td>
-                          <div class="table-actions">
-                            @if (!l.tenantUid && l.status === 'active') {
-                              <button class="table-action" [disabled]="busy()" (click)="invite(l)">
-                                {{ ' Invite tenant ' | tr }}
-                              </button>
-                            }
-                            @if (l.status === 'active') {
-                              <button class="table-action muted" (click)="open('endLease', l)">
-                                {{ ' End lease ' | tr }}
-                              </button>
-                            }
-                          </div>
-                        </td>
-                      </tr>
-                    } @empty {
-                      <tr>
-                        <td colspan="5">
-                          <div class="empty">
-                            <kf-icon name="people" />
-                            <h3>{{ 'A place for your people.' | tr }}</h3>
-                            <p>
-                              {{
-                                'Add a property first, then create a lease and invite your tenant.'
-                                  | tr
-                              }}
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+              <ul class="list">
+                @for (l of visible('leases'); track l.id) {
+                  <li class="list-item lease-item">
+                    <span class="li-avatar">{{ initials(l.tenantName) }}</span>
+                    <span class="li-text"
+                      ><strong>{{ l.tenantName | tr }}</strong
+                      ><small>{{ l.tenantEmail | tr }}</small></span
+                    >
+                    <span class="li-text"
+                      ><strong>{{ l.propertyName + ' · ' + l.unitLabel | tr }}</strong
+                      ><small>{{ date(l.startDate) + ' — ' + date(l.endDate) }}</small></span
+                    >
+                    <span class="li-amount"
+                      ><strong>{{ money(l.rentMinor, l.currency) }}</strong
+                      ><small>{{ 'Due day' | tr }} {{ l.dueDay }}</small></span
+                    >
+                    <span class="li-status"
+                      ><span [class]="'badge ' + (l.tenantUid ? 'green' : '')">{{
+                        (l.tenantUid ? 'Connected' : 'Not invited / pending') | tr
+                      }}</span></span
+                    >
+                    <span class="li-action">
+                      @if (!l.tenantUid && l.status === 'active') {
+                        <button class="table-action" [disabled]="busy()" (click)="invite(l)">
+                          {{ ' Invite tenant ' | tr }}
+                        </button>
+                      }
+                      @if (l.status === 'active') {
+                        <button class="table-action muted" (click)="open('endLease', l)">
+                          {{ ' End lease ' | tr }}
+                        </button>
+                      }
+                    </span>
+                  </li>
+                } @empty {
+                  <li class="empty">
+                    <kf-icon name="people" />
+                    <h3>{{ 'A place for your people.' | tr }}</h3>
+                    <p>
+                      {{ 'Add a property first, then create a lease and invite your tenant.' | tr }}
+                    </p>
+                  </li>
+                }
+              </ul>
             </section>
           }
           @if (section() === 'maintenance') {
+            <div class="kpi-row standalone three">
+              <div>
+                <small>{{ 'Reported' | tr }}</small
+                ><strong>{{ repairCount(0) }}</strong>
+              </div>
+              <div>
+                <small>{{ 'In progress' | tr }}</small
+                ><strong>{{ repairCount(1) }}</strong>
+              </div>
+              <div>
+                <small>{{ 'Resolved' | tr }}</small
+                ><strong>{{ repairCount(2) }}</strong>
+              </div>
+            </div>
             <div class="ticket-grid">
               @for (t of visible('maintenance'); track t.id) {
                 <article class="panel ticket">
                   <div class="ticket-top">
+                    <span class="li-icon" [class.soft]="ticketStep(t.status) === 2"
+                      ><kf-icon [name]="ticketStep(t.status) === 2 ? 'check' : 'tool'"
+                    /></span>
+                    <span class="li-text"
+                      ><strong>{{ t.title | tr }}</strong
+                      ><small>{{ t.propertyName + ' · ' + t.unitLabel | tr }}</small></span
+                    >
                     <span [class]="'badge ' + statusClass(t.status)">{{
                       t.status.replace('_', ' ') | tr
-                    }}</span
-                    ><span [class]="'badge ' + statusClass(t.priority)">{{ t.priority | tr }}</span>
+                    }}</span>
                   </div>
-                  <h2>{{ t.title | tr }}</h2>
-                  <p class="ticket-location">{{ t.propertyName + ' · ' + t.unitLabel | tr }}</p>
+                  <div class="steps-track" aria-hidden="true">
+                    <span class="done">{{ 'Reported' | tr }}</span
+                    ><span [class.done]="ticketStep(t.status) >= 1">{{ 'In progress' | tr }}</span
+                    ><span [class.done]="ticketStep(t.status) >= 2">{{ 'Resolved' | tr }}</span>
+                  </div>
                   <p class="pre-line">{{ t.description | tr }}</p>
                   @if (t.latestNote) {
                     <blockquote>{{ t.latestNote | tr }}</blockquote>
                   }
                   <div class="ticket-bottom">
-                    <small>{{ t.tenantName | tr }}</small>
+                    <small
+                      >{{ t.tenantName | tr }} ·
+                      <span [class]="'priority ' + t.priority">{{ t.priority | tr }}</span></small
+                    >
                     @if (canUpdate(t)) {
                       <button class="table-action" (click)="open('updateMaintenance', t)">
                         {{ ' Update request ' | tr }}<kf-icon name="arrow" />
@@ -1064,80 +1009,63 @@
             </section>
           }
           @if (section() === 'documents') {
-            <div class="notice">
-              {{
-                ' Documents are shared with the tenant on their linked lease. Avoid uploading identity documents or unnecessary sensitive information during this pilot. '
-                  | tr
-              }}
-            </div>
             <section class="panel">
-              <div class="table-scroll">
-                <table>
-                  <caption class="sr-only">
+              <div class="panel-heading">
+                <div>
+                  <h2>{{ 'Lease documents' | tr }}</h2>
+                  <p>
                     {{
-                      ' Private lease documents ' | tr
+                      ' Documents are shared with the tenant on their linked lease. Avoid uploading identity documents or unnecessary sensitive information during this pilot. '
+                        | tr
                     }}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th>{{ 'Document' | tr }}</th>
-                      <th>{{ 'Lease' | tr }}</th>
-                      <th>{{ 'Status' | tr }}</th>
-                      <th>{{ 'Access' | tr }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (doc of rows('documents'); track doc.id) {
-                      <tr>
-                        <td>
-                          <strong>{{ doc.title | tr }}</strong
-                          ><small>{{
-                            doc.fileName + ' · ' + (doc.size / 1024).toFixed(0) + ' KB' | tr
-                          }}</small>
-                        </td>
-                        <td>{{ doc.leaseId | tr }}</td>
-                        <td>
-                          <span [class]="'badge ' + statusClass(doc.status)">{{
-                            doc.status | tr
-                          }}</span>
-                        </td>
-                        <td>
-                          @if (doc.status === 'ready') {
-                            <button
-                              class="table-action"
-                              [disabled]="busy()"
-                              (click)="download(doc)"
-                            >
-                              <kf-icon name="download" /> {{ ' Download ' | tr }}
-                            </button>
-                          } @else {
-                            <small class="muted">{{
-                              'Upload incomplete. Upload again as a new record.' | tr
-                            }}</small>
-                          }
-                        </td>
-                      </tr>
-                    } @empty {
-                      <tr>
-                        <td colspan="4">
-                          <div class="empty">
-                            <kf-icon name="file" />
-                            <h3>{{ 'The right place for important papers.' | tr }}</h3>
-                            <p>
-                              {{
-                                (owner
-                                  ? 'Add a lease, then upload a document to share privately with that tenant.'
-                                  : 'Documents shared by your landlord will appear here.') +
-                                  '\n                            ' | tr
-                              }}
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
+                  </p>
+                </div>
               </div>
+              <ul class="list">
+                @for (doc of rows('documents'); track doc.id) {
+                  <li class="list-item">
+                    <span class="li-icon soft"><kf-icon name="file" /></span>
+                    <span class="li-text"
+                      ><strong>{{ doc.title | tr }}</strong
+                      ><small
+                        >{{ doc.fileName }} · {{ (doc.size / 1024).toFixed(0) }} KB</small
+                      ></span
+                    >
+                    <span class="li-text"
+                      ><small>{{ leaseLabel(doc.leaseId) | tr }}</small></span
+                    >
+                    <span class="li-status"
+                      ><span [class]="'badge ' + statusClass(doc.status)">{{
+                        doc.status | tr
+                      }}</span></span
+                    >
+                    <span class="li-action">
+                      @if (doc.status === 'ready') {
+                        <button class="table-action" [disabled]="busy()" (click)="download(doc)">
+                          <kf-icon name="download" /> {{ ' Download ' | tr }}
+                        </button>
+                      } @else {
+                        <small class="muted">{{
+                          'Upload incomplete. Upload again as a new record.' | tr
+                        }}</small>
+                      }
+                    </span>
+                  </li>
+                } @empty {
+                  <li class="empty">
+                    <kf-icon name="file" />
+                    <h3>{{ 'The right place for important papers.' | tr }}</h3>
+                    <p>
+                      {{
+                        (owner
+                          ? 'Add a lease, then upload a document to share privately with that tenant.'
+                          : 'Documents shared by your landlord will appear here.') +
+                          '\n                            ' | tr
+                      }}
+                    </p>
+                  </li>
+                }
+              </ul>
             </section>
           }
           @if (section() === 'settings') {

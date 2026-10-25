@@ -825,4 +825,10 @@ export const FRENCH: Record<string, string> = {
   'Your homes': 'Vos biens',
   'Your home': 'Votre logement',
   'Your rent': 'Votre loyer',
+  Collected: 'Part enregistrée',
+  of: 'sur',
+  '/ month': '/ mois',
+  'Active leases': 'Baux actifs',
+  'Waiting for invitation': 'En attente d’invitation',
+  'Lease documents': 'Documents du bail',
 };

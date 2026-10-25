@@ -255,6 +255,34 @@ export class Workspace implements OnDestroy {
     }));
     return [...rent, ...repairs];
   }
+  readonly connected = (lease: Row) => !!lease.tenantUid;
+  leaseLabel(id: string) {
+    const lease = this.rows('leases').find((l) => l.id === id);
+    return lease ? `${lease.propertyName} · ${lease.unitLabel}` : id;
+  }
+  initials(name = '') {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  }
+  /** 0 = reported, 1 = being handled, 2 = resolved. */
+  ticketStep(status: string) {
+    return ['resolved', 'closed'].includes(status)
+      ? 2
+      : ['acknowledged', 'in_progress'].includes(status)
+        ? 1
+        : 0;
+  }
+  repairCount(step: number) {
+    return this.rows('maintenance').filter((t) => this.ticketStep(t.status) === step).length;
+  }
+  activeLeases() {
+    return this.rows('leases').filter((l) => l.status === 'active');
+  }
   activityIcon(action: string) {
     return action === 'recordReceipt' || action === 'voidReceipt'
       ? 'wallet'
