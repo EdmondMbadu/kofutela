@@ -6,6 +6,13 @@ export class DemoSession {
   month = '';
   name = 'The Garden Portfolio';
 }
+// Only these authored demo examples are translatable; edited or real records stay verbatim.
+function samples<T extends Record<string, unknown>>(rows: T[], fields: (keyof T)[]) {
+  return rows.map((row) => ({
+    ...row,
+    sampleCopy: Object.fromEntries(fields.map((field) => [field, row[field]])),
+  }));
+}
 export function demoData(month: string) {
   const properties = [
     {
@@ -130,42 +137,48 @@ export function demoData(month: string) {
       voided: false,
     }));
   return {
-    properties,
+    properties: samples(properties, ['notes']),
     units,
     leases,
     charges,
     receipts,
-    maintenance: [
-      {
-        id: 'm1',
-        leaseId: 'l1',
-        title: 'Kitchen tap needs attention',
-        description: 'The kitchen tap has a slow leak. A morning visit would work well.',
-        status: 'acknowledged',
-        priority: 'normal',
-        propertyName: 'Maison du Jardin',
-        unitLabel: 'Garden apartment',
-        tenantName: 'Amara M.',
-        latestNote: 'Thanks for letting us know. We’re arranging a visit.',
-      },
-    ],
+    maintenance: samples(
+      [
+        {
+          id: 'm1',
+          leaseId: 'l1',
+          title: 'Kitchen tap needs attention',
+          description: 'The kitchen tap has a slow leak. A morning visit would work well.',
+          status: 'acknowledged',
+          priority: 'normal',
+          propertyName: 'Maison du Jardin',
+          unitLabel: 'Garden apartment',
+          tenantName: 'Amara M.',
+          latestNote: 'Thanks for letting us know. We’re arranging a visit.',
+        },
+      ],
+      ['title', 'description', 'latestNote'],
+    ),
     documents: [],
-    messages: [
-      {
-        id: 'msg1',
-        leaseId: 'l1',
-        body: 'Welcome to your home’s shared space. You can find your rent records and let me know if anything needs attention here.',
-        authorName: 'Your landlord',
-        authorUid: 'demo-owner',
-      },
-      {
-        id: 'msg2',
-        leaseId: 'l1',
-        body: 'Thank you! It’s helpful to have everything together.',
-        authorName: 'Amara M.',
-        authorUid: 'demo-tenant',
-      },
-    ],
+    messages: samples(
+      [
+        {
+          id: 'msg1',
+          leaseId: 'l1',
+          body: 'Welcome to your home’s shared space. You can find your rent records and let me know if anything needs attention here.',
+          authorName: 'Your landlord',
+          authorUid: 'demo-owner',
+        },
+        {
+          id: 'msg2',
+          leaseId: 'l1',
+          body: 'Thank you! It’s helpful to have everything together.',
+          authorName: 'Amara M.',
+          authorUid: 'demo-tenant',
+        },
+      ],
+      ['body', 'authorName'],
+    ),
     activity: [
       { id: 'a1', detail: 'Maintenance request acknowledged', action: 'updateMaintenance' },
       { id: 'a2', detail: 'Partial rent receipt recorded', action: 'recordReceipt' },

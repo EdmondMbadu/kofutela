@@ -1,0 +1,92 @@
+/** Labels belong to a domain: a closed repair, support request and lease mean different things. */
+export const CONTEXT_LABELS = {
+  rent: {
+    recorded: 'Paid',
+    partial: 'Partly paid',
+    due: 'Rent due',
+    overdue: 'Overdue rent',
+    cancelled: 'Cancelled rent',
+  },
+  receipt: { recorded: 'Payment recorded', voided: 'Entry reversed' },
+  maintenance: {
+    new: 'Reported request',
+    acknowledged: 'Acknowledged request',
+    in_progress: 'Repair in progress',
+    resolved: 'Resolved request',
+    closed: 'Closed repair request',
+  },
+  support: { open: 'Open support request', closed: 'Closed support request' },
+  lease: { active: 'Active lease', ended: 'Ended lease' },
+  'tenant-access': {
+    connected: 'Accepted invitation',
+    pending: 'Sent invitation',
+    not_invited: 'Tenant not invited',
+  },
+  unit: { occupied: 'Occupied rental unit', available: 'Available rental unit' },
+  document: { uploading: 'Upload in progress', ready: 'Available for download' },
+  'payment-method': {
+    cash: 'Cash',
+    bank: 'Bank transfer',
+    mobile_money: 'Mobile money',
+    other: 'Other',
+  },
+  'property-type': {
+    building: 'Building',
+    house: 'House',
+    apartment: 'Apartment',
+    commercial: 'Commercial premises',
+  },
+  priority: { normal: 'Normal priority', urgent: 'Urgent priority' },
+  role: {
+    owner: 'Landlord / owner',
+    tenant: 'Tenant',
+    admin: 'Administrator',
+    superadmin: 'Super administrator',
+    none: 'No platform access',
+  },
+  activity: {
+    createWorkspace: 'Portfolio created',
+    updateWorkspace: 'Portfolio details updated',
+    updateProfile: 'Profile updated',
+    createProperty: 'Property added',
+    updateProperty: 'Property details updated',
+    createUnit: 'Rental unit added',
+    createLease: 'Lease created',
+    endLease: 'Lease ended; later unpaid charges cancelled',
+    createInvite: 'Tenant invitation created',
+    acceptInvite: 'Tenant invitation accepted',
+    recordReceipt: 'Rent payment recorded',
+    voidReceipt: 'Receipt reversed with a recorded reason',
+    createMaintenance: 'Repair request created',
+    updateMaintenance: 'Repair request updated',
+    sendMessage: 'Message sent',
+    prepareDocument: 'Document upload prepared',
+    documentReady: 'Document uploaded',
+    createSupport: 'Support request created',
+    updateSupport: 'Support request updated',
+    setPlatformRole: 'Platform access updated',
+  },
+} as const;
+export type TranslationContext = keyof typeof CONTEXT_LABELS;
+
+/** Keep the compact English badge text while giving French its own context key. */
+export const CONTEXT_ENGLISH: Partial<Record<TranslationContext, Record<string, string>>> = {
+  rent: { due: 'Due', overdue: 'Overdue', cancelled: 'Cancelled' },
+  maintenance: {
+    new: 'Reported',
+    acknowledged: 'Acknowledged',
+    in_progress: 'In progress',
+    resolved: 'Resolved',
+    closed: 'Closed',
+  },
+  support: { open: 'Open', closed: 'Closed' },
+  lease: { active: 'Active', ended: 'Ended' },
+  'tenant-access': {
+    connected: 'Connected',
+    pending: 'Not invited / pending',
+    not_invited: 'Not invited / pending',
+  },
+  unit: { occupied: 'Occupied', available: 'Available' },
+  document: { uploading: 'Uploading', ready: 'Ready' },
+  priority: { normal: 'Normal', urgent: 'Urgent' },
+};

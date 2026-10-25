@@ -373,3 +373,10 @@ hr {
     font-size: 26px;
   }
 }
+
+/* French labels use sentence case, including compound payment and repair states. */
+html:lang(fr) .badge,
+html:lang(fr) .priority,
+html:lang(fr) .role {
+  text-transform: none;
+}

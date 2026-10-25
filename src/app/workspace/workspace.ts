@@ -160,6 +160,10 @@ export class Workspace implements OnDestroy {
     if (this.demo && key === 'messages') return rows.filter((r) => r.leaseId === this.leaseId);
     return rows;
   }
+  displayText(row: Row, field: string): string {
+    const value = String(row[field] ?? '');
+    return this.demo && row.sampleCopy?.[field] === value ? this.i18n.t(value) : value;
+  }
   visible(key: string) {
     const search = this.search.toLowerCase();
     return this.rows(key).filter(
@@ -184,7 +188,7 @@ export class Workspace implements OnDestroy {
         ).split(' ')[0];
   }
   money(value: number, currency = this.currency) {
-    return new Intl.NumberFormat(this.i18n.language() === 'fr' ? 'fr-FR' : 'en-US', {
+    return new Intl.NumberFormat(this.locale(), {
       style: 'currency',
       currency,
       maximumFractionDigits: currency === 'CDF' ? 2 : 2,
@@ -192,7 +196,7 @@ export class Workspace implements OnDestroy {
   }
   date(value: string) {
     return value
-      ? new Intl.DateTimeFormat(this.i18n.language() === 'fr' ? 'fr-FR' : 'en-GB', {
+      ? new Intl.DateTimeFormat(this.i18n.language() === 'fr' ? 'fr-CD' : 'en-GB', {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
@@ -236,7 +240,7 @@ export class Workspace implements OnDestroy {
     return this.rows('maintenance').filter((m) => !['closed', 'resolved'].includes(m.status));
   }
   locale() {
-    return this.i18n.language() === 'fr' ? 'fr-FR' : 'en-US';
+    return this.i18n.language() === 'fr' ? 'fr-CD' : 'en-US';
   }
   today() {
     return new Intl.DateTimeFormat(this.locale(), {
@@ -690,11 +694,11 @@ export class Workspace implements OnDestroy {
         'Property',
         'Unit',
         'Currency',
-        'Due',
-        'Recorded',
+        'Scheduled rent',
+        'Recorded payments',
         'Outstanding',
-        'Status',
-      ],
+        'Payment status',
+      ].map((label) => this.i18n.t(label)),
       ...this.rows('charges').map((c) => [
         c.period,
         c.tenantName,
@@ -704,7 +708,7 @@ export class Workspace implements OnDestroy {
         (c.amountMinor / 100).toFixed(2),
         (c.receivedMinor / 100).toFixed(2),
         ((c.amountMinor - c.receivedMinor) / 100).toFixed(2),
-        this.status(c),
+        this.i18n.t(this.status(c), 'rent'),
       ]),
     ];
     // Neutralize spreadsheet formulas in user-entered names before CSV export.

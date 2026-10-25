@@ -6,7 +6,7 @@
     <div class="workspace-label">
       <span class="workspace-avatar">{{ (org()?.name || 'K').slice(0, 1) | tr }}</span>
       <div>
-        <strong>{{ org()?.name || 'Your portfolio' | tr }}</strong
+        <strong>{{ org()?.name || ('Your portfolio' | tr) }}</strong
         ><span>{{
           (demo ? 'Demo workspace' : owner ? 'Landlord workspace' : 'Tenant workspace') | tr
         }}</span>
@@ -21,7 +21,7 @@
         [disabled]="busy() || loading()"
       >
         @for (m of memberships; track m.id) {
-          <option [value]="m.id">{{ m.name | tr }}</option>
+          <option [value]="m.id">{{ m.name }}</option>
         }
       </select>
     }
@@ -53,9 +53,9 @@
         }
       </nav>
       <div class="profile">
-        <span class="avatar">{{ name().slice(0, 1) | tr }}</span>
+        <span class="avatar">{{ name().slice(0, 1) }}</span>
         <div>
-          <strong>{{ name() | tr }}</strong
+          <strong>{{ name() }}</strong
           ><span>{{ (owner ? 'Landlord' : 'Tenant') | tr }}</span>
         </div>
         @if (!demo) {
@@ -96,7 +96,7 @@
         <span class="pilot-badge"><span class="live-dot"></span> {{ ' Early pilot' | tr }}</span
         ><a routerLink="/help" class="icon-button" aria-label="{{ 'Help center' | tr }}"
           ><kf-icon name="help" /></a
-        ><span class="avatar small">{{ name().slice(0, 1) | tr }}</span>
+        ><span class="avatar small">{{ name().slice(0, 1) }}</span>
       </div>
     </header>
     @if (demo) {
@@ -153,7 +153,7 @@
           <span class="note-icon"><kf-icon name="home" /></span
           ><span class="eyebrow">{{ 'A place for a fresh start' | tr }}</span>
           <h1>
-            {{ ' Welcome home,' | tr }}<br /><em>{{ name() + '.' | tr }}</em>
+            {{ ' Welcome home,' | tr }}<br /><em>{{ name() + '.' }}</em>
           </h1>
           <p>
             {{
@@ -330,7 +330,7 @@
                 [disabled]="busy() || loading()"
               >
                 @for (l of rows('leases'); track l.id) {
-                  <option [value]="l.id">{{ l.propertyName + ' · ' + l.unitLabel | tr }}</option>
+                  <option [value]="l.id">{{ l.propertyName + ' · ' + l.unitLabel }}</option>
                 }
               </select></label
             >
@@ -403,8 +403,8 @@
                       @for (c of monthCharges(); track c.id) {
                         <li>
                           <span [class]="'dot ' + status(c)"></span
-                          >{{ (owner ? c.tenantName : c.unitLabel) | tr }}
-                          <small>{{ status(c) | tr }}</small>
+                          >{{ owner ? c.tenantName : c.unitLabel }}
+                          <small>{{ status(c) | tr: 'rent' }}</small>
                         </li>
                       }
                     </ul>
@@ -464,13 +464,13 @@
                       <span [class]="'need-icon ' + item.status"><kf-icon name="wallet" /></span>
                       <div class="need-text">
                         <strong
-                          >{{ (owner ? item.row.tenantName : 'Your rent') | tr }}
+                          >{{ owner ? item.row.tenantName : ('Your rent' | tr) }}
                           <span [class]="'badge ' + statusClass(item.status)">{{
-                            item.status | tr
+                            item.status | tr: 'rent'
                           }}</span></strong
                         >
                         <small
-                          >{{ item.row.propertyName + ' · ' + item.row.unitLabel | tr }} ·
+                          >{{ item.row.propertyName + ' · ' + item.row.unitLabel }} ·
                           {{ 'Due' | tr }} {{ date(item.row.dueDate) }}</small
                         >
                       </div>
@@ -489,12 +489,12 @@
                       <span class="need-icon repair"><kf-icon name="tool" /></span>
                       <div class="need-text">
                         <strong
-                          >{{ item.row.title | tr }}
+                          >{{ item.row.title }}
                           <span [class]="'badge ' + statusClass(item.status)">{{
-                            item.status.replace('_', ' ') | tr
+                            item.status | tr: 'maintenance'
                           }}</span></strong
                         >
-                        <small>{{ item.row.propertyName + ' · ' + item.row.unitLabel | tr }}</small>
+                        <small>{{ item.row.propertyName + ' · ' + item.row.unitLabel }}</small>
                       </div>
                       <span class="need-link"
                         >{{ 'See request' | tr }} <kf-icon name="arrow"
@@ -525,8 +525,8 @@
                       <a class="home-line" [routerLink]="[base, 'properties']">
                         <span class="home-mark"><kf-icon name="building" /></span>
                         <span class="home-text"
-                          ><strong>{{ p.name | tr }}</strong
-                          ><small>{{ p.city | tr }}</small></span
+                          ><strong>{{ p.name }}</strong
+                          ><small>{{ p.city }}</small></span
                         >
                         <span class="home-occ"
                           >{{ propertyOccupied(p.id) }}/{{ propertyUnits(p.id).length
@@ -546,8 +546,8 @@
                       <div class="home-line static">
                         <span class="home-mark"><kf-icon name="home" /></span>
                         <span class="home-text"
-                          ><strong>{{ lease.propertyName | tr }}</strong
-                          ><small>{{ lease.unitLabel | tr }}</small></span
+                          ><strong>{{ lease.propertyName }}</strong
+                          ><small>{{ lease.unitLabel }}</small></span
                         >
                       </div>
                       <dl class="lease-facts">
@@ -581,7 +581,7 @@
                           <span class="timeline-icon"
                             ><kf-icon [name]="activityIcon(event.action)"
                           /></span>
-                          <span>{{ event.detail | tr }}</span>
+                          <span>{{ i18n.activity(event.action, event.detail) }}</span>
                         </li>
                       }
                     </ol>
@@ -656,9 +656,9 @@
                     <li class="list-item">
                       <span [class]="'li-icon ' + status(c)"><kf-icon name="wallet" /></span>
                       <span class="li-text"
-                        ><strong>{{ (owner ? c.tenantName : c.unitLabel) | tr }}</strong
+                        ><strong>{{ owner ? c.tenantName : c.unitLabel }}</strong
                         ><small
-                          >{{ c.propertyName + ' · ' + c.unitLabel | tr }} · {{ 'Due' | tr }}
+                          >{{ c.propertyName + ' · ' + c.unitLabel }} · {{ 'Due' | tr }}
                           {{ date(c.dueDate) }}</small
                         ></span
                       >
@@ -669,7 +669,7 @@
                       ></span>
                       <span class="li-status"
                         ><span [class]="'badge ' + statusClass(status(c))">{{
-                          status(c) | tr
+                          status(c) | tr: 'rent'
                         }}</span></span
                       >
                       @if (owner) {
@@ -719,13 +719,13 @@
                         ><kf-icon [name]="r.voided ? 'refresh' : 'check'"
                       /></span>
                       <span class="li-text"
-                        ><strong>{{ r.tenantName | tr }}</strong
+                        ><strong>{{ r.tenantName }}</strong
                         ><small
-                          >{{ date(r.receivedOn) }} · {{ r.method.replace('_', ' ') | tr }} ·
-                          {{ r.reference || 'No reference' | tr }}</small
+                          >{{ date(r.receivedOn) }} · {{ r.method | tr: 'payment-method' }} ·
+                          {{ r.reference || ('No reference' | tr) }}</small
                         >
                         @if (r.voided) {
-                          <small class="void-reason">{{ r.voidReason | tr }}</small>
+                          <small class="void-reason">{{ r.voidReason }}</small>
                         }
                       </span>
                       <span class="li-amount"
@@ -733,7 +733,7 @@
                       >
                       <span class="li-status"
                         ><span [class]="'badge ' + (r.voided ? 'red' : 'green')">{{
-                          (r.voided ? 'Reversed' : 'Recorded') | tr
+                          (r.voided ? 'voided' : 'recorded') | tr: 'receipt'
                         }}</span></span
                       >
                       @if (owner) {
@@ -787,33 +787,33 @@
                   <div class="prop-head">
                     <span class="li-icon"><kf-icon name="building" /></span>
                     <span class="li-text"
-                      ><strong>{{ p.name | tr }}</strong
-                      ><small>{{ p.address | tr }} · {{ p.city | tr }}</small></span
+                      ><strong>{{ p.name }}</strong
+                      ><small>{{ p.address }} · {{ p.city }}</small></span
                     >
-                    <span class="badge">{{ p.type | tr }}</span>
+                    <span class="badge">{{ p.type | tr: 'property-type' }}</span>
                     <button
                       class="icon-button"
                       (click)="open('updateProperty', p)"
-                      [attr.aria-label]="'Edit ' + p.name"
+                      [attr.aria-label]="('Edit' | tr) + ' ' + p.name"
                     >
                       <kf-icon name="settings" />
                     </button>
                   </div>
                   @if (p.notes) {
-                    <p class="prop-notes">{{ p.notes | tr }}</p>
+                    <p class="prop-notes">{{ displayText(p, 'notes') }}</p>
                   }
                   <ul class="list">
                     @for (u of propertyUnits(p.id); track u.id) {
                       <li class="list-item">
                         <span class="li-icon soft"><kf-icon name="home" /></span>
                         <span class="li-text"
-                          ><strong>{{ u.label | tr }}</strong
+                          ><strong>{{ u.label }}</strong
                           ><small
                             >{{ money(u.rentMinor, u.currency) }} {{ '/ month' | tr }}</small
                           ></span
                         >
                         <span [class]="'badge ' + (u.activeLeaseId ? 'green' : '')">{{
-                          (u.activeLeaseId ? 'Occupied' : 'Available') | tr
+                          (u.activeLeaseId ? 'occupied' : 'available') | tr: 'unit'
                         }}</span>
                       </li>
                     }
@@ -881,11 +881,11 @@
                   <li class="list-item lease-item">
                     <span class="li-avatar">{{ initials(l.tenantName) }}</span>
                     <span class="li-text"
-                      ><strong>{{ l.tenantName | tr }}</strong
-                      ><small>{{ l.tenantEmail | tr }}</small></span
+                      ><strong>{{ l.tenantName }}</strong
+                      ><small>{{ l.tenantEmail }}</small></span
                     >
                     <span class="li-text"
-                      ><strong>{{ l.propertyName + ' · ' + l.unitLabel | tr }}</strong
+                      ><strong>{{ l.propertyName + ' · ' + l.unitLabel }}</strong
                       ><small>{{ date(l.startDate) + ' — ' + date(l.endDate) }}</small></span
                     >
                     <span class="li-amount"
@@ -894,8 +894,10 @@
                     >
                     <span class="li-status"
                       ><span [class]="'badge ' + (l.tenantUid ? 'green' : '')">{{
-                        (l.tenantUid ? 'Connected' : 'Not invited / pending') | tr
-                      }}</span></span
+                        (l.tenantUid ? 'connected' : l.inviteHash ? 'pending' : 'not_invited')
+                          | tr: 'tenant-access'
+                      }}</span
+                      ><span class="badge">{{ l.status | tr: 'lease' }}</span></span
                     >
                     <span class="li-action">
                       @if (!l.tenantUid && l.status === 'active') {
@@ -945,26 +947,32 @@
                       ><kf-icon [name]="ticketStep(t.status) === 2 ? 'check' : 'tool'"
                     /></span>
                     <span class="li-text"
-                      ><strong>{{ t.title | tr }}</strong
-                      ><small>{{ t.propertyName + ' · ' + t.unitLabel | tr }}</small></span
+                      ><strong>{{ displayText(t, 'title') }}</strong
+                      ><small>{{ t.propertyName + ' · ' + t.unitLabel }}</small></span
                     >
                     <span [class]="'badge ' + statusClass(t.status)">{{
-                      t.status.replace('_', ' ') | tr
+                      t.status | tr: 'maintenance'
                     }}</span>
                   </div>
                   <div class="steps-track" aria-hidden="true">
-                    <span class="done">{{ 'Reported' | tr }}</span
-                    ><span [class.done]="ticketStep(t.status) >= 1">{{ 'In progress' | tr }}</span
-                    ><span [class.done]="ticketStep(t.status) >= 2">{{ 'Resolved' | tr }}</span>
+                    <span class="done">{{ 'new' | tr: 'maintenance' }}</span
+                    ><span [class.done]="ticketStep(t.status) >= 1">{{
+                      'in_progress' | tr: 'maintenance'
+                    }}</span
+                    ><span [class.done]="ticketStep(t.status) >= 2">{{
+                      'resolved' | tr: 'maintenance'
+                    }}</span>
                   </div>
-                  <p class="pre-line">{{ t.description | tr }}</p>
+                  <p class="pre-line">{{ displayText(t, 'description') }}</p>
                   @if (t.latestNote) {
-                    <blockquote>{{ t.latestNote | tr }}</blockquote>
+                    <blockquote>{{ displayText(t, 'latestNote') }}</blockquote>
                   }
                   <div class="ticket-bottom">
                     <small
-                      >{{ t.tenantName | tr }} ·
-                      <span [class]="'priority ' + t.priority">{{ t.priority | tr }}</span></small
+                      >{{ t.tenantName }} ·
+                      <span [class]="'priority ' + t.priority">{{
+                        t.priority | tr: 'priority'
+                      }}</span></small
                     >
                     @if (canUpdate(t)) {
                       <button class="table-action" (click)="open('updateMaintenance', t)">
@@ -997,7 +1005,7 @@
                     [disabled]="busy() || loading()"
                   >
                     @for (l of rows('leases'); track l.id) {
-                      <option [value]="l.id">{{ l.tenantName + ' · ' + l.unitLabel | tr }}</option>
+                      <option [value]="l.id">{{ l.tenantName + ' · ' + l.unitLabel }}</option>
                     }
                   </select></label
                 ><span class="muted">{{
@@ -1013,8 +1021,8 @@
                       (demo ? (demoTenant ? 'demo-tenant' : 'demo-owner') : cloud.user()?.uid)
                     "
                   >
-                    <strong>{{ m.authorName | tr }}</strong>
-                    <p>{{ m.body | tr }}</p>
+                    <strong>{{ displayText(m, 'authorName') }}</strong>
+                    <p>{{ displayText(m, 'body') }}</p>
                   </article>
                 } @empty {
                   <div class="empty">
@@ -1070,17 +1078,17 @@
                   <li class="list-item">
                     <span class="li-icon soft"><kf-icon name="file" /></span>
                     <span class="li-text"
-                      ><strong>{{ doc.title | tr }}</strong
+                      ><strong>{{ doc.title }}</strong
                       ><small
                         >{{ doc.fileName }} · {{ (doc.size / 1024).toFixed(0) }} KB</small
                       ></span
                     >
                     <span class="li-text"
-                      ><small>{{ leaseLabel(doc.leaseId) | tr }}</small></span
+                      ><small>{{ leaseLabel(doc.leaseId) }}</small></span
                     >
                     <span class="li-status"
                       ><span [class]="'badge ' + statusClass(doc.status)">{{
-                        doc.status | tr
+                        doc.status | tr: 'document'
                       }}</span></span
                     >
                     <span class="li-action">
@@ -1120,11 +1128,11 @@
                 <dl>
                   <div>
                     <dt>{{ 'Name' | tr }}</dt>
-                    <dd>{{ (demo ? name() : cloud.session()?.profile?.displayName) | tr }}</dd>
+                    <dd>{{ demo ? name() : cloud.session()?.profile?.displayName }}</dd>
                   </div>
                   <div>
                     <dt>{{ 'Email' | tr }}</dt>
-                    <dd>{{ (demo ? 'alex@example.com' : cloud.user()?.email) | tr }}</dd>
+                    <dd>{{ demo ? 'alex@example.com' : cloud.user()?.email }}</dd>
                   </div>
                   <div>
                     <dt>{{ 'Account ID' | tr }}</dt>
@@ -1150,7 +1158,7 @@
                 <dl>
                   <div>
                     <dt>{{ 'Name' | tr }}</dt>
-                    <dd>{{ org()?.name | tr }}</dd>
+                    <dd>{{ org()?.name }}</dd>
                   </div>
                   <div>
                     <dt>{{ 'Role' | tr }}</dt>
@@ -1189,13 +1197,13 @@
             <div class="ticket-grid">
               @for (ticket of rows('support'); track ticket.id) {
                 <article class="panel ticket">
-                  <span class="badge">{{ ticket.status | tr }}</span>
-                  <h2>{{ ticket.subject | tr }}</h2>
-                  <p class="pre-line">{{ ticket.body | tr }}</p>
+                  <span class="badge">{{ ticket.status | tr: 'support' }}</span>
+                  <h2>{{ ticket.subject }}</h2>
+                  <p class="pre-line">{{ ticket.body }}</p>
                   @if (ticket.reply) {
                     <blockquote>
                       <strong>{{ 'From the Kofutela team' | tr }}</strong>
-                      <p class="pre-line">{{ ticket.reply | tr }}</p>
+                      <p class="pre-line">{{ ticket.reply }}</p>
                     </blockquote>
                   } @else {
                     <small class="muted">{{
@@ -1281,7 +1289,13 @@
                     [disabled]="busy()"
                   >
                     @for (option of field.options; track option.value) {
-                      <option [value]="option.value">{{ option.label | tr }}</option>
+                      <option [value]="option.value">
+                        {{
+                          option.translate === false
+                            ? option.label
+                            : i18n.t(field.context ? option.value : option.label, field.context)
+                        }}
+                      </option>
                     }
                   </select>
                 } @else if (field.type === 'textarea') {

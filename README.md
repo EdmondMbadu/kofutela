@@ -72,6 +72,25 @@ Verification and recovery links return to the originating host, including the de
 
 ## Verification
 
+### French interface terminology
+
+Use French rental-management wording consistently across navigation, dialogs, status badges, errors, activity history and CSV exports:
+
+| Concept | French wording |
+| --- | --- |
+| Property / properties | Propriété / propriétés |
+| Portfolio | Parc immobilier |
+| Rentable unit, including commercial space | Logement ou local |
+| Tenant navigation and creating a rental | Locataires / ajouter un locataire |
+| Rental period and ending a rental | Location; en cours / terminée; terminer la location |
+| Actual contract document | Contrat de location |
+| Rent records / scheduled rent | Suivi des loyers / loyer dû |
+| Received payment entered by the landlord | Paiement enregistré |
+| Outstanding rent / reverse a recorded payment | Reste à payer / annuler l’enregistrement |
+| Maintenance request | Demande de réparation; signalée / prise en charge / en cours / résolue / fermée |
+
+`translation-context.ts` separates rent, receipt, rental period, invitations, repair, support, occupancy, document, payment-method and role labels. Prefer everyday French over administrative wording: use « Locataires » in navigation and « Terminer la location » for the action. Reserve « contrat de location » for an actual agreement/document. Keep the existing English copy and stored field/action names unchanged. The UI does not call a payment entry a generated quittance. The interface uses `fr-CD` for localized dates and currency display. Stored property/unit names, addresses, people, messages and support text stay verbatim. Only explicitly marked, unchanged authored demo samples may be translated; editing them removes that presentation behavior. New French copy should follow this glossary and the rendered-screen regressions in `i18n.spec.ts`.
+
 ```sh
 npm run test:domain
 npm run test:rules
@@ -117,7 +136,7 @@ Public pages contain full static HTML, unique titles, descriptions, canonical/Op
 
 ## Deliberate pilot boundaries / next refinements
 
-- English interface; French localization remains to be added. No native mobile app, offline mutations or push/email notification system. Messages/replies are refreshed on demand.
+- English and French interfaces. No native mobile app, offline mutations or push/email notification system. Messages/replies are refreshed on demand.
 - One owned portfolio per account; tenant membership in other portfolios is supported. No delegated property-manager role yet.
 - Leases cover at most 24 calendar months, full monthly charges, due days 1–28, no automatic prorating. Future-dated lease terminations are not supported. Monthly reports are not a full accounting ledger.
 - Views are bounded at 500 records, with totals disabled if the limit is exceeded. Larger portfolio pagination/aggregate dashboards must be implemented before expanding beyond the pilot.

@@ -1,3 +1,4 @@
+import type { TranslationContext } from '../core/translation-context';
 export type Field = {
   key: string;
   label: string;
@@ -6,7 +7,8 @@ export type Field = {
   min?: number;
   max?: number;
   step?: string;
-  options?: { value: string; label: string }[];
+  options?: { value: string; label: string; translate?: boolean }[];
+  context?: TranslationContext;
   hint?: string;
 };
 export type FormSpec = { title: string; description: string; fields: Field[]; submit?: string };
@@ -34,6 +36,7 @@ export function formSpec(
     options: options.leases.map((l) => ({
       value: l.id,
       label: `${l.tenantName} · ${l.propertyName} / ${l.unitLabel}`,
+      translate: false,
     })),
   });
   const status: Record<string, string[]> = {
@@ -60,6 +63,7 @@ export function formSpec(
         t('name', 'Property name'),
         t('type', 'Property type', {
           type: 'select',
+          context: 'property-type',
           options: ['apartment', 'house', 'building', 'commercial'].map((value) => ({
             value,
             label: value,
@@ -88,7 +92,11 @@ export function formSpec(
       fields: [
         t('propertyId', 'Property', {
           type: 'select',
-          options: options.properties.map((p) => ({ value: p.id, label: p.name })),
+          options: options.properties.map((p) => ({
+            value: p.id,
+            label: p.name,
+            translate: false,
+          })),
         }),
         t('label', 'Unit name'),
         ...money,
@@ -106,6 +114,7 @@ export function formSpec(
             .map((u) => ({
               value: u.id,
               label: `${options.properties.find((p) => p.id === u.propertyId)?.name || 'Property'} · ${u.label}`,
+              translate: false,
             })),
         }),
         t('tenantName', 'Tenant name'),
@@ -135,6 +144,7 @@ export function formSpec(
         t('receivedOn', 'Date received', { type: 'date' }),
         t('method', 'How it was received', {
           type: 'select',
+          context: 'payment-method',
           options: [
             { value: 'cash', label: 'Cash' },
             { value: 'bank', label: 'Bank transfer' },
@@ -163,6 +173,7 @@ export function formSpec(
         t('title', 'What needs attention?'),
         t('priority', 'Priority', {
           type: 'select',
+          context: 'priority',
           options: [
             { value: 'normal', label: 'Normal' },
             { value: 'urgent', label: 'Urgent' },
@@ -178,12 +189,13 @@ export function formSpec(
       fields: [
         t('status', 'Next status', {
           type: 'select',
+          context: 'maintenance',
           options: (options.owner
             ? status[options.status || 'new'] || []
             : options.status === 'resolved'
               ? ['closed', 'in_progress']
               : []
-          ).map((value) => ({ value, label: value.replace('_', ' ') })),
+          ).map((value) => ({ value, label: value })),
         }),
         t('note', 'Update note', { type: 'textarea', required: false, max: 1000 }),
       ],

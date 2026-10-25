@@ -50,7 +50,7 @@ import { LanguageSwitcher } from '../shared/language-switcher';
         </article>
         <article>
           <span>{{ 'Your role' | tr }}</span
-          ><strong class="role">{{ data.role | tr }}</strong>
+          ><strong class="role">{{ data.role | tr: 'role' }}</strong>
         </article>
       </div>
       <div class="section-title">
@@ -68,11 +68,11 @@ import { LanguageSwitcher } from '../shared/language-switcher';
         @for (ticket of data.tickets; track ticket.id) {
           <article>
             <div class="ticket-heading">
-              <span class="badge">{{ ticket.status | tr }}</span
-              ><small>{{ ticket.email | tr }}</small>
+              <span class="badge">{{ ticket.status | tr: 'support' }}</span
+              ><small>{{ ticket.email }}</small>
             </div>
-            <h3>{{ ticket.subject | tr }}</h3>
-            <p class="message">{{ ticket.body | tr }}</p>
+            <h3>{{ ticket.subject }}</h3>
+            <p class="message">{{ ticket.body }}</p>
             <form
               class="form-stack"
               ngNativeValidate
@@ -147,8 +147,8 @@ import { LanguageSwitcher } from '../shared/language-switcher';
           <h3>{{ 'Current platform access' | tr }}</h3>
           @for (admin of data.admins; track admin.id) {
             <div class="admin-row">
-              <code>{{ admin.id | tr }}</code
-              ><span class="badge">{{ admin.role | tr }}</span>
+              <code>{{ admin.id }}</code
+              ><span class="badge">{{ admin.role | tr: 'role' }}</span>
             </div>
           }
         </section>
@@ -157,8 +157,8 @@ import { LanguageSwitcher } from '../shared/language-switcher';
         <h2>{{ 'Recent platform activity' | tr }}</h2>
         @for (event of data.activity; track event.id) {
           <p>
-            <strong>{{ event.action | tr }}</strong> {{ '· ' + event.entityId | tr
-            }}<small>{{ 'Actor: ' + event.actorUid | tr }}</small>
+            <strong>{{ event.action | tr: 'activity' }}</strong> {{ '· ' + event.entityId
+            }}<small>{{ 'Actor' | tr }} : {{ event.actorUid }}</small>
           </p>
         } @empty {
           <p>{{ 'No platform actions recorded yet.' | tr }}</p>
