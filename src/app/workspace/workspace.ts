@@ -74,6 +74,7 @@ export class Workspace implements OnDestroy {
     month: '2-digit',
   }).format(new Date());
   currency = 'USD';
+  showDeleted = false;
   search = '';
   message = '';
   capped = false;
@@ -149,7 +150,7 @@ export class Workspace implements OnDestroy {
       (this.section() === 'support' ? 'Support' : 'Settings')
     );
   }
-  rows(key: string) {
+  rows(key: string, includeDeleted = false) {
     const rows = this.data()[key] || [];
     if (this.demo && this.demoTenant) {
       if (['properties', 'units', 'activity'].includes(key)) return [];
@@ -158,7 +159,26 @@ export class Workspace implements OnDestroy {
         return rows.filter((r) => r.leaseId === 'l1');
     }
     if (this.demo && key === 'messages') return rows.filter((r) => r.leaseId === this.leaseId);
+    if (!includeDeleted && ['properties', 'units'].includes(key)) {
+      const deletedProperties = new Set(
+        (this.data()['properties'] || []).filter((p) => p.deletedAt).map((p) => p.id),
+      );
+      return rows.filter(
+        (r) => !r.deletedAt && (key !== 'units' || !deletedProperties.has(r.propertyId)),
+      );
+    }
     return rows;
+  }
+  hasDeletedEntries() {
+    return ['properties', 'units'].some((key) =>
+      this.rows(key, true).some((row) => !!row.deletedAt),
+    );
+  }
+  propertyHasOngoingRental(id: string) {
+    return (
+      this.rows('units', true).some((u) => u.propertyId === id && !!u.activeLeaseId) ||
+      this.rows('leases').some((l) => l.propertyId === id && l.status === 'active')
+    );
   }
   displayText(row: Row, field: string): string {
     const value = String(row[field] ?? '');
@@ -166,14 +186,16 @@ export class Workspace implements OnDestroy {
   }
   visible(key: string) {
     const search = this.search.toLowerCase();
-    return this.rows(key).filter(
+    return this.rows(key, key === 'properties' && this.showDeleted).filter(
       (r) =>
         !search ||
         ['name', 'tenantName', 'propertyName', 'title', 'unitLabel', 'city'].some((k) =>
           String(r[k] || '')
             .toLowerCase()
             .includes(search),
-        ),
+        ) ||
+        (key === 'properties' &&
+          this.propertyUnits(r.id).some((u) => String(u.label).toLowerCase().includes(search))),
     );
   }
   name() {
@@ -332,7 +354,7 @@ export class Workspace implements OnDestroy {
           : 'check';
   }
   propertyUnits(id: string) {
-    return this.rows('units').filter((u) => u.propertyId === id);
+    return this.rows('units', this.showDeleted).filter((u) => u.propertyId === id);
   }
   canUpdate(ticket: Row) {
     return this.owner || ticket.status === 'resolved';
@@ -535,13 +557,16 @@ export class Workspace implements OnDestroy {
       displayName:
         this.cloud.session()?.profile?.displayName || this.cloud.user()?.displayName || '',
       name: action === 'updateWorkspace' ? this.org()?.name : '',
+      confirmed: false,
       receivedOn: new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kinshasa' }).format(
         new Date(),
       ),
       ...row,
     };
     if (row) {
-      if (action === 'updateProperty') this.form.propertyId = row.id;
+      if (['updateProperty', 'deleteProperty', 'restoreProperty'].includes(action))
+        this.form.propertyId = row.id;
+      if (['updateUnit', 'deleteUnit', 'restoreUnit'].includes(action)) this.form.unitId = row.id;
       if (action === 'recordReceipt') this.form.chargeId = row.id;
       if (action === 'voidReceipt') this.form.receiptId = row.id;
       if (action === 'updateMaintenance') this.form.ticketId = row.id;
@@ -775,10 +800,36 @@ export class Workspace implements OnDestroy {
         d['properties'].find((r) => r.id === p.propertyId),
         p,
       );
-    else if (action === 'createUnit') add('units', { ...p, activeLeaseId: null });
+    else if (['deleteProperty', 'restoreProperty'].includes(action)) {
+      const property = d['properties'].find((r) => r.id === p.propertyId);
+      const restoring = action === 'restoreProperty';
+      if (!restoring && this.propertyHasOngoingRental(p.propertyId))
+        throw new Error('End all ongoing rentals in this property before deleting it.');
+      property.deletedAt = restoring ? null : new Date().toISOString();
+      for (const unit of d['units'].filter((u) => u.propertyId === p.propertyId)) {
+        if (restoring ? unit.deletedWithProperty : !unit.deletedAt) {
+          unit.deletedAt = property.deletedAt;
+          unit.deletedWithProperty = !restoring;
+        }
+      }
+    } else if (['updateUnit', 'deleteUnit', 'restoreUnit'].includes(action)) {
+      const unit = d['units'].find((r) => r.id === p.unitId);
+      if (action === 'updateUnit') Object.assign(unit, p);
+      else {
+        if (
+          action === 'deleteUnit' &&
+          (unit.activeLeaseId ||
+            d['leases'].some((l) => l.unitId === p.unitId && l.status === 'active'))
+        )
+          throw new Error('End the ongoing rental before deleting this unit.');
+        unit.deletedAt = action === 'restoreUnit' ? null : new Date().toISOString();
+        unit.deletedWithProperty = false;
+      }
+    } else if (action === 'createUnit') add('units', { ...p, activeLeaseId: null });
     else if (action === 'createLease') {
       const unit = d['units'].find((r) => r.id === p.unitId);
-      if (!unit || unit.activeLeaseId) throw new Error('Choose an available unit.');
+      if (!unit || unit.deletedAt || unit.activeLeaseId)
+        throw new Error('Choose an available unit.');
       if (p.endDate < p.startDate) throw new Error('The end date must follow the start date.');
       unit.activeLeaseId = id;
       const property = d['properties'].find((r) => r.id === unit.propertyId);

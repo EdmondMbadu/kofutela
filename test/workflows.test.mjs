@@ -45,6 +45,8 @@ async function client(name, verified = true) {
       displayName: name,
     });
   }
+  // Reset only this disposable fixture's throttle so the suite can be rerun immediately.
+  await adminFirestore(admin).doc(`rateLimits/${user.uid}`).delete();
   const app = initializeApp(
     { projectId, apiKey: 'demo-api-key', storageBucket: `${projectId}.firebasestorage.app` },
     name,
@@ -370,6 +372,76 @@ test(
         );
       });
       await t.test(
+        'unit and property edits preserve agreed rent and deletion blocks ongoing rentals',
+        async () => {
+          const base = `organizations/${org}`;
+          const leaseBefore = (await getDoc(doc(owner.db, `${base}/leases/${lease}`))).data();
+          const chargeBefore = (await getDoc(doc(owner.db, `${base}/charges/${charge}`))).data();
+          await owner.command(
+            'updateUnit',
+            { unitId: unit, label: 'Renamed space', rentMinor: 123456, currency: 'CDF' },
+            org,
+          );
+          await owner.command(
+            'updateProperty',
+            {
+              propertyId: property,
+              name: 'Renamed property',
+              type: 'commercial',
+              address: 'New address',
+              city: 'Kinshasa',
+              notes: 'Updated',
+            },
+            org,
+          );
+          const changed = (await getDoc(doc(owner.db, `${base}/units/${unit}`))).data();
+          assert.equal(changed.label, 'Renamed space');
+          assert.equal(changed.rentMinor, 123456);
+          assert.equal(changed.currency, 'CDF');
+          assert.deepEqual(
+            (await getDoc(doc(owner.db, `${base}/leases/${lease}`))).data(),
+            leaseBefore,
+          );
+          assert.deepEqual(
+            (await getDoc(doc(owner.db, `${base}/charges/${charge}`))).data(),
+            chargeBefore,
+          );
+          assert.equal(
+            (await getDoc(doc(owner.db, `${base}/properties/${property}`))).data().type,
+            'commercial',
+          );
+          await rejected(owner.command('deleteUnit', { unitId: unit }, org), /ongoing rental/);
+          await rejected(
+            owner.command('deleteProperty', { propertyId: property }, org),
+            /ongoing rentals/,
+          );
+          assert.equal(
+            (await getDoc(doc(owner.db, `${base}/units/${unit}`))).data().deletedAt,
+            undefined,
+          );
+          const actions = [
+            ['updateUnit', { unitId: unit, label: 'Unauthorized', rentMinor: 1, currency: 'USD' }],
+            ['deleteUnit', { unitId: unit }],
+            ['restoreUnit', { unitId: unit }],
+            ['deleteProperty', { propertyId: property }],
+            ['restoreProperty', { propertyId: property }],
+          ];
+          for (const [action, payload] of actions) {
+            await rejected(tenant.command(action, payload, org), /owner|access/i);
+            await rejected(stranger.command(action, payload, org), /access/i);
+            await rejected(unverified.command(action, payload, org), /Verify/);
+          }
+          await rejected(
+            owner.command(
+              'updateUnit',
+              { unitId: unit, label: 'Bad rent', rentMinor: 0, currency: 'USD' },
+              org,
+            ),
+            /invalid|positive|greater|Too small/i,
+          );
+        },
+      );
+      await t.test(
         'ending a lease preserves past records and cancels later unpaid rent',
         async () => {
           await owner.command(
@@ -394,6 +466,162 @@ test(
           );
         },
       );
+      await t.test(
+        'delete, retry, restore and property cascade preserve history and separately deleted spaces',
+        async () => {
+          const base = `organizations/${org}`;
+          const adminDb = adminFirestore(admin);
+          const leaseBefore = (await adminDb.doc(`${base}/leases/${lease}`).get()).data();
+          const chargesBefore = (
+            await adminDb.collection(`${base}/charges`).where('leaseId', '==', lease).get()
+          ).docs.map((s) => s.data());
+          const receiptBefore = (await adminDb.doc(`${base}/receipts/${receipt}`).get()).data();
+          const requestId = crypto.randomUUID();
+          await owner.command('deleteUnit', { unitId: unit }, org, requestId);
+          await owner.command('deleteUnit', { unitId: unit }, org, requestId);
+          assert.ok((await getDoc(doc(owner.db, `${base}/units/${unit}`))).data().deletedAt);
+          await rejected(
+            owner.command(
+              'updateUnit',
+              { unitId: unit, label: 'Hidden', rentMinor: 500, currency: 'USD' },
+              org,
+            ),
+            /Restore/,
+          );
+          await rejected(
+            owner.command(
+              'createLease',
+              {
+                unitId: unit,
+                tenantName: 'New',
+                tenantEmail: 'new@example.test',
+                startDate: '2026-10-01',
+                endDate: '2026-11-30',
+                dueDay: 5,
+                rentMinor: 500,
+                currency: 'USD',
+              },
+              org,
+            ),
+            /Restore/,
+          );
+          // This unit was removed separately; restoring the property must not restore it.
+          const other = (
+            await owner.command(
+              'createUnit',
+              { propertyId: property, label: 'Other space', rentMinor: 700, currency: 'USD' },
+              org,
+            )
+          ).id;
+          await owner.command('deleteProperty', { propertyId: property }, org);
+          assert.ok(
+            (await getDoc(doc(owner.db, `${base}/properties/${property}`))).data().deletedAt,
+          );
+          assert.ok((await getDoc(doc(owner.db, `${base}/units/${other}`))).data().deletedAt);
+          await rejected(
+            owner.command(
+              'createUnit',
+              { propertyId: property, label: 'Hidden child', rentMinor: 100, currency: 'USD' },
+              org,
+            ),
+            /Restore/,
+          );
+          await rejected(
+            owner.command('restoreUnit', { unitId: unit }, org),
+            /Restore this property/,
+          );
+          await rejected(
+            owner.command(
+              'updateProperty',
+              {
+                propertyId: property,
+                name: 'Hidden',
+                address: 'Street',
+                city: 'Kinshasa',
+                notes: '',
+              },
+              org,
+            ),
+            /Restore/,
+          );
+          await owner.command('restoreProperty', { propertyId: property }, org);
+          assert.equal(
+            (await getDoc(doc(owner.db, `${base}/properties/${property}`))).data().deletedAt,
+            null,
+          );
+          assert.equal(
+            (await getDoc(doc(owner.db, `${base}/units/${other}`))).data().deletedAt,
+            null,
+          );
+          assert.ok((await getDoc(doc(owner.db, `${base}/units/${unit}`))).data().deletedAt);
+          await owner.command('restoreUnit', { unitId: unit }, org);
+          const restored = (await getDoc(doc(owner.db, `${base}/units/${unit}`))).data();
+          assert.equal(restored.deletedAt, null);
+          assert.equal(restored.label, 'Renamed space');
+          assert.equal(restored.rentMinor, 123456);
+          assert.deepEqual(
+            (await adminDb.doc(`${base}/leases/${lease}`).get()).data(),
+            leaseBefore,
+          );
+          assert.deepEqual(
+            (
+              await adminDb.collection(`${base}/charges`).where('leaseId', '==', lease).get()
+            ).docs.map((s) => s.data()),
+            chargesBefore,
+          );
+          assert.deepEqual(
+            (await adminDb.doc(`${base}/receipts/${receipt}`).get()).data(),
+            receiptBefore,
+          );
+          assert.equal(
+            (await getDoc(doc(tenant.db, `${base}/leases/${lease}`))).data().status,
+            'ended',
+          );
+          assert.equal((await getBytes(ref(tenant.storage, document.path))).byteLength > 0, true);
+          await rejected(
+            owner.command('deleteUnit', { unitId: 'missing-record' }, org),
+            /no longer exists/i,
+          );
+        },
+      );
+      await t.test('starting a rental and deleting its space cannot both succeed', async () => {
+        const raceUnit = (
+          await owner.command(
+            'createUnit',
+            { propertyId: property, label: 'Concurrent test', rentMinor: 50000, currency: 'USD' },
+            org,
+          )
+        ).id;
+        const results = await Promise.allSettled([
+          owner.command(
+            'createLease',
+            {
+              unitId: raceUnit,
+              tenantName: 'Race tenant',
+              tenantEmail: 'race@example.test',
+              startDate: '2030-01-01',
+              endDate: '2030-03-31',
+              dueDay: 5,
+              rentMinor: 50000,
+              currency: 'USD',
+            },
+            org,
+          ),
+          owner.command('deleteUnit', { unitId: raceUnit }, org),
+        ]);
+        assert.equal(results.filter((r) => r.status === 'fulfilled').length, 1);
+        const saved = (
+          await getDoc(doc(owner.db, `organizations/${org}/units/${raceUnit}`))
+        ).data();
+        assert.notEqual(!!saved.deletedAt, !!saved.activeLeaseId);
+        const rentals = await getDocs(
+          query(
+            collection(owner.db, `organizations/${org}/leases`),
+            where('unitId', '==', raceUnit),
+          ),
+        );
+        assert.equal(rentals.size, saved.deletedAt ? 0 : 1);
+      });
     } finally {
       for (const c of clients) {
         await signOut(c.auth);

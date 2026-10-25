@@ -2491,3 +2491,155 @@ a.home-line:hover {
     width: 210px;
   }
 }
+
+/* Compact, always-visible actions with accessible labels and touch targets. */
+.property-controls,
+.unit-controls {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 2px;
+}
+.prop-head {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+.property-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.property-controls {
+  padding: 0;
+}
+.unit-controls {
+  margin-left: 0;
+}
+.unit-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  gap: 10px;
+}
+.unit-row .li-text,
+.prop-head .li-text {
+  min-width: 0;
+}
+.prop-card .li-text strong,
+.dialog-target {
+  overflow-wrap: anywhere;
+}
+.record-action {
+  min-width: 34px;
+  min-height: 34px;
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  color: var(--text-2);
+  background: transparent;
+  border-radius: 9px;
+}
+.record-action kf-icon {
+  width: 18px;
+  height: 18px;
+}
+.record-action:hover:not(:disabled) {
+  background: var(--green-soft);
+  color: var(--green-ink);
+}
+.record-action:focus-visible {
+  outline: 2px solid var(--green-ink);
+  outline-offset: 2px;
+}
+.record-action.danger-action:hover:not(:disabled) {
+  background: #fbeeed;
+  color: #a33732;
+}
+.record-action:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.deleted-entry {
+  background: #f6f6f3;
+}
+.deleted-toggle,
+.delete-confirmation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.list-toolbar > .deleted-toggle {
+  flex: 0 1 auto;
+}
+.deleted-toggle input,
+.delete-confirmation input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--ink);
+}
+.delete-confirmation {
+  margin: 22px 0 0;
+}
+.dialog-target {
+  font-weight: 650;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--cream, #f4f5f0);
+}
+.button.destructive {
+  background: #9b3832;
+  border-color: #9b3832;
+  color: white;
+}
+.management-hint {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: 0 0 16px;
+}
+@media (max-width: 650px) {
+  .prop-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .prop-head > .li-icon {
+    display: none;
+  }
+  .unit-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 8px;
+  }
+  .unit-row > .li-icon {
+    display: none;
+  }
+  .unit-row > .li-text {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .unit-row > .badge {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+  .unit-controls {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .record-action {
+    width: 40px;
+    height: 40px;
+    padding: 11px;
+  }
+}
+@media (pointer: coarse) {
+  .record-action {
+    width: 44px;
+    height: 44px;
+    padding: 12px;
+  }
+}

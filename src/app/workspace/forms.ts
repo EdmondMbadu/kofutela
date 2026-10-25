@@ -11,7 +11,13 @@ export type Field = {
   context?: TranslationContext;
   hint?: string;
 };
-export type FormSpec = { title: string; description: string; fields: Field[]; submit?: string };
+export type FormSpec = {
+  title: string;
+  description: string;
+  fields: Field[];
+  submit?: string;
+  destructive?: boolean;
+};
 const t = (key: string, label: string, extra: Partial<Field> = {}): Field => ({
   key,
   label,
@@ -81,6 +87,14 @@ export function formSpec(
       description: 'Edit this property’s details. Historical lease labels remain unchanged.',
       fields: [
         t('name', 'Property name'),
+        t('type', 'Property type', {
+          type: 'select',
+          context: 'property-type',
+          options: ['apartment', 'house', 'building', 'commercial'].map((value) => ({
+            value,
+            label: value,
+          })),
+        }),
         t('address', 'Street address'),
         t('city', 'City / commune'),
         t('notes', 'Notes', { type: 'textarea', required: false, max: 2000 }),
@@ -101,6 +115,42 @@ export function formSpec(
         t('label', 'Unit name'),
         ...money,
       ],
+    },
+    updateUnit: {
+      title: 'Edit this rental space.',
+      description:
+        'Update the name and rent for the next rental. Existing rental agreements, rent due and payments keep their original details.',
+      fields: [t('label', 'Unit name'), ...money],
+    },
+    deleteUnit: {
+      title: 'Delete this rental space?',
+      description:
+        'This space will disappear from your property list and will no longer be offered for new rentals. Rental and payment history stays available. You can restore it from Show deleted entries.',
+      fields: [],
+      submit: 'Delete',
+      destructive: true,
+    },
+    deleteProperty: {
+      title: 'Delete this property?',
+      description:
+        'This property and all its remaining spaces will disappear from your property list. Rental and payment history stays available. You can restore them from Show deleted entries. End all ongoing rentals first.',
+      fields: [],
+      submit: 'Delete',
+      destructive: true,
+    },
+    restoreUnit: {
+      title: 'Restore this rental space?',
+      description:
+        'This space will appear in your property list again, with its saved name and rent.',
+      fields: [],
+      submit: 'Restore',
+    },
+    restoreProperty: {
+      title: 'Restore this property?',
+      description:
+        'This property and the spaces deleted with it will appear again. Spaces deleted separately stay deleted.',
+      fields: [],
+      submit: 'Restore',
     },
     createLease: {
       title: 'Start a new chapter.',
@@ -233,6 +283,8 @@ export function formSpec(
 
 /** Map dialog values to the command contract, with only that action's references. */
 export function formPayload(action: string, spec: FormSpec, values: Record<string, any>) {
+  if (spec.destructive && values['confirmed'] !== true)
+    throw new Error('Confirm deletion to continue.');
   const payload: Record<string, any> = {};
   for (const field of spec.fields) {
     if (field.type === 'file') continue;
@@ -255,6 +307,11 @@ export function formPayload(action: string, spec: FormSpec, values: Record<strin
   }
   const references: Record<string, string> = {
     updateProperty: 'propertyId',
+    deleteProperty: 'propertyId',
+    restoreProperty: 'propertyId',
+    updateUnit: 'unitId',
+    deleteUnit: 'unitId',
+    restoreUnit: 'unitId',
     recordReceipt: 'chargeId',
     voidReceipt: 'receiptId',
     updateMaintenance: 'ticketId',

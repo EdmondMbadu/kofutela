@@ -360,6 +360,11 @@ async function perform(
     'createProperty',
     'updateProperty',
     'createUnit',
+    'updateUnit',
+    'deleteUnit',
+    'restoreUnit',
+    'deleteProperty',
+    'restoreProperty',
     'createLease',
     'endLease',
     'createInvite',
@@ -408,8 +413,10 @@ async function perform(
     }
     case 'updateProperty': {
       const ref = org.collection('properties').doc(p.propertyId);
-      await existing(tx, ref);
+      const property = await existing(tx, ref);
+      if (property['deletedAt']) fail('Restore this property before editing it.');
       tx.update(ref, {
+        ...(p.type ? { type: p.type } : {}),
         name: p.name,
         address: p.address,
         city: p.city,
@@ -421,7 +428,12 @@ async function perform(
       break;
     }
     case 'createUnit': {
-      await existing(tx, org.collection('properties').doc(p.propertyId));
+      const property = await existing(tx, org.collection('properties').doc(p.propertyId));
+      if (property['deletedAt']) fail('Restore this property before adding a unit.');
+      const units = await tx.get(
+        org.collection('units').where('propertyId', '==', p.propertyId).limit(401),
+      );
+      if (units.size >= 400) fail('This property has reached the limit of 400 units.');
       const ref = org.collection('units').doc();
       tx.create(ref, {
         propertyId: p.propertyId,
@@ -437,12 +449,90 @@ async function perform(
       result = { id: ref.id };
       break;
     }
+    case 'updateUnit':
+    case 'deleteUnit':
+    case 'restoreUnit': {
+      const ref = org.collection('units').doc(p.unitId);
+      const unit = await existing(tx, ref);
+      const property = await existing(tx, org.collection('properties').doc(unit['propertyId']));
+      if (property['deletedAt']) fail('Restore this property before changing its units.');
+      if (action === 'restoreUnit') {
+        if (!unit['deletedAt']) fail('This unit is already restored.');
+        tx.update(ref, {
+          deletedAt: null,
+          deletedBy: null,
+          deletedWithProperty: false,
+          updatedAt: now(),
+        });
+      } else {
+        if (unit['deletedAt']) fail('Restore this unit before editing it.');
+        if (action === 'deleteUnit') {
+          const leases = await tx.get(org.collection('leases').where('unitId', '==', ref.id));
+          if (unit['activeLeaseId'] || leases.docs.some((s) => s.data()['status'] === 'active'))
+            fail('End the ongoing rental before deleting this unit.');
+          tx.update(ref, {
+            deletedAt: now(),
+            deletedBy: who.uid,
+            deletedWithProperty: false,
+            updatedAt: now(),
+          });
+        } else {
+          // The advertised rent is independent of signed rental terms and their charges.
+          tx.update(ref, {
+            label: p.label,
+            rentMinor: p.rentMinor,
+            currency: p.currency,
+            updatedAt: now(),
+          });
+        }
+      }
+      entityId = ref.id;
+      break;
+    }
+    case 'deleteProperty':
+    case 'restoreProperty': {
+      const ref = org.collection('properties').doc(p.propertyId);
+      const property = await existing(tx, ref);
+      const restoring = action === 'restoreProperty';
+      if (restoring ? !property['deletedAt'] : !!property['deletedAt'])
+        fail(
+          restoring ? 'This property is already restored.' : 'This property is already deleted.',
+        );
+      const units = await tx.get(
+        org.collection('units').where('propertyId', '==', ref.id).limit(401),
+      );
+      if (units.size > 400)
+        fail('Manage units individually for properties with more than 400 units.');
+      const leases = await tx.get(org.collection('leases').where('propertyId', '==', ref.id));
+      if (
+        !restoring &&
+        (units.docs.some((s) => s.data()['activeLeaseId']) ||
+          leases.docs.some((s) => s.data()['status'] === 'active'))
+      )
+        fail('End all ongoing rentals in this property before deleting it.');
+      const change = {
+        deletedAt: restoring ? null : now(),
+        deletedBy: restoring ? null : who.uid,
+        updatedAt: now(),
+      };
+      tx.update(ref, change);
+      // Restore only the units removed with this property, not those deleted separately.
+      for (const unit of units.docs) {
+        const data = unit.data();
+        if (restoring ? data['deletedWithProperty'] : !data['deletedAt'])
+          tx.update(unit.ref, { ...change, deletedWithProperty: !restoring });
+      }
+      entityId = ref.id;
+      break;
+    }
     case 'createLease': {
       const unitRef = org.collection('units').doc(p.unitId);
       const unit = await existing(tx, unitRef);
+      if (unit['deletedAt']) fail('Restore this unit before starting a rental.');
       if (unit['activeLeaseId'])
         fail('This unit already has an active lease. End that lease before adding a new one.');
       const property = await existing(tx, org.collection('properties').doc(unit['propertyId']));
+      if (property['deletedAt']) fail('Restore this property before starting a rental.');
       const priorLeases = await tx.get(org.collection('leases').where('unitId', '==', p.unitId));
       if (
         priorLeases.docs.some(

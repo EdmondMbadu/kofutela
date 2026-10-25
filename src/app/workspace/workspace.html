@@ -762,7 +762,19 @@
                   [(ngModel)]="search"
                   placeholder="{{ 'Find a home by name or city…' | tr }}"
               /></label>
+              @if (hasDeletedEntries()) {
+                <label class="deleted-toggle"
+                  ><input type="checkbox" [(ngModel)]="showDeleted" />{{
+                    'Show deleted entries' | tr
+                  }}</label
+                >
+              }
             </div>
+            @if (occupiedUnits()) {
+              <p class="management-hint">
+                {{ 'End ongoing rentals before deleting their property or rental space.' | tr }}
+              </p>
+            }
             <div class="kpi-row standalone">
               <div>
                 <small>{{ 'Properties' | tr }}</small
@@ -783,28 +795,63 @@
             </div>
             <div class="property-grid">
               @for (p of visible('properties'); track p.id) {
-                <article class="panel prop-card">
+                <article class="panel prop-card" [class.deleted-entry]="!!p.deletedAt">
                   <div class="prop-head">
                     <span class="li-icon"><kf-icon name="building" /></span>
                     <span class="li-text"
                       ><strong>{{ p.name }}</strong
-                      ><small>{{ p.address }} · {{ p.city }}</small></span
+                      ><small>{{ p.address }} · {{ p.city }}</small>
+                      <span class="property-meta">
+                        <span class="badge">{{ p.type | tr: 'property-type' }}</span>
+                        @if (p.deletedAt) {
+                          <span class="badge">{{ 'Deleted property' | tr }}</span>
+                        }
+                      </span></span
                     >
-                    <span class="badge">{{ p.type | tr: 'property-type' }}</span>
-                    <button
-                      class="icon-button"
-                      (click)="open('updateProperty', p)"
-                      [attr.aria-label]="('Edit' | tr) + ' ' + p.name"
-                    >
-                      <kf-icon name="settings" />
-                    </button>
+                    <div class="property-controls">
+                      @if (p.deletedAt) {
+                        <button
+                          class="icon-button record-action"
+                          [disabled]="busy()"
+                          (click)="open('restoreProperty', p)"
+                          [attr.aria-label]="('Restore' | tr) + ' ' + p.name"
+                          [title]="('Restore' | tr) + ' ' + p.name"
+                        >
+                          <kf-icon name="restore" />
+                        </button>
+                      } @else {
+                        <button
+                          class="icon-button record-action"
+                          [disabled]="busy()"
+                          (click)="open('updateProperty', p)"
+                          [attr.aria-label]="('Edit' | tr) + ' ' + p.name"
+                          [title]="('Edit' | tr) + ' ' + p.name"
+                        >
+                          <kf-icon name="edit" />
+                        </button>
+                        <button
+                          class="icon-button record-action danger-action"
+                          [disabled]="busy() || propertyHasOngoingRental(p.id)"
+                          (click)="open('deleteProperty', p)"
+                          [attr.aria-label]="('Delete' | tr) + ' ' + p.name"
+                          [title]="
+                            (propertyHasOngoingRental(p.id)
+                              ? 'End ongoing rentals before deleting their property or rental space.'
+                              : 'Delete this property?'
+                            ) | tr
+                          "
+                        >
+                          <kf-icon name="trash" />
+                        </button>
+                      }
+                    </div>
                   </div>
                   @if (p.notes) {
                     <p class="prop-notes">{{ displayText(p, 'notes') }}</p>
                   }
                   <ul class="list">
                     @for (u of propertyUnits(p.id); track u.id) {
-                      <li class="list-item">
+                      <li class="list-item unit-row" [class.deleted-entry]="!!u.deletedAt">
                         <span class="li-icon soft"><kf-icon name="home" /></span>
                         <span class="li-text"
                           ><strong>{{ u.label }}</strong
@@ -813,14 +860,61 @@
                           ></span
                         >
                         <span [class]="'badge ' + (u.activeLeaseId ? 'green' : '')">{{
-                          (u.activeLeaseId ? 'occupied' : 'available') | tr: 'unit'
+                          u.deletedAt
+                            ? ('Deleted' | tr)
+                            : ((u.activeLeaseId ? 'occupied' : 'available') | tr: 'unit')
                         }}</span>
+                        @if (!p.deletedAt) {
+                          <span class="unit-controls">
+                            @if (u.deletedAt) {
+                              <button
+                                class="icon-button record-action"
+                                [disabled]="busy()"
+                                (click)="open('restoreUnit', u)"
+                                [attr.aria-label]="('Restore' | tr) + ' ' + u.label"
+                                [title]="('Restore' | tr) + ' ' + u.label"
+                              >
+                                <kf-icon name="restore" />
+                              </button>
+                            } @else {
+                              <button
+                                class="icon-button record-action"
+                                [disabled]="busy()"
+                                (click)="open('updateUnit', u)"
+                                [attr.aria-label]="('Edit' | tr) + ' ' + u.label"
+                                [title]="('Edit' | tr) + ' ' + u.label"
+                              >
+                                <kf-icon name="edit" />
+                              </button>
+                              <button
+                                class="icon-button record-action danger-action"
+                                [disabled]="busy() || !!u.activeLeaseId"
+                                (click)="open('deleteUnit', u)"
+                                [attr.aria-label]="('Delete' | tr) + ' ' + u.label"
+                                [title]="
+                                  (u.activeLeaseId
+                                    ? 'End ongoing rentals before deleting their property or rental space.'
+                                    : 'Delete this rental space?'
+                                  ) | tr
+                                "
+                              >
+                                <kf-icon name="trash" />
+                              </button>
+                            }
+                          </span>
+                        }
                       </li>
                     }
                   </ul>
-                  <button class="add-line" (click)="open('createUnit', { propertyId: p.id })">
-                    <kf-icon name="plus" /> {{ ' Add a unit ' | tr }}
-                  </button>
+                  @if (!p.deletedAt) {
+                    <button
+                      class="add-line"
+                      [disabled]="busy()"
+                      (click)="open('createUnit', { propertyId: p.id })"
+                    >
+                      <kf-icon name="plus" /> {{ ' Add a unit ' | tr }}
+                    </button>
+                  }
                 </article>
               } @empty {
                 <section class="panel empty">
@@ -1258,6 +1352,13 @@
       <span class="eyebrow">{{ 'A little more together' | tr }}</span>
       <h2 id="dialog-title">{{ spec.title | tr }}</h2>
       <p class="dialog-description">{{ spec.description | tr }}</p>
+      @if (
+        ['updateUnit', 'deleteUnit', 'restoreUnit', 'deleteProperty', 'restoreProperty'].includes(
+          action
+        )
+      ) {
+        <p class="dialog-target">{{ form.label || form.name }}</p>
+      }
       @if (formError()) {
         <div class="error" role="alert">{{ formError() | tr }}</div>
       }
@@ -1336,10 +1437,26 @@
               </label>
             }
           </div>
+          @if (spec.destructive) {
+            <label class="delete-confirmation"
+              ><input
+                type="checkbox"
+                name="confirmed"
+                [(ngModel)]="form.confirmed"
+                required
+                [disabled]="busy()"
+              />{{ 'I confirm I want to delete this entry.' | tr }}</label
+            >
+          }
           <div class="form-actions">
             <button type="button" class="button secondary" [disabled]="busy()" (click)="close()">
               {{ ' Cancel' | tr }}</button
-            ><button type="submit" class="button" [disabled]="busy()">
+            ><button
+              type="submit"
+              class="button"
+              [class.destructive]="spec.destructive"
+              [disabled]="busy() || (spec.destructive && !form.confirmed)"
+            >
               {{ (busy() ? 'Saving…' : spec.submit || 'Save changes') + ' ' | tr
               }}<kf-icon name="arrow" />
             </button>

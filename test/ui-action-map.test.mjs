@@ -27,6 +27,7 @@ const options = {
   owner: true,
 };
 const values = {
+  confirmed: true,
   displayName: 'Test Owner',
   name: 'Test Portfolio',
   currency: 'USD',
@@ -70,6 +71,11 @@ test('every workspace dialog button maps to an exact backend payload contract', 
       'createProperty',
       'updateProperty',
       'createUnit',
+      'updateUnit',
+      'deleteUnit',
+      'restoreUnit',
+      'deleteProperty',
+      'restoreProperty',
       'createLease',
       'endLease',
       'recordReceipt',
@@ -89,14 +95,12 @@ test('every workspace dialog button maps to an exact backend payload contract', 
       const payload = formPayload(action, spec, values);
       if (action === 'uploadDocument') {
         assert.deepEqual(Object.keys(payload).sort(), ['leaseId', 'title']);
-        schemas.prepareDocument
-          .strict()
-          .parse({
-            ...payload,
-            fileName: 'fixture.pdf',
-            contentType: 'application/pdf',
-            size: 100,
-          });
+        schemas.prepareDocument.strict().parse({
+          ...payload,
+          fileName: 'fixture.pdf',
+          contentType: 'application/pdf',
+          size: 100,
+        });
       } else {
         assert.ok(schemas[action], `${action} has no backend command`);
         schemas[action].strict().parse(payload);
@@ -125,4 +129,18 @@ test('dialog mapping validates values and converts currency amounts to integer m
     () => formPayload('createLease', formSpec('createLease', { ...options, units: [] }), values),
     /Available unit/,
   );
+});
+
+test('deletion needs explicit confirmation and sends only the selected record reference', () => {
+  for (const [action, reference] of [
+    ['deleteUnit', 'unitId'],
+    ['deleteProperty', 'propertyId'],
+  ]) {
+    const spec = formSpec(action, options);
+    assert.throws(
+      () => formPayload(action, spec, { ...values, confirmed: false }),
+      /Confirm deletion/,
+    );
+    assert.deepEqual(formPayload(action, spec, values), { [reference]: values[reference] });
+  }
 });

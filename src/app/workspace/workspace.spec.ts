@@ -100,6 +100,11 @@ describe('Portfolio setup', () => {
   });
   for (const [action, reference] of [
     ['updateProperty', 'propertyId'],
+    ['updateUnit', 'unitId'],
+    ['deleteUnit', 'unitId'],
+    ['restoreUnit', 'unitId'],
+    ['deleteProperty', 'propertyId'],
+    ['restoreProperty', 'propertyId'],
     ['recordReceipt', 'chargeId'],
     ['voidReceipt', 'receiptId'],
     ['updateMaintenance', 'ticketId'],
@@ -116,6 +121,9 @@ describe('Portfolio setup', () => {
         endDate: '2026-12-31',
       });
       Object.assign(page.form, {
+        confirmed: true,
+        label: 'Updated rental space',
+        rent: 123.45,
         name: 'Updated home',
         address: 'Test address',
         city: 'Kinshasa',
@@ -160,5 +168,74 @@ describe('Portfolio setup', () => {
     await page.load();
     expect(page.error()).toContain('Connection interrupted');
     expect(page.loading()).toBeFalse();
+  });
+  it('prefills unit details and requires fresh confirmation each time a delete form opens', async () => {
+    const page = await setup();
+    const unit = { id: 'unit', label: 'Logement principal', rentMinor: 10025, currency: 'CDF' };
+    page.open('updateUnit', unit);
+    expect(page.form.unitId).toBe('unit');
+    expect(page.form.label).toBe('Logement principal');
+    expect(page.form.rent).toBe(100.25);
+    expect(page.form.currency).toBe('CDF');
+    page.open('deleteUnit', unit);
+    await page.submit();
+    expect(TestBed.inject(Cloud).command).not.toHaveBeenCalled();
+    expect(page.formError()).toContain('Confirm deletion');
+    page.form.confirmed = true;
+    page.open('deleteProperty', { id: 'home', name: 'My property' });
+    expect(page.form.confirmed).toBeFalse();
+  });
+  it('excludes deleted records from counts, dashboard and rental selectors while keeping restore access', async () => {
+    const page = await setup();
+    page.data.set({
+      properties: [
+        { id: 'home', name: 'Home' },
+        { id: 'gone', name: 'Deleted', deletedAt: 'date' },
+      ],
+      units: [
+        { id: 'one', propertyId: 'home', label: 'Laurette' },
+        { id: 'two', propertyId: 'home', label: 'Principal', deletedAt: 'date' },
+        { id: 'three', propertyId: 'gone', label: 'Hidden with parent' },
+      ],
+      leases: [{ id: 'past', status: 'ended', unitId: 'two' }],
+    });
+    expect(page.rows('properties').length).toBe(1);
+    expect(page.rows('units').length).toBe(1);
+    expect(page.availableUnits().map((u) => u.id)).toEqual(['one']);
+    expect(page.rows('leases').length).toBe(1);
+    expect(page.hasDeletedEntries()).toBeTrue();
+    page.showDeleted = true;
+    expect(page.visible('properties').length).toBe(2);
+    expect(page.propertyUnits('home').length).toBe(2);
+    page.open('createLease');
+    expect(page.spec?.fields.find((f) => f.key === 'unitId')?.options?.map((o) => o.value)).toEqual(
+      ['one'],
+    );
+    page.search = 'laurette';
+    expect(page.visible('properties').map((p) => p.id)).toEqual(['home']);
+  });
+  it('deletes and restores demo records without reviving a separately deleted unit', async () => {
+    const page = await setup();
+    page.demo = true;
+    const property = { id: 'home', name: 'Maison' };
+    const units = [
+      { id: 'one', propertyId: 'home', label: 'One' },
+      { id: 'two', propertyId: 'home', label: 'Two' },
+    ];
+    page.data.set({ properties: [property], units, leases: [] });
+    for (const [action, row] of [
+      ['deleteUnit', units[0]],
+      ['deleteProperty', property],
+      ['restoreProperty', property],
+    ] as const) {
+      page.open(action, row);
+      page.form.confirmed = true;
+      await page.submit();
+      expect(page.formError()).toBe('');
+    }
+    expect(page.rows('units').map((u) => u.id)).toEqual(['two']);
+    page.open('restoreUnit', units[0]);
+    await page.submit();
+    expect(page.rows('units').length).toBe(2);
   });
 });

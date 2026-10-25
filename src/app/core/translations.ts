@@ -1,5 +1,55 @@
 // English interface text is the lookup key. Stored names, addresses and messages are never translated.
 export const FRENCH: Record<string, string> = {
+  'Property restored': 'Propriété restaurée',
+  'Property deleted': 'Propriété supprimée',
+  'Rental unit restored': 'Logement ou local restauré',
+  'Rental unit deleted': 'Logement ou local supprimé',
+  'Rental unit updated': 'Logement ou local modifié',
+  'Manage units individually for properties with more than 400 units.':
+    'Pour une propriété de plus de 400 logements et locaux, gérez chaque élément séparément.',
+  'This property has reached the limit of 400 units.':
+    'Cette propriété a atteint la limite de 400 logements et locaux.',
+  'This property is already deleted.': 'Cette propriété est déjà supprimée.',
+  'This property is already restored.': 'Cette propriété est déjà restaurée.',
+  'This unit is already restored.': 'Ce logement ou local est déjà restauré.',
+  'Restore this property before starting a rental.':
+    'Restaurez cette propriété avant d’y ajouter un locataire.',
+  'Restore this unit before starting a rental.':
+    'Restaurez ce logement ou local avant d’y ajouter un locataire.',
+  'Restore this unit before editing it.': 'Restaurez ce logement ou local avant de le modifier.',
+  'Restore this property before changing its units.':
+    'Restaurez cette propriété avant de modifier ses logements ou locaux.',
+  'Restore this property before adding a unit.':
+    'Restaurez cette propriété avant d’y ajouter un logement ou un local.',
+  'Restore this property before editing it.': 'Restaurez cette propriété avant de la modifier.',
+  'End all ongoing rentals in this property before deleting it.':
+    'Terminez toutes les locations en cours dans cette propriété avant de la supprimer.',
+  'End the ongoing rental before deleting this unit.':
+    'Terminez la location en cours avant de supprimer ce logement ou local.',
+  'End ongoing rentals before deleting their property or rental space.':
+    'Terminez les locations en cours avant de supprimer la propriété, le logement ou le local concerné.',
+  'Confirm deletion to continue.': 'Confirmez la suppression pour continuer.',
+  'I confirm I want to delete this entry.': 'Je confirme la suppression de cet élément.',
+  'This property and the spaces deleted with it will appear again. Spaces deleted separately stay deleted.':
+    'Cette propriété et les logements et locaux supprimés avec elle seront de nouveau visibles. Ceux que vous aviez supprimés séparément ne seront pas restaurés.',
+  'Restore this property?': 'Restaurer cette propriété ?',
+  'This space will appear in your property list again, with its saved name and rent.':
+    'Ce logement ou local sera de nouveau visible dans votre liste, avec son nom et son loyer enregistrés.',
+  'Restore this rental space?': 'Restaurer ce logement ou local ?',
+  'This property and all its remaining spaces will disappear from your property list. Rental and payment history stays available. You can restore them from Show deleted entries. End all ongoing rentals first.':
+    'Cette propriété et ses logements et locaux seront retirés de votre liste. L’historique des locations et des paiements reste accessible. Vous pourrez les restaurer en cochant « Afficher les éléments supprimés ». Terminez d’abord les locations en cours.',
+  'Delete this property?': 'Supprimer cette propriété ?',
+  'This space will disappear from your property list and will no longer be offered for new rentals. Rental and payment history stays available. You can restore it from Show deleted entries.':
+    'Ce logement ou local sera retiré de votre liste et ne pourra plus être proposé à un nouveau locataire. L’historique des locations et des paiements reste accessible. Pour le restaurer, cochez « Afficher les éléments supprimés ».',
+  'Delete this rental space?': 'Supprimer ce logement ou local ?',
+  'Update the name and rent for the next rental. Existing rental agreements, rent due and payments keep their original details.':
+    'Modifiez le nom et le loyer pour la prochaine location. Les locations déjà enregistrées, les loyers à payer et les paiements conservent leurs informations d’origine.',
+  'Edit this rental space.': 'Modifier ce logement ou local',
+  Restore: 'Restaurer',
+  Delete: 'Supprimer',
+  Deleted: 'Supprimé',
+  'Deleted property': 'Supprimée',
+  'Show deleted entries': 'Afficher les éléments supprimés',
   'Sign in to continue.': 'Connectez-vous pour continuer.',
   'Verify your email before managing your portfolio.':
     'Vérifiez votre adresse e-mail avant de gérer votre parc immobilier.',

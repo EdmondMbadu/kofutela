@@ -69,12 +69,18 @@ export const schemas = {
   }),
   updateProperty: z.object({
     propertyId: id,
+    type: z.enum(['apartment', 'house', 'building', 'commercial']).optional(),
     name: shortText,
     address: shortText,
     city: shortText,
     notes: text(),
   }),
   createUnit: z.object({ propertyId: id, label: shortText, rentMinor: money, currency }),
+  updateUnit: z.object({ unitId: id, label: shortText, rentMinor: money, currency }),
+  deleteUnit: z.object({ unitId: id }),
+  restoreUnit: z.object({ unitId: id }),
+  deleteProperty: z.object({ propertyId: id }),
+  restoreProperty: z.object({ propertyId: id }),
   createLease: z.object({
     unitId: id,
     tenantName: shortText,
