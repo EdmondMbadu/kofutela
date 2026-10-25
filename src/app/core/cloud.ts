@@ -4,6 +4,7 @@ import type { Firestore, QueryConstraint } from 'firebase/firestore';
 import type { Functions } from 'firebase/functions';
 import type { FirebaseStorage } from 'firebase/storage';
 import { accountContinueUrl } from './auth-flow';
+import { verifiedSession } from './verified-session';
 export type Row = any;
 export const firebaseConfig = {
   projectId: 'kofutela',
@@ -15,6 +16,7 @@ export const firebaseConfig = {
 };
 export function errorMessage(e: unknown): string {
   const error = e as { code?: string; message?: string };
+  const code = error.code?.replace(/^functions\//, '') || '';
   const messages: Record<string, string> = {
     'auth/invalid-credential': 'The email or password is not correct.',
     'auth/email-already-in-use': 'An account already uses this email. Try signing in.',
@@ -30,24 +32,31 @@ export function errorMessage(e: unknown): string {
     'auth/user-disabled': 'This account has been disabled. Please contact support.',
     'auth/user-token-expired': 'Your session has expired. Please sign in again.',
     'auth/requires-recent-login': 'Please sign in again to continue.',
+    'auth/email-not-verified': 'Verify your email before managing your portfolio.',
+    'auth/login-required': 'Sign in to continue.',
     'permission-denied': 'You do not have access to these records.',
     unavailable: 'The service is temporarily unavailable. Please try again.',
   };
   return (
-    messages[error.code || ''] ||
-    error.message?.replace(/^Firebase: /, '').replace(/\s*\(auth\/.*\)\.?$/, '') ||
+    messages[code] ||
+    error.message
+      ?.replace(/^Firebase: /, '')
+      .replace(/\s*\(auth\/.*\)\.?$/, '')
+      .replace(/\s*\[\d{3}\]\s*$/, '') ||
     'Something went wrong. Please try again.'
   );
 }
 @Injectable({ providedIn: 'root' })
 export class Cloud {
-  user = signal<User | null>(null);
+  // Firebase mutates User instances in place when reloading an email verification.
+  user = signal<User | null>(null, { equal: () => false });
   session = signal<Row>(null);
   auth!: Auth;
   db!: Firestore;
   functions!: Functions;
   storage!: FirebaseStorage;
   private started?: Promise<void>;
+  private verificationCheck?: Promise<boolean>;
   start(): Promise<void> {
     return (this.started ||= this.initialize().catch((e) => {
       this.started = undefined;
@@ -109,8 +118,27 @@ export class Cloud {
     return result;
   }
   async call(name: string, data: Row): Promise<Row> {
+    await this.start();
+    const verified = await this.checkVerification(false);
+    if (!this.auth.currentUser) throw { code: 'auth/login-required' };
+    if (name !== 'session' && !verified) throw { code: 'auth/email-not-verified' };
     const { httpsCallable } = await import('firebase/functions');
-    return (await httpsCallable(this.functions, name)(data)).data;
+    const invoke = () => httpsCallable(this.functions, name)(data);
+    try {
+      return (await invoke()).data;
+    } catch (error) {
+      // This rejection happens before any command writes. Keep the original UUID
+      // when retrying so a recovered session cannot duplicate an operation.
+      const failure = error as { code?: string; details?: { reason?: string }; message?: string };
+      if (
+        failure.code === 'functions/failed-precondition' &&
+        (failure.details?.reason === 'email-verification-required' ||
+          failure.message?.startsWith('Verify your email before managing your portfolio.')) &&
+        (await this.checkVerification(true))
+      )
+        return (await invoke()).data;
+      throw error;
+    }
   }
   async command(
     action: string,
@@ -141,14 +169,24 @@ export class Cloud {
       url: accountContinueUrl(location.origin, returnTo),
     });
   }
-  async checkVerification() {
-    const a = await import('firebase/auth');
-    if (this.auth.currentUser) {
-      await a.reload(this.auth.currentUser);
-      await a.getIdToken(this.auth.currentUser, true);
-      this.user.set(this.auth.currentUser);
+  async checkVerification(forceRefresh = true): Promise<boolean> {
+    await this.start();
+    if (this.verificationCheck) return this.verificationCheck;
+    const current = this.auth.currentUser;
+    if (!current) {
+      this.user.set(null);
+      return false;
     }
-    return this.auth.currentUser?.emailVerified;
+    this.verificationCheck = verifiedSession(current, forceRefresh)
+      .then((verified) => {
+        if (this.auth.currentUser?.uid !== current.uid) return false;
+        this.user.set(current);
+        return verified;
+      })
+      .finally(() => {
+        this.verificationCheck = undefined;
+      });
+    return this.verificationCheck;
   }
   async reset(email: string, returnTo?: string) {
     const a = await import('firebase/auth');

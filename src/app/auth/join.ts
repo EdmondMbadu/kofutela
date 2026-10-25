@@ -159,6 +159,7 @@ export class Join {
   async init() {
     try {
       await this.cloud.start();
+      if (this.cloud.user()) await this.cloud.checkVerification();
       this.displayName = this.cloud.user()?.displayName || '';
     } catch (e) {
       this.error.set(errorMessage(e));

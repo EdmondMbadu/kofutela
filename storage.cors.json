@@ -1,0 +1,15 @@
+[
+  {
+    "origin": [
+      "https://kofutela.web.app",
+      "https://kofutela.firebaseapp.com",
+      "https://kofutela.com",
+      "https://www.kofutela.com",
+      "http://localhost:4200",
+      "http://127.0.0.1:4200"
+    ],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

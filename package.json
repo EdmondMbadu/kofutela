@@ -10,9 +10,11 @@
     "test:domain": "npm --prefix functions test",
     "test:rules": "node --test test/rules.test.mjs",
     "test:workflows": "node --test test/workflows.test.mjs",
-    "test:accounts": "node --test test/account-flow.test.mjs",
+    "test:accounts": "node --experimental-strip-types --test test/account-flow.test.mjs",
+    "test:ui-actions": "npm --prefix functions run build && node --experimental-strip-types --test test/ui-action-map.test.mjs",
     "test:seo": "node --test test/seo.test.mjs",
     "auth:domains": "node scripts/auth-domains.cjs",
+    "storage:cors": "node scripts/storage-cors.cjs",
     "emulators": "npx -y firebase-tools@latest emulators:start --only auth,firestore,functions,storage --project demo-kofutela",
     "deploy": "npx -y firebase-tools@latest deploy --project kofutela"
   },

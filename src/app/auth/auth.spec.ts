@@ -17,6 +17,7 @@ describe('Account creation and recovery', () => {
     mode = 'signup',
     user: ReturnType<typeof account> | null = null,
     returnTo = '/join?token=test-invitation',
+    typedEmail = '',
   ) {
     const cloud = {
       user: signal(user),
@@ -25,7 +26,9 @@ describe('Account creation and recovery', () => {
       signup: jasmine.createSpy('signup').and.callFake(async () => cloud.user.set(account())),
       login: jasmine.createSpy('login').and.resolveTo(),
       reset: jasmine.createSpy('reset').and.resolveTo(),
-      checkVerification: jasmine.createSpy('checkVerification').and.resolveTo(false),
+      checkVerification: jasmine
+        .createSpy('checkVerification')
+        .and.callFake(async () => cloud.user()?.emailVerified === true),
       sendVerification: jasmine.createSpy('sendVerification').and.resolveTo(),
       logout: jasmine.createSpy('logout').and.callFake(async () => cloud.user.set(null)),
     };
@@ -51,6 +54,7 @@ describe('Account creation and recovery', () => {
     spyOn(router, 'navigate').and.resolveTo(true);
     const fixture = TestBed.createComponent(AuthPage);
     const page = fixture.componentInstance;
+    page.email = typedEmail;
     await page.init();
     fixture.detectChanges();
     return { page, cloud, navigate, router, fixture };
@@ -77,6 +81,10 @@ describe('Account creation and recovery', () => {
     await page.submit();
     expect(cloud.signup).not.toHaveBeenCalled();
     expect(page.error()).toContain('acknowledge');
+  });
+  it('keeps an email typed while Firebase is still initializing', async () => {
+    const { page } = await setup('login', null, '/app', 'typed@example.test');
+    expect(page.email).toBe('typed@example.test');
   });
   it('keeps a created account recoverable when the first verification email fails', async () => {
     const { page, cloud } = await setup();

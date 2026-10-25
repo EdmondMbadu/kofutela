@@ -77,6 +77,12 @@ export class I18n {
       return `sur ${match[1]} prévus ce mois-ci`;
     if ((match = value.match(/^Joining as (.+)$/)))
       return `Vous rejoignez le logement avec ${match[1]}`;
+    if ((match = value.match(/^Please complete: (.+)\.$/)))
+      return `Veuillez compléter : ${this.t(match[1])}.`;
+    if ((match = value.match(/^Check the value for: (.+)\.$/)))
+      return `Vérifiez la valeur de : ${this.t(match[1])}.`;
+    if ((match = value.match(/^Choose an available option for: (.+)\.$/)))
+      return `Choisissez une option disponible pour : ${this.t(match[1])}.`;
     if ((match = value.match(/^([0-9]+) units? · (building|house|apartment|commercial)$/)))
       return `${match[1]} logement${match[1] === '1' ? '' : 's'} · ${this.t(match[2])}`;
     if ((match = value.match(/^(\d{4}-\d{2}) · Keep the whole picture in view\.$/)))

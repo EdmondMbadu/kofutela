@@ -42,6 +42,30 @@ Open `http://localhost:4200/login?emulator=1` to explicitly opt into the local d
 4. Tenant path: `/join?token=…` carries its invitation through signup, verification, login and password recovery. The tenant signs in with the invited email and accepts the invitation instead of creating a portfolio. A different account can be selected without losing the invitation. Invitations expire after seven days and are email-bound and single-use.
 5. Returning users: verified login/signup sessions resume the requested private route automatically. Password recovery remains accessible even when the current account is unverified. External redirect destinations are rejected.
 
+Protected calls synchronize both the Firebase user record and the ID token's `email_verified` claim. A saved verified profile alone is insufficient for Firestore/Storage access. The server also checks the authoritative Auth record when an older valid token still says unverified, while rejecting unverified, disabled, or email-mismatched records. Verification failures can refresh and retry once with the same command UUID; other errors are not retried automatically.
+
+Authenticated document downloads allow the four production origins and development at `http://localhost:4200` / `http://127.0.0.1:4200`. `storage.cors.json` records those origins; `npm run storage:cors` merges missing origins without removing existing CORS rules and verifies the live bucket. The Storage predeploy hook runs it automatically. This does not make document bytes public.
+
+### UI action map
+
+| UI control | Backend operation | Result |
+| --- | --- | --- |
+| Create portfolio | `createWorkspace` | Organization, owner membership, profile, saved setup progress |
+| Add/edit property; add unit | `createProperty`, `updateProperty`, `createUnit` | Persisted properties/units; refreshed list |
+| Add lease; end lease | `createLease`, `endLease` | Available unit only; rent/currency prefill; schedule or historical termination |
+| Invite tenant; accept invitation | `createInvite`, `acceptInvite` | Private email-bound link; tenant membership |
+| Record/correct receipt | `recordReceipt`, `voidReceipt` | Integer minor units; correct charge/receipt ID; immutable history |
+| New/update maintenance | `createMaintenance`, `updateMaintenance` | Scoped lease and ticket; allowed status transition |
+| Send message; switch conversation | `sendMessage`, scoped message query | Correct lease; draft/request ID reset on conversation change |
+| Upload/download document | `prepareDocument`, Storage upload, `finalizeDocument`; authenticated download | File validation and private lease access |
+| Edit name/portfolio | `updateProfile`, `updateWorkspace` | Saved settings and refreshed session |
+| Support request/reply | `createSupport`, `updateSupport` | Private ticket and reply; works before portfolio creation |
+| Platform access | `setPlatformRole`, `adminOverview` | Server-enforced administrator permissions |
+| Month/currency/report export | Scoped queries and `exportCsv` | Separate currencies and formula-safe CSV |
+| Portfolio selector; refresh; logout | Membership query, scoped data reload, Firebase sign-out | Stale loads discarded; account errors surfaced |
+
+`test:ui-actions` extracts every dialog action from the actual template, builds its production payload, and validates it against the exact server schema. Component tests also exercise record IDs, form retries, unit defaults, support loading, and verification mismatches.
+
 Verification and recovery links return to the originating host, including the development port. Authorized hosts are `localhost`, `127.0.0.1`, `kofutela.web.app`, `kofutela.firebaseapp.com`, `kofutela.com`, and `www.kofutela.com`. Hostnames have no protocol, port, slash, or trailing dot. Authorizing a custom domain does not configure its DNS or Hosting certificate.
 
 `firebase-tools` 15.8 deploys Auth providers but **ignores** `auth.authorizedDomains`. The Auth predeploy hook runs `npm run auth:domains` to merge the configured hosts into the live allowlist, preserve other existing hosts, and read back the result. It reuses the installed CLI's existing authenticated client (or application default credentials); it never prints tokens. Run `npm run auth:domains` independently to repair or verify live domains. The helper uses internal CLI APIs, so verify it when upgrading `firebase-tools`.
@@ -53,6 +77,7 @@ npm run test:domain
 npm run test:rules
 npm run test:workflows
 npm run test:accounts
+npm run test:ui-actions
 npm run build
 npm run test:seo
 ```
@@ -63,7 +88,7 @@ Rules, workflow, and account tests require running emulators. They use **only** 
 
 All Firestore client writes are denied. Bounded Zod-validated callable commands enforce ownership, verified email and lease membership inside transactions. Currency uses integer minor units (two decimal places), never floating-point ledger arithmetic. UUID request receipts deduplicate retried operations; concurrent receipts cannot over-allocate. Corrections retain the original entry and reason. Ending a lease preserves past records and cancels later unpaid charges. Overlapping leases are rejected.
 
-Tenants can query only their leases and related records. User profiles and support requests stay account-private. Platform admins see counts and support, **not** unrestricted portfolio data. Storage creates require owner identity and server-prepared exact path, size and MIME metadata. Files become readable only after server finalization. Overwrite/delete/list are denied. The app uses authenticated byte downloads, not public token links. CORS allows only Kofutela Hosting/custom-domain origins.
+Tenants can query only their leases and related records. User profiles and support requests stay account-private. Platform admins see counts and support, **not** unrestricted portfolio data. Storage creates require owner identity and server-prepared exact path, size and MIME metadata. Files become readable only after server finalization. Overwrite/delete/list are denied. The app uses authenticated byte downloads, not public token links. CORS allows Kofutela Hosting/custom-domain origins and the two explicit local development origins in `storage.cors.json`.
 
 ## Deployment
 

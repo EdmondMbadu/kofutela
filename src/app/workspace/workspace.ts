@@ -16,7 +16,7 @@ import { I18n, TrPipe } from '../core/i18n';
 import { Icon } from '../shared/icon';
 import { LanguageSwitcher } from '../shared/language-switcher';
 import { demoData, DemoSession } from './demo';
-import { FormSpec, formSpec } from './forms';
+import { FormSpec, formSpec, formPayload } from './forms';
 export const SECTIONS = [
   'dashboard',
   'properties',
@@ -130,7 +130,7 @@ export class Workspace implements OnDestroy {
         this.demo ? 'demo' : 'app',
         true,
       );
-      if (this.ready() && this.org()) void this.load();
+      if (this.ready()) void this.load();
     });
     if (isPlatformBrowser(inject(PLATFORM_ID))) void this.init();
   }
@@ -315,6 +315,9 @@ export class Workspace implements OnDestroy {
   activeLeases() {
     return this.rows('leases').filter((l) => l.status === 'active');
   }
+  availableUnits() {
+    return this.rows('units').filter((unit) => !unit.activeLeaseId);
+  }
   activityIcon(action: string) {
     return action === 'recordReceipt' || action === 'voidReceipt'
       ? 'wallet'
@@ -345,7 +348,7 @@ export class Workspace implements OnDestroy {
         return;
       }
       await this.cloud.start();
-      if (!this.cloud.user() || !this.cloud.user()?.emailVerified) {
+      if (!this.cloud.user() || !(await this.cloud.checkVerification())) {
         await this.router.navigate(['/login'], { queryParams: { returnTo: this.router.url } });
         return;
       }
@@ -364,11 +367,19 @@ export class Workspace implements OnDestroy {
   async selectOrg(id: string) {
     this.error.set('');
     this.loading.set(true);
+    const selection = ++this.generation;
     try {
       const membership = this.memberships.find((m) => m.id === id);
       if (!membership) return;
+      const organization = await this.cloud.document(`organizations/${id}`);
+      if (selection !== this.generation) return;
+      if (!organization)
+        throw new Error('This portfolio is no longer available. Refresh and select another.');
       this.role = membership.role;
-      this.org.set(await this.cloud.document(`organizations/${id}`));
+      this.org.set(organization);
+      this.data.set({});
+      this.message = '';
+      this.messageRequest = undefined;
       this.currency = this.org().currency;
       this.leaseId = '';
       localStorage.setItem('kf-workspace', id);
@@ -376,15 +387,25 @@ export class Workspace implements OnDestroy {
         await this.router.navigate([this.base, 'dashboard']);
       await this.load();
     } catch (e) {
-      this.error.set(errorMessage(e));
+      if (selection === this.generation) this.error.set(errorMessage(e));
     } finally {
-      this.loading.set(false);
+      if (selection === this.generation) this.loading.set(false);
     }
   }
   async load() {
     if (this.demo) return;
     if (!this.org()) {
-      if (this.section() === 'support') await this.loadSupport();
+      if (this.section() === 'support') {
+        this.loading.set(true);
+        this.error.set('');
+        try {
+          await this.loadSupport();
+        } catch (e) {
+          this.error.set(errorMessage(e));
+        } finally {
+          this.loading.set(false);
+        }
+      }
       return;
     }
     const generation = ++this.generation;
@@ -468,6 +489,11 @@ export class Workspace implements OnDestroy {
       this.demoSession.month = this.month;
     } else await this.load();
   }
+  async leaseChanged() {
+    this.message = '';
+    this.messageRequest = undefined;
+    await this.load();
+  }
   switchDemo() {
     this.demoTenant = !this.demoTenant;
     this.demoSession.tenant = this.demoTenant;
@@ -476,6 +502,11 @@ export class Workspace implements OnDestroy {
     void this.router.navigate(['/demo', 'dashboard']);
   }
   open(action: string, row?: Row) {
+    if (this.busy()) return;
+    if (action === 'createLease' && !this.availableUnits().length) {
+      this.error.set('Add an available unit before creating a lease.');
+      return;
+    }
     this.action = action;
     this.formError.set('');
     this.resultLink = '';
@@ -506,11 +537,14 @@ export class Workspace implements OnDestroy {
       ...row,
     };
     if (row) {
-      this.form.propertyId = row.propertyId || row.id;
-      this.form.chargeId = row.id;
-      this.form.receiptId = row.id;
-      this.form.ticketId = row.id;
-      if (['endLease'].includes(action)) this.form.leaseId = row.id;
+      if (action === 'updateProperty') this.form.propertyId = row.id;
+      if (action === 'recordReceipt') this.form.chargeId = row.id;
+      if (action === 'voidReceipt') this.form.receiptId = row.id;
+      if (action === 'updateMaintenance') this.form.ticketId = row.id;
+      if (action === 'endLease') {
+        this.form.leaseId = row.id;
+        this.form.endDate = [row.endDate, this.form.receivedOn].sort()[0];
+      }
       if (row.rentMinor) this.form.rent = row.rentMinor / 100;
       if (action === 'recordReceipt')
         this.form.amount = (row.amountMinor - row.receivedMinor) / 100;
@@ -518,6 +552,7 @@ export class Workspace implements OnDestroy {
     for (const field of this.spec.fields)
       if (field.type === 'select' && !field.options?.some((o) => o.value === this.form[field.key]))
         this.form[field.key] = field.options?.[0]?.value || '';
+    if (action === 'createLease') this.leaseUnitChanged();
     this.dialog?.nativeElement.showModal();
   }
   close() {
@@ -529,29 +564,19 @@ export class Workspace implements OnDestroy {
   fileChosen(event: Event) {
     this.file = (event.target as HTMLInputElement).files?.[0];
   }
+  leaseUnitChanged() {
+    const unit = this.rows('units').find((row) => row.id === this.form.unitId);
+    if (unit) {
+      this.form.rent = unit.rentMinor / 100;
+      this.form.currency = unit.currency;
+    }
+  }
   async submit() {
     if (!this.spec || this.busy()) return;
     this.busy.set(true);
     this.formError.set('');
     try {
-      const payload: Row = Object.fromEntries(
-        this.spec.fields
-          .filter((f) => f.type !== 'file')
-          .map((f) => [
-            f.key,
-            f.type === 'number' ? Number(this.form[f.key]) : (this.form[f.key] ?? ''),
-          ]),
-      );
-      for (const key of ['propertyId', 'chargeId', 'receiptId', 'ticketId', 'leaseId'])
-        if (this.form[key]) payload[key] = this.form[key];
-      if ('rent' in payload) {
-        payload.rentMinor = Math.round(Number(payload.rent) * 100);
-        delete payload.rent;
-      }
-      if ('amount' in payload) {
-        payload.amountMinor = Math.round(Number(payload.amount) * 100);
-        delete payload.amount;
-      }
+      const payload: Row = formPayload(this.action, this.spec, this.form);
       if (this.action === 'uploadDocument') {
         if (!this.file) throw new Error('Choose a document first.');
         if (
@@ -576,9 +601,11 @@ export class Workspace implements OnDestroy {
         this.action === 'createWorkspace' ||
         this.action === 'updateProfile' ||
         this.action === 'updateWorkspace'
-      )
+      ) {
         await this.init();
-      else await this.load();
+        if (this.action === 'createWorkspace' && this.org())
+          await this.router.navigate([this.base, 'dashboard']);
+      } else await this.load();
     } catch (e) {
       this.formError.set(errorMessage(e));
     } finally {
@@ -644,6 +671,8 @@ export class Workspace implements OnDestroy {
     }
   }
   async download(doc: Row) {
+    if (this.busy()) return;
+    this.error.set('');
     this.busy.set(true);
     try {
       await this.cloud.download(doc);
@@ -691,8 +720,17 @@ export class Workspace implements OnDestroy {
     );
   }
   async logout() {
-    await this.cloud.logout();
-    await this.router.navigate(['/login']);
+    if (this.busy()) return;
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      await this.cloud.logout();
+      await this.router.navigate(['/login']);
+    } catch (e) {
+      this.error.set(errorMessage(e));
+    } finally {
+      this.busy.set(false);
+    }
   }
   private demoCommand(action: string, p: Row) {
     const d = structuredClone(this.data());

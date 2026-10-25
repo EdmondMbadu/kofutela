@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import {
   DocumentReference,
   FieldValue,
@@ -36,13 +37,23 @@ const sha = (value: string) => createHash('sha256').update(value).digest('hex');
 const today = () =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kinshasa' }).format(new Date());
 
-function identity(request: CallableRequest, verified = true) {
+async function identity(request: CallableRequest, verified = true) {
   if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in to continue.');
   if (verified && request.auth.token.email_verified !== true) {
-    throw new HttpsError(
-      'failed-precondition',
-      'Verify your email before managing your portfolio.',
-    );
+    // Email actions update the Auth record before existing ID tokens expire.
+    // Accept that verified record, never a verification flag supplied by the client.
+    const account = await getAuth().getUser(request.auth.uid);
+    if (
+      !account.emailVerified ||
+      account.disabled ||
+      account.email?.toLowerCase() !== String(request.auth.token.email || '').toLowerCase()
+    ) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Verify your email before managing your portfolio.',
+        { reason: 'email-verification-required' },
+      );
+    }
   }
   return {
     uid: request.auth.uid,
@@ -138,7 +149,7 @@ function mappedError(error: unknown): never {
 
 export const session = onCall(async (request) => {
   try {
-    const who = identity(request, false);
+    const who = await identity(request, false);
     await rateLimit(who.uid);
     const profileRef = db.doc(`users/${who.uid}`);
     const profile = await db.runTransaction(async (tx) => {
@@ -190,7 +201,7 @@ const envelope = z.object({
 
 export const command = onCall(async (request) => {
   try {
-    const who = identity(request);
+    const who = await identity(request);
     const input = envelope.parse(request.data);
     // Every branch consumes a bounded, validated schema from domain.ts.
     const payload: any = schemas[input.action].parse(input.payload);
@@ -213,7 +224,7 @@ export const command = onCall(async (request) => {
   }
 });
 
-type Identity = ReturnType<typeof identity>;
+type Identity = Awaited<ReturnType<typeof identity>>;
 async function perform(
   tx: Transaction,
   who: Identity,
@@ -664,7 +675,7 @@ async function perform(
 
 export const finalizeDocument = onCall(async (request) => {
   try {
-    const who = identity(request);
+    const who = await identity(request);
     const p = z.object({ orgId: id, documentId: id }).parse(request.data);
     await rateLimit(who.uid);
     const ref = db.doc(`organizations/${p.orgId}/documents/${p.documentId}`);
@@ -690,7 +701,7 @@ export const finalizeDocument = onCall(async (request) => {
 
 export const adminOverview = onCall(async (request) => {
   try {
-    const who = identity(request);
+    const who = await identity(request);
     await rateLimit(who.uid);
     const role = (await db.doc(`platformAdmins/${who.uid}`).get()).data()?.['role'];
     if (!['admin', 'superadmin'].includes(role)) deny();

@@ -62,14 +62,14 @@ export class AuthPage implements OnDestroy {
     try {
       await this.cloud.start();
       if (this.destroyed) return;
-      if (this.mode() !== 'reset' && this.cloud.user()?.emailVerified) {
+      if (this.mode() !== 'reset' && this.cloud.user() && (await this.cloud.checkVerification())) {
         await this.continue();
         return;
       }
       this.verification.set(
         this.mode() !== 'reset' && !!this.cloud.user() && !this.cloud.user()!.emailVerified,
       );
-      this.email = this.cloud.user()?.email || '';
+      if (!this.email) this.email = this.cloud.user()?.email || '';
       if (this.verification()) await this.checkOnReturn();
       if (!this.destroyed)
         this.timer = setInterval(() => {
@@ -103,7 +103,7 @@ export class AuthPage implements OnDestroy {
         await this.cloud.signup(this.email, this.password, this.displayName, this.returnTo);
         this.resendSeconds.set(60);
       } else await this.cloud.login(this.email, this.password);
-      if (!this.cloud.user()?.emailVerified) {
+      if (!(await this.cloud.checkVerification())) {
         this.verification.set(true);
         this.notice.set(
           'Verify your email to protect your portfolio. Check your inbox, then return here.',

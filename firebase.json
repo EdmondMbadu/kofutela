@@ -17,7 +17,7 @@
     ],
     "providers": { "emailPassword": true }
   },
-  "storage": { "rules": "storage.rules" },
+  "storage": { "rules": "storage.rules", "predeploy": ["npm run storage:cors"] },
   "functions": [
     {
       "source": "functions",

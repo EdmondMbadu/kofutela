@@ -73,7 +73,12 @@ import { LanguageSwitcher } from '../shared/language-switcher';
             </div>
             <h3>{{ ticket.subject | tr }}</h3>
             <p class="message">{{ ticket.body | tr }}</p>
-            <form class="form-stack" (ngSubmit)="reply(ticket)">
+            <form
+              class="form-stack"
+              ngNativeValidate
+              #replyForm="ngForm"
+              (ngSubmit)="replyForm.valid && reply(ticket)"
+            >
               <label
                 >{{ 'Reply' | tr
                 }}<textarea
@@ -109,7 +114,12 @@ import { LanguageSwitcher } from '../shared/language-switcher';
                 | tr
             }}
           </p>
-          <form class="role-form" (ngSubmit)="grant()">
+          <form
+            class="role-form"
+            ngNativeValidate
+            #roleForm="ngForm"
+            (ngSubmit)="roleForm.valid && grant()"
+          >
             <label
               >{{ 'Existing account ID' | tr
               }}<input
@@ -182,7 +192,7 @@ export class Admin {
   async init() {
     try {
       await this.cloud.start();
-      if (!this.cloud.user()?.emailVerified) {
+      if (!this.cloud.user() || !(await this.cloud.checkVerification())) {
         await this.router.navigate(['/login'], { queryParams: { returnTo: '/admin' } });
         return;
       }
@@ -207,6 +217,9 @@ export class Admin {
     }
   }
   async reply(ticket: Row) {
+    if (this.busy()) return;
+    this.error.set('');
+    this.notice.set('');
     this.busy.set(true);
     try {
       await this.cloud.command('updateSupport', {
@@ -223,7 +236,9 @@ export class Admin {
     }
   }
   async grant() {
-    if (!this.confirmed) return;
+    if (!this.confirmed || this.busy()) return;
+    this.error.set('');
+    this.notice.set('');
     this.busy.set(true);
     try {
       await this.cloud.command('setPlatformRole', { uid: this.uid.trim(), role: this.role });

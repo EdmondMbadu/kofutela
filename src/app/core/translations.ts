@@ -1,6 +1,13 @@
 // English source text is the lookup key so existing routes and stored records stay unchanged.
 // Keep this catalog limited to interface copy; user-entered property data is never translated.
 export const FRENCH: Record<string, string> = {
+  'Sign in to continue.': 'Connectez-vous pour continuer.',
+  'Verify your email before managing your portfolio.':
+    'Vérifiez votre adresse e-mail avant de gérer votre portefeuille.',
+  'Add an available unit before creating a lease.':
+    'Ajoutez un logement disponible avant de créer un bail.',
+  'This portfolio is no longer available. Refresh and select another.':
+    'Ce portefeuille n’est plus disponible. Actualisez la page et sélectionnez-en un autre.',
   'Account setup': 'Création du compte',
   '1. Account': '1. Compte',
   '2. Verify email': '2. Vérification',

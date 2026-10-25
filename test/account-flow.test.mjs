@@ -17,6 +17,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
+import { verifiedSession } from '../src/app/core/verified-session.ts';
 
 // Isolated, disposable emulator accounts only. Never read production credentials.
 const projectId = 'demo-kofutela';
@@ -73,13 +74,19 @@ test(
       );
       assert.equal(user.emailVerified, false);
       await applyActionCode(auth, verification.oobCode);
-      await reload(user);
-      const token = await getIdTokenResult(user, true);
+      // Reproduce verification in another tab: the current profile/token are stale.
+      assert.equal((await getIdTokenResult(user)).claims.email_verified, false);
+      const portfolio = await call('command', request);
+      assert.equal(
+        portfolio.id,
+        user.uid,
+        'The server must use the verified Auth record for old sessions',
+      );
+      assert.equal(await verifiedSession(user), true);
+      const token = await getIdTokenResult(user);
       assert.equal(user.emailVerified, true);
       assert.equal(token.claims.email_verified, true);
 
-      const portfolio = await call('command', request);
-      assert.equal(portfolio.id, user.uid);
       assert.deepEqual(await call('command', request), portfolio);
       const session = await call('session', {});
       assert.equal(session.memberships.length, 1);

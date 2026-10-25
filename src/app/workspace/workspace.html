@@ -14,7 +14,12 @@
     </div>
     @if (memberships.length > 1) {
       <label class="sr-only" for="workspace-select">{{ 'Choose portfolio' | tr }}</label
-      ><select id="workspace-select" [ngModel]="org()?.id" (ngModelChange)="selectOrg($event)">
+      ><select
+        id="workspace-select"
+        [ngModel]="org()?.id"
+        (ngModelChange)="selectOrg($event)"
+        [disabled]="busy() || loading()"
+      >
         @for (m of memberships; track m.id) {
           <option [value]="m.id">{{ m.name | tr }}</option>
         }
@@ -228,7 +233,7 @@
               <button
                 class="button small"
                 (click)="open('createLease')"
-                [disabled]="!rows('units').length"
+                [disabled]="!availableUnits().length || busy()"
               >
                 <kf-icon name="plus" /> {{ ' Add lease ' | tr }}
               </button>
@@ -319,7 +324,11 @@
           @if (!owner && rows('leases').length > 1) {
             <label class="lease-picker"
               >{{ 'Your lease' | tr
-              }}<select [(ngModel)]="leaseId" (ngModelChange)="load()">
+              }}<select
+                [(ngModel)]="leaseId"
+                (ngModelChange)="leaseChanged()"
+                [disabled]="busy() || loading()"
+              >
                 @for (l of rows('leases'); track l.id) {
                   <option [value]="l.id">{{ l.propertyName + ' · ' + l.unitLabel | tr }}</option>
                 }
@@ -982,7 +991,11 @@
               <div class="message-header">
                 <label
                   >{{ 'Conversation' | tr
-                  }}<select [(ngModel)]="leaseId" (ngModelChange)="load()">
+                  }}<select
+                    [(ngModel)]="leaseId"
+                    (ngModelChange)="leaseChanged()"
+                    [disabled]="busy() || loading()"
+                  >
                     @for (l of rows('leases'); track l.id) {
                       <option [value]="l.id">{{ l.tenantName + ' · ' + l.unitLabel | tr }}</option>
                     }
@@ -1027,7 +1040,7 @@
                     required
                     maxlength="4000"
                     rows="2"
-                    [disabled]="!leaseId"
+                    [disabled]="!leaseId || busy()"
                   ></textarea></label
                 ><button
                   class="button"
@@ -1261,7 +1274,11 @@
                   <select
                     [name]="field.key"
                     [(ngModel)]="form[field.key]"
+                    (ngModelChange)="
+                      action === 'createLease' && field.key === 'unitId' && leaseUnitChanged()
+                    "
                     [required]="!!field.required"
+                    [disabled]="busy()"
                   >
                     @for (option of field.options; track option.value) {
                       <option [value]="option.value">{{ option.label | tr }}</option>
@@ -1272,6 +1289,7 @@
                     [name]="field.key"
                     [(ngModel)]="form[field.key]"
                     [required]="!!field.required"
+                    [disabled]="busy()"
                     [attr.minlength]="field.min"
                     [attr.maxlength]="field.max || 2000"
                   ></textarea>
@@ -1282,6 +1300,7 @@
                     accept="application/pdf,image/jpeg,image/png,image/webp"
                     required
                     (change)="fileChosen($event)"
+                    [disabled]="busy()"
                   />
                 } @else {
                   <input
@@ -1289,6 +1308,7 @@
                     [name]="field.key"
                     [(ngModel)]="form[field.key]"
                     [required]="!!field.required"
+                    [disabled]="busy()"
                     [attr.min]="field.type === 'number' ? field.min : null"
                     [attr.max]="field.type === 'number' ? field.max : null"
                     [attr.step]="field.step"

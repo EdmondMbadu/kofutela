@@ -218,3 +218,46 @@ export function formSpec(
   };
   return forms[action];
 }
+
+/** Map dialog values to the command contract, with only that action's references. */
+export function formPayload(action: string, spec: FormSpec, values: Record<string, any>) {
+  const payload: Record<string, any> = {};
+  for (const field of spec.fields) {
+    if (field.type === 'file') continue;
+    const raw = values[field.key] ?? '';
+    if (field.required && !String(raw).trim()) throw new Error(`Please complete: ${field.label}.`);
+    const value = field.type === 'number' ? Number(raw) : raw;
+    if (
+      field.type === 'number' &&
+      (!Number.isFinite(value) ||
+        (field.min !== undefined && value < field.min) ||
+        (field.max !== undefined && value > field.max) ||
+        (field.step === '1' && !Number.isInteger(value)))
+    ) {
+      throw new Error(`Check the value for: ${field.label}.`);
+    }
+    if (field.type === 'select' && !field.options?.some((option) => option.value === value)) {
+      throw new Error(`Choose an available option for: ${field.label}.`);
+    }
+    payload[field.key] = value;
+  }
+  const references: Record<string, string> = {
+    updateProperty: 'propertyId',
+    recordReceipt: 'chargeId',
+    voidReceipt: 'receiptId',
+    updateMaintenance: 'ticketId',
+    endLease: 'leaseId',
+  };
+  const reference = references[action];
+  if (reference) payload[reference] = values[reference];
+  for (const [field, commandField] of [
+    ['rent', 'rentMinor'],
+    ['amount', 'amountMinor'],
+  ]) {
+    if (field in payload) {
+      payload[commandField] = Math.round(Number(payload[field]) * 100);
+      delete payload[field];
+    }
+  }
+  return payload;
+}
