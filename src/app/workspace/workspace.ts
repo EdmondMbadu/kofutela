@@ -203,6 +203,67 @@ export class Workspace implements OnDestroy {
   openRepairs() {
     return this.rows('maintenance').filter((m) => !['closed', 'resolved'].includes(m.status));
   }
+  locale() {
+    return this.i18n.language() === 'fr' ? 'fr-FR' : 'en-US';
+  }
+  today() {
+    return new Intl.DateTimeFormat(this.locale(), {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'Africa/Kinshasa',
+    }).format(new Date());
+  }
+  monthLabel() {
+    const [y, m] = (this.month || '').split('-').map(Number);
+    if (!y || !m) return this.month;
+    return new Intl.DateTimeFormat(this.locale(), {
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(Date.UTC(y, m - 1, 1)));
+  }
+  monthCharges() {
+    return this.rows('charges').filter((c) => c.currency === this.currency && !c.cancelled);
+  }
+  collected() {
+    const total = this.total('amountMinor');
+    return total ? Math.min(100, Math.round((this.total('receivedMinor') / total) * 100)) : 0;
+  }
+  fill(charge: Row) {
+    return charge.amountMinor
+      ? Math.min(100, (charge.receivedMinor / charge.amountMinor) * 100)
+      : 0;
+  }
+  occupiedUnits() {
+    return this.rows('units').filter((u) => u.activeLeaseId).length;
+  }
+  propertyOccupied(id: string) {
+    return this.propertyUnits(id).filter((u) => u.activeLeaseId).length;
+  }
+  /** Everything that needs the user's attention: unpaid rent first (overdue → partial → due), then open repairs. */
+  attention(): { kind: 'rent' | 'repair'; status: string; row: Row }[] {
+    const order: Record<string, number> = { overdue: 0, partial: 1, due: 2 };
+    const rent = this.rows('charges')
+      .filter((c) => !c.cancelled && c.receivedMinor < c.amountMinor)
+      .map((c) => ({ kind: 'rent' as const, status: this.status(c), row: c }))
+      .sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
+    const repairs = this.openRepairs().map((t) => ({
+      kind: 'repair' as const,
+      status: t.status as string,
+      row: t,
+    }));
+    return [...rent, ...repairs];
+  }
+  activityIcon(action: string) {
+    return action === 'recordReceipt' || action === 'voidReceipt'
+      ? 'wallet'
+      : /aintenance/.test(action || '')
+        ? 'tool'
+        : /essage/.test(action || '')
+          ? 'message'
+          : 'check';
+  }
   propertyUnits(id: string) {
     return this.rows('units').filter((u) => u.propertyId === id);
   }

@@ -798,4 +798,31 @@ export const FRENCH: Record<string, string> = {
     'Suivez chaque demande, du signalement à la résolution.',
   'Keep messages with the right home and the right tenant.':
     'Gardez les messages avec le bon logement et le bon locataire.',
+  // Workspace refresh
+  Demo: 'Démo',
+  'View as': 'Voir en tant que',
+  'Create your own space': 'Créer votre espace',
+  'Everything is calm. Nothing needs you right now.':
+    'Tout est calme. Rien ne demande votre attention pour le moment.',
+  'recorded of': 'enregistrés sur',
+  'No rent scheduled for this month.': 'Aucun loyer prévu pour ce mois-ci.',
+  'units occupied': 'logements occupés',
+  'Open repairs': 'Réparations en cours',
+  'What needs you': 'Ce qui demande votre attention',
+  'Unpaid rent first, then open repairs.':
+    'Les loyers impayés d’abord, puis les réparations en cours.',
+  'still to record': 'reste à enregistrer',
+  'Nothing needs you right now.': 'Rien ne demande votre attention pour le moment.',
+  'Latest activity': 'Activité récente',
+  'Message your landlord': 'Écrire à votre propriétaire',
+  'Questions, updates and repairs, in one thread.':
+    'Questions, nouvelles et réparations, dans une seule conversation.',
+  'thing needs your attention.': 'chose demande votre attention.',
+  'things need your attention.': 'choses demandent votre attention.',
+  due: 'à venir',
+  'Rent for': 'Loyers de',
+  'Your rent for': 'Votre loyer de',
+  'Your homes': 'Vos biens',
+  'Your home': 'Votre logement',
+  'Your rent': 'Votre loyer',
 };

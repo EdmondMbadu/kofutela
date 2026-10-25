@@ -103,14 +103,30 @@
     </header>
     @if (demo) {
       <div class="demo-banner">
-        <div>
-          <strong>{{ 'A little look inside.' | tr }}</strong
-          ><span> {{ ' Fictional data. Nothing here touches a real account.' | tr }}</span>
+        <div class="demo-copy">
+          <span class="demo-tag">{{ 'Demo' | tr }}</span
+          ><span>{{ 'Fictional data. Nothing here touches a real account.' | tr }}</span>
         </div>
-        <button (click)="switchDemo()">
-          {{ 'View as ' + (demoTenant ? 'landlord' : 'tenant') + ' ' | tr
-          }}<kf-icon name="refresh" /></button
-        ><a routerLink="/signup">{{ 'Create your own space →' | tr }}</a>
+        <div class="demo-switch" role="group" aria-label="{{ 'View as' | tr }}">
+          <button
+            type="button"
+            [class.on]="!demoTenant"
+            [attr.aria-pressed]="!demoTenant"
+            (click)="demoTenant && switchDemo()"
+          >
+            {{ 'Landlord' | tr }}</button
+          ><button
+            type="button"
+            [class.on]="demoTenant"
+            [attr.aria-pressed]="demoTenant"
+            (click)="!demoTenant && switchDemo()"
+          >
+            {{ 'Tenant' | tr }}
+          </button>
+        </div>
+        <a class="demo-cta" routerLink="/signup"
+          >{{ 'Create your own space' | tr }} <kf-icon name="arrow"
+        /></a>
       </div>
     }
     <main id="main" class="workspace-main">
@@ -164,37 +180,51 @@
         <section class="page-title">
           <div>
             <span class="eyebrow">{{
-              (section() === 'dashboard'
-                ? 'A little clarity for your day'
-                : 'Everything in its place'
-              ) | tr
+              section() === 'dashboard' ? today() : ('Everything in its place' | tr)
             }}</span>
             <h1>
               {{ (section() === 'dashboard' ? 'Good to see you, ' + name() + '.' : title()) | tr }}
             </h1>
-            <p>
-              {{
-                (section() === 'dashboard'
-                  ? 'Here’s how things are looking around home.'
-                  : section() === 'rent'
-                    ? 'A clear history of what’s due and what’s been recorded.'
-                    : section() === 'properties'
-                      ? 'Every home has a story. Keep the details together.'
-                      : section() === 'tenants'
-                        ? 'Good relationships start with a little clarity.'
-                        : section() === 'maintenance'
-                          ? 'From a small repair to a resolved request.'
-                          : section() === 'messages'
-                            ? 'A shared conversation, connected to the right home.'
-                            : section() === 'documents'
-                              ? 'The important papers, right where you need them.'
-                              : section() === 'reports'
-                                ? 'A monthly view, with currencies kept separate.'
-                                : section() === 'support'
-                                  ? 'A direct line to the platform operator.'
-                                  : 'Make your space work for you.') + '\n            ' | tr
-              }}
-            </p>
+            @if (section() === 'dashboard') {
+              <p class="status-line">
+                @if (attention().length) {
+                  <span class="status-dot warn"></span><strong>{{ attention().length }}</strong>
+                  {{
+                    (attention().length === 1
+                      ? 'thing needs your attention.'
+                      : 'things need your attention.'
+                    ) | tr
+                  }}
+                } @else {
+                  <span class="status-dot"></span>
+                  {{ 'Everything is calm. Nothing needs you right now.' | tr }}
+                }
+              </p>
+            } @else {
+              <p>
+                {{
+                  (section() === 'dashboard'
+                    ? 'Here’s how things are looking around home.'
+                    : section() === 'rent'
+                      ? 'A clear history of what’s due and what’s been recorded.'
+                      : section() === 'properties'
+                        ? 'Every home has a story. Keep the details together.'
+                        : section() === 'tenants'
+                          ? 'Good relationships start with a little clarity.'
+                          : section() === 'maintenance'
+                            ? 'From a small repair to a resolved request.'
+                            : section() === 'messages'
+                              ? 'A shared conversation, connected to the right home.'
+                              : section() === 'documents'
+                                ? 'The important papers, right where you need them.'
+                                : section() === 'reports'
+                                  ? 'A monthly view, with currencies kept separate.'
+                                  : section() === 'support'
+                                    ? 'A direct line to the platform operator.'
+                                    : 'Make your space work for you.') + '\n            ' | tr
+                }}
+              </p>
+            }
           </div>
           <div class="page-actions">
             @if (section() === 'properties' && owner) {
@@ -265,7 +295,7 @@
               </select></label
             >
           }
-          @if (['dashboard', 'rent', 'reports'].includes(section())) {
+          @if (['rent', 'reports'].includes(section())) {
             <div class="period-bar">
               <label
                 >{{ 'Month' | tr
@@ -287,7 +317,250 @@
               >
             </div>
           }
-          @if (section() === 'dashboard' || section() === 'reports') {
+          @if (section() === 'dashboard') {
+            <section class="pulse" aria-labelledby="pulse-title">
+              <div class="pulse-main">
+                <div class="pulse-top">
+                  <h2 id="pulse-title">
+                    {{ (owner ? 'Rent for' : 'Your rent for') | tr }} {{ monthLabel() }}
+                  </h2>
+                  <div class="pulse-controls">
+                    <input
+                      type="month"
+                      [(ngModel)]="month"
+                      (ngModelChange)="periodChange()"
+                      required
+                      aria-label="{{ 'Report month' | tr }}"
+                    /><select [(ngModel)]="currency" aria-label="{{ 'Summary currency' | tr }}">
+                      <option value="USD">USD</option>
+                      <option value="CDF">CDF</option>
+                    </select>
+                  </div>
+                </div>
+                @if (!capped) {
+                  <p class="pulse-figure">
+                    <strong>{{ money(total('receivedMinor')) }}</strong>
+                    <span
+                      >{{ 'recorded of' | tr }} {{ money(total('amountMinor')) }}
+                      <em>· {{ collected() }}%</em></span
+                    >
+                  </p>
+                  <div
+                    class="pulse-bar"
+                    role="img"
+                    [attr.aria-label]="collected() + '% · ' + ('Rent recorded' | tr)"
+                  >
+                    @for (c of monthCharges(); track c.id) {
+                      <span [class]="'seg ' + status(c)" [style.flex-grow]="c.amountMinor"
+                        ><i [style.width.%]="fill(c)"></i
+                      ></span>
+                    } @empty {
+                      <span class="seg empty"></span>
+                    }
+                  </div>
+                  @if (monthCharges().length) {
+                    <ul class="pulse-legend">
+                      @for (c of monthCharges(); track c.id) {
+                        <li>
+                          <span [class]="'dot ' + status(c)"></span
+                          >{{ (owner ? c.tenantName : c.unitLabel) | tr }}
+                          <small>{{ status(c) | tr }}</small>
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="pulse-empty">{{ 'No rent scheduled for this month.' | tr }}</p>
+                  }
+                }
+              </div>
+              <dl class="pulse-facts">
+                <div>
+                  <dt>{{ 'Still outstanding' | tr }}</dt>
+                  <dd>{{ capped ? '—' : money(total('amountMinor') - total('receivedMinor')) }}</dd>
+                </div>
+                @if (owner) {
+                  <div>
+                    <dt>{{ 'Occupancy' | tr }}</dt>
+                    <dd>
+                      {{ occupancy() }}%<small
+                        >{{ occupiedUnits() }} / {{ rows('units').length }}
+                        {{ 'units occupied' | tr }}</small
+                      >
+                    </dd>
+                  </div>
+                } @else {
+                  <div>
+                    <dt>{{ 'Your monthly rent' | tr }}</dt>
+                    <dd>
+                      {{ money(currentLease()?.rentMinor, currentLease()?.currency || currency) }}
+                    </dd>
+                  </div>
+                }
+                <div>
+                  <dt>{{ 'Open repairs' | tr }}</dt>
+                  <dd>{{ openRepairs().length }}</dd>
+                </div>
+              </dl>
+              <span class="pulse-note"
+                ><kf-icon name="lock" />
+                {{ 'Recorded activity, not payment processing' | tr }}</span
+              >
+            </section>
+
+            <div class="dash-grid">
+              <section class="panel needs" aria-labelledby="needs-title">
+                <div class="panel-heading">
+                  <div>
+                    <h2 id="needs-title">{{ 'What needs you' | tr }}</h2>
+                    <p>{{ 'Unpaid rent first, then open repairs.' | tr }}</p>
+                  </div>
+                  @if (attention().length) {
+                    <span class="count-pill">{{ attention().length }}</span>
+                  }
+                </div>
+                @for (item of attention(); track item.kind + item.row.id) {
+                  @if (item.kind === 'rent') {
+                    <div class="need-row">
+                      <span [class]="'need-icon ' + item.status"><kf-icon name="wallet" /></span>
+                      <div class="need-text">
+                        <strong
+                          >{{ (owner ? item.row.tenantName : 'Your rent') | tr }}
+                          <span [class]="'badge ' + statusClass(item.status)">{{
+                            item.status | tr
+                          }}</span></strong
+                        >
+                        <small
+                          >{{ item.row.propertyName + ' · ' + item.row.unitLabel | tr }} ·
+                          {{ 'Due' | tr }} {{ date(item.row.dueDate) }}</small
+                        >
+                      </div>
+                      <span class="need-amount"
+                        >{{ money(item.row.amountMinor - item.row.receivedMinor, item.row.currency)
+                        }}<small>{{ 'still to record' | tr }}</small></span
+                      >
+                      @if (owner) {
+                        <button class="button small" (click)="open('recordReceipt', item.row)">
+                          <kf-icon name="plus" /> {{ 'Record receipt' | tr }}
+                        </button>
+                      }
+                    </div>
+                  } @else {
+                    <a class="need-row" [routerLink]="[base, 'maintenance']">
+                      <span class="need-icon repair"><kf-icon name="tool" /></span>
+                      <div class="need-text">
+                        <strong
+                          >{{ item.row.title | tr }}
+                          <span [class]="'badge ' + statusClass(item.status)">{{
+                            item.status.replace('_', ' ') | tr
+                          }}</span></strong
+                        >
+                        <small>{{ item.row.propertyName + ' · ' + item.row.unitLabel | tr }}</small>
+                      </div>
+                      <span class="need-link"
+                        >{{ 'See request' | tr }} <kf-icon name="arrow"
+                      /></span>
+                    </a>
+                  }
+                } @empty {
+                  <div class="empty calm">
+                    <span class="calm-icon"><kf-icon name="check" /></span>
+                    <h3>{{ 'A calmer kind of day.' | tr }}</h3>
+                    <p>{{ 'Nothing needs you right now.' | tr }}</p>
+                  </div>
+                }
+              </section>
+
+              <div class="dash-side">
+                <section class="panel homes-panel">
+                  <div class="panel-heading">
+                    <div>
+                      <h2>{{ (owner ? 'Your homes' : 'Your home') | tr }}</h2>
+                    </div>
+                    <a class="text-link" [routerLink]="[base, owner ? 'properties' : 'documents']"
+                      >{{ 'View all ' | tr }}<kf-icon name="arrow"
+                    /></a>
+                  </div>
+                  @if (owner) {
+                    @for (p of rows('properties').slice(0, 4); track p.id) {
+                      <a class="home-line" [routerLink]="[base, 'properties']">
+                        <span class="home-mark"><kf-icon name="building" /></span>
+                        <span class="home-text"
+                          ><strong>{{ p.name | tr }}</strong
+                          ><small>{{ p.city | tr }}</small></span
+                        >
+                        <span class="home-occ"
+                          >{{ propertyOccupied(p.id) }}/{{ propertyUnits(p.id).length
+                          }}<small>{{ 'occupied' | tr }}</small></span
+                        >
+                      </a>
+                    } @empty {
+                      <div class="empty">
+                        <h3>{{ 'Your first home belongs here.' | tr }}</h3>
+                        <button class="button small" (click)="open('createProperty')">
+                          {{ ' Add your first property ' | tr }}<kf-icon name="plus" />
+                        </button>
+                      </div>
+                    }
+                  } @else {
+                    @if (currentLease(); as lease) {
+                      <div class="home-line static">
+                        <span class="home-mark"><kf-icon name="home" /></span>
+                        <span class="home-text"
+                          ><strong>{{ lease.propertyName | tr }}</strong
+                          ><small>{{ lease.unitLabel | tr }}</small></span
+                        >
+                      </div>
+                      <dl class="lease-facts">
+                        <div>
+                          <dt>{{ 'Lease dates' | tr }}</dt>
+                          <dd>{{ date(lease.startDate) + ' — ' + date(lease.endDate) }}</dd>
+                        </div>
+                        <div>
+                          <dt>{{ 'Monthly rent' | tr }}</dt>
+                          <dd>{{ money(lease.rentMinor, lease.currency) }}</dd>
+                        </div>
+                      </dl>
+                    } @else {
+                      <div class="empty">
+                        <h3>{{ 'No linked lease yet.' | tr }}</h3>
+                        <p>{{ 'Ask your landlord for a fresh invitation.' | tr }}</p>
+                      </div>
+                    }
+                  }
+                </section>
+                @if (owner && rows('activity').length) {
+                  <section class="panel activity-panel">
+                    <div class="panel-heading">
+                      <div>
+                        <h2>{{ 'Latest activity' | tr }}</h2>
+                      </div>
+                    </div>
+                    <ol class="timeline">
+                      @for (event of rows('activity'); track event.id) {
+                        <li>
+                          <span class="timeline-icon"
+                            ><kf-icon [name]="activityIcon(event.action)"
+                          /></span>
+                          <span>{{ event.detail | tr }}</span>
+                        </li>
+                      }
+                    </ol>
+                  </section>
+                } @else if (!owner) {
+                  <a class="panel message-cta" [routerLink]="[base, 'messages']">
+                    <span class="home-mark"><kf-icon name="message" /></span>
+                    <span class="home-text"
+                      ><strong>{{ 'Message your landlord' | tr }}</strong
+                      ><small>{{
+                        'Questions, updates and repairs, in one thread.' | tr
+                      }}</small></span
+                    >
+                    <kf-icon name="arrow" />
+                  </a>
+                }
+              </div>
+            </div>
+          } @else if (section() === 'reports') {
             @if (!capped) {
               <div class="stats-grid">
                 <article class="stat-card accent">
@@ -345,125 +618,24 @@
                 </article>
               </div>
             }
-            @if (section() === 'dashboard') {
-              <div class="dashboard-grid">
-                <section class="panel">
-                  <div class="panel-heading">
-                    <div>
-                      <h2>{{ 'Around your homes' | tr }}</h2>
-                      <p>
-                        {{
-                          (owner
-                            ? 'The people and places in your portfolio.'
-                            : 'The details of your home.') + '\n                      ' | tr
-                        }}
-                      </p>
-                    </div>
-                    <a class="text-link" [routerLink]="[base, owner ? 'properties' : 'documents']"
-                      >{{ 'View all ' | tr }}<kf-icon name="arrow"
-                    /></a>
-                  </div>
-                  @if (owner) {
-                    @for (p of rows('properties').slice(0, 3); track p.id; let i = $index) {
-                      <a class="home-row" [routerLink]="[base, 'properties']"
-                        ><span class="home-thumbnail" [class.alternate]="i % 2"
-                          ><kf-icon name="building"
-                        /></span>
-                        <div>
-                          <h3>{{ p.name | tr }}</h3>
-                          <p>{{ p.city | tr }}</p>
-                          <span>{{ propertyUnits(p.id).length + ' units · ' + p.type | tr }}</span>
-                        </div>
-                        <kf-icon name="chevron"
-                      /></a>
-                    } @empty {
-                      <div class="empty">
-                        <kf-icon name="home" />
-                        <h3>{{ 'Your first home belongs here.' | tr }}</h3>
-                        <p>{{ 'Add a property to start bringing the details together.' | tr }}</p>
-                        <button class="button small" (click)="open('createProperty')">
-                          {{ ' Add your first property ' | tr }}<kf-icon name="plus" />
-                        </button>
-                      </div>
-                    }
-                  } @else {
-                    @if (currentLease(); as lease) {
-                      <div class="tenant-home">
-                        <span class="home-thumbnail"><kf-icon name="home" /></span>
-                        <h3>{{ lease.propertyName | tr }}</h3>
-                        <p>{{ lease.unitLabel | tr }}</p>
-                        <dl>
-                          <div>
-                            <dt>{{ 'Lease dates' | tr }}</dt>
-                            <dd>{{ date(lease.startDate) + ' — ' + date(lease.endDate) | tr }}</dd>
-                          </div>
-                          <div>
-                            <dt>{{ 'Monthly rent' | tr }}</dt>
-                            <dd>{{ money(lease.rentMinor, lease.currency) | tr }}</dd>
-                          </div>
-                          <div>
-                            <dt>{{ 'Status' | tr }}</dt>
-                            <dd>
-                              <span class="badge">{{ lease.status | tr }}</span>
-                            </dd>
-                          </div>
-                        </dl>
-                      </div>
-                    } @else {
-                      <div class="empty">
-                        <h3>{{ 'No linked lease yet.' | tr }}</h3>
-                        <p>{{ 'Ask your landlord for a fresh invitation.' | tr }}</p>
-                      </div>
-                    }
-                  }
-                </section>
-                <section class="panel attention-panel">
-                  <div class="panel-heading">
-                    <div>
-                      <h2>{{ 'A little attention' | tr }}</h2>
-                      <p>{{ 'Small things, kept moving.' | tr }}</p>
-                    </div>
-                    <span class="note-icon"><kf-icon name="tool" /></span>
-                  </div>
-                  @for (ticket of openRepairs().slice(0, 3); track ticket.id) {
-                    <a class="attention-item" [routerLink]="[base, 'maintenance']"
-                      ><span class="badge" [class]="'badge ' + statusClass(ticket.status)">{{
-                        ticket.status.replace('_', ' ') | tr
-                      }}</span>
-                      <h3>{{ ticket.title | tr }}</h3>
-                      <p>{{ ticket.propertyName + ' · ' + ticket.unitLabel | tr }}</p>
-                      <span class="text-link"
-                        >{{ 'See request ' | tr }}<kf-icon name="arrow" /></span
-                    ></a>
-                  } @empty {
-                    <div class="empty">
-                      <kf-icon name="check" />
-                      <h3>{{ 'A calmer kind of day.' | tr }}</h3>
-                      <p>{{ 'No open maintenance requests right now.' | tr }}</p>
-                    </div>
-                  }
-                </section>
-              </div>
-            } @else {
-              <section class="panel report-summary">
-                <h2>{{ 'Keep a copy for your records.' | tr }}</h2>
-                <p>
-                  {{
-                    ' Export the selected month’s rent entries with currency, recorded amounts and outstanding balances. This report does not independently verify funds or replace accounting advice. '
-                      | tr
-                  }}
-                </p>
-                <button
-                  class="button secondary"
-                  [disabled]="capped || !rows('charges').length"
-                  (click)="exportCsv()"
-                >
-                  <kf-icon name="download" /> {{ ' Export monthly CSV ' | tr }}
-                </button>
-              </section>
-            }
+            <section class="panel report-summary">
+              <h2>{{ 'Keep a copy for your records.' | tr }}</h2>
+              <p>
+                {{
+                  ' Export the selected month’s rent entries with currency, recorded amounts and outstanding balances. This report does not independently verify funds or replace accounting advice. '
+                    | tr
+                }}
+              </p>
+              <button
+                class="button secondary"
+                [disabled]="capped || !rows('charges').length"
+                (click)="exportCsv()"
+              >
+                <kf-icon name="download" /> {{ ' Export monthly CSV ' | tr }}
+              </button>
+            </section>
           }
-          @if (['dashboard', 'rent', 'reports'].includes(section())) {
+          @if (['rent', 'reports'].includes(section())) {
             <section class="panel rent-panel">
               <div class="panel-heading">
                 <div>
@@ -1075,21 +1247,6 @@
                 </section>
               }
             </div>
-          }
-          @if (section() === 'dashboard' && owner && rows('activity').length) {
-            <section class="panel activity-panel">
-              <div class="panel-heading">
-                <div>
-                  <h2>{{ 'The latest around here' | tr }}</h2>
-                  <p>{{ 'A small trail of useful updates.' | tr }}</p>
-                </div>
-              </div>
-              @for (event of rows('activity'); track event.id) {
-                <div class="activity-row">
-                  <span class="activity-dot"></span><span>{{ event.detail | tr }}</span>
-                </div>
-              }
-            </section>
           }
         }
       }
