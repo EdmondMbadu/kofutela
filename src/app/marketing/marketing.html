@@ -1,5 +1,5 @@
 <div class="marketing" [attr.data-language]="i18n.language()">
-  <header class="public-header" [class.landing-header]="!page">
+  <header class="public-header" [class.landing-header]="!page" [class.scrolled]="scrolled()">
     <a class="brand" routerLink="/" aria-label="{{ 'Kofutela home' | tr }}"
       ><span class="brand-symbol"><kf-icon name="home" /></span>{{ 'kofutela' | tr
       }}<span class="brand-dot">.</span></a
@@ -43,8 +43,13 @@
         />
         <div class="landing-hero-shade" aria-hidden="true"></div>
         <div class="landing-hero-content">
-          <span class="landing-eyebrow">{{ 'A simpler way to look after home' | tr }}</span>
-          <h1 id="landing-title">{{ 'Close to home.' | tr }}<br />{{ 'Even from afar.' | tr }}</h1>
+          <span class="landing-eyebrow"
+            ><span class="pulse-dot" aria-hidden="true"></span
+            >{{ 'A simpler way to look after home' | tr }}</span
+          >
+          <h1 id="landing-title">
+            {{ 'Close to home.' | tr }}<br /><em>{{ 'Even from afar.' | tr }}</em>
+          </h1>
           <p>{{ 'Your properties. Your people. More peace of mind.' | tr }}</p>
           <div class="landing-hero-actions">
             <a class="button" routerLink="/signup"
@@ -55,193 +60,467 @@
             /></a>
           </div>
         </div>
+        <div class="hero-stack" aria-label="{{ 'Illustrative property preview' | tr }}">
+          <small class="hero-stack-label">{{ 'ILLUSTRATIVE PREVIEW' | tr }}</small>
+          <div class="hero-note n1">
+            <span class="hero-note-icon"><kf-icon name="wallet" /></span>
+            <div>
+              <strong>{{ 'Rent recorded' | tr }}</strong
+              ><small>{{ 'The Garden House' | tr }} · $450</small>
+            </div>
+            <time>{{ 'Just now' | tr }}</time>
+          </div>
+          <div class="hero-note n2">
+            <span class="hero-note-icon"><kf-icon name="tool" /></span>
+            <div>
+              <strong>{{ 'Repair resolved' | tr }}</strong
+              ><small>{{ 'Park View Apartment' | tr }}</small>
+            </div>
+            <time>{{ 'Today' | tr }}</time>
+          </div>
+          <div class="hero-note n3">
+            <span class="hero-note-icon"><kf-icon name="message" /></span>
+            <div>
+              <strong>{{ 'New message from your tenant' | tr }}</strong
+              ><small>{{ 'Oak Street Studio' | tr }}</small>
+            </div>
+            <time>{{ 'Today' | tr }}</time>
+          </div>
+        </div>
         <span class="landing-hero-caption">{{
           'Wherever you are, stay close to what matters.' | tr
         }}</span>
-        <div class="landing-property-card" aria-label="{{ 'Illustrative property preview' | tr }}">
-          <div class="landing-property-top">
-            <span class="landing-property-icon"><kf-icon name="home" /></span>
-            <div>
-              <small>{{ 'ILLUSTRATIVE PREVIEW' | tr }}</small
-              ><strong>{{ 'The Garden House' | tr }}</strong>
-            </div>
-          </div>
-          <div class="landing-property-row">
-            <kf-icon name="file" /> {{ ' Rent records ' | tr }}<kf-icon name="chevron" />
-          </div>
-          <div class="landing-property-row">
-            <kf-icon name="tool" /> {{ ' Repairs ' | tr }}<kf-icon name="chevron" />
-          </div>
-          <div class="landing-property-row">
-            <kf-icon name="message" /> {{ ' Conversations ' | tr }}<kf-icon name="chevron" />
-          </div>
+      </section>
+
+      <section class="facts wrap" aria-label="{{ 'Kofutela at a glance' | tr }}">
+        <div data-reveal>
+          <strong>USD<span>+</span>CDF</strong>
+          <p>{{ 'Two currencies, always kept separate.' | tr }}</p>
+        </div>
+        <div data-reveal>
+          <strong>EN<span>·</span>FR</strong>
+          <p>{{ 'English and French, from the first screen.' | tr }}</p>
+        </div>
+        <div data-reveal>
+          <strong>1</strong>
+          <p>{{ 'Place for every lease, receipt and repair.' | tr }}</p>
+        </div>
+        <div data-reveal>
+          <strong>$0</strong>
+          <p>{{ 'Of your money ever held by us.' | tr }}</p>
         </div>
       </section>
 
-      <section class="landing-intro wrap">
-        <div>
-          <span class="eyebrow">{{ 'A clearer way to manage what matters' | tr }}</span>
-          <h2>
-            {{ 'Everything around a home,' | tr }}<br /><em>{{ 'in one calm place.' | tr }}</em>
-          </h2>
-        </div>
-        <p>
-          {{ 'Less chasing updates. More time for the people and places you care about.' | tr }}
-        </p>
-      </section>
-
-      <section class="landing-gallery wrap" aria-label="{{ 'How Kofutela helps' | tr }}">
-        <article class="landing-image-card">
-          <img
-            src="/landing-home.webp"
-            alt="{{ 'A welcoming home entrance surrounded by greenery' | tr }}"
-            width="980"
-            height="735"
-            loading="lazy"
-          />
+      <section class="product wrap" aria-labelledby="product-title">
+        <div class="section-head" data-reveal>
           <div>
-            <h3>{{ 'See the whole picture.' | tr }}</h3>
-            <p>{{ 'Homes, leases and the details that make each one yours.' | tr }}</p>
+            <span class="eyebrow">{{ 'A clearer way to manage what matters' | tr }}</span>
+            <h2 id="product-title">
+              {{ 'Everything around a home,' | tr }}<br /><em>{{ 'in one calm place.' | tr }}</em>
+            </h2>
           </div>
-        </article>
-        <article class="landing-app-card">
+          <p>
+            {{ 'Less chasing updates. More time for the people and places you care about.' | tr }}
+          </p>
+        </div>
+        <div class="product-body" data-reveal>
+          <div class="product-tabs" role="tablist" aria-label="{{ 'Platform features' | tr }}">
+            @for (t of tabs; track t.id; let i = $index) {
+              <button
+                type="button"
+                role="tab"
+                [id]="'tab-' + t.id"
+                [class.active]="tab() === i"
+                [attr.aria-selected]="tab() === i"
+                aria-controls="product-panel"
+                (click)="pickTab(i)"
+              >
+                <span class="tab-icon"><kf-icon [name]="t.icon" /></span>
+                <span class="tab-text"
+                  ><strong>{{ t.title | tr }}</strong
+                  ><small>{{ t.body | tr }}</small></span
+                >
+                <span class="tab-progress" aria-hidden="true"></span>
+              </button>
+            }
+          </div>
           <div
-            class="landing-app-window"
-            aria-label="{{ 'Illustrative portfolio interface' | tr }}"
+            class="product-stage"
+            role="tabpanel"
+            id="product-panel"
+            [attr.aria-labelledby]="'tab-' + tabs[tab()].id"
           >
-            <div class="landing-app-sidebar">
-              <strong><kf-icon name="home" /> {{ ' kofutela.' | tr }}</strong>
-              <span class="selected"><kf-icon name="building" /> {{ ' Properties' | tr }}</span>
-              <span><kf-icon name="file" /> {{ ' Leases' | tr }}</span>
-              <span><kf-icon name="wallet" /> {{ ' Rent records' | tr }}</span>
-              <span><kf-icon name="tool" /> {{ ' Repairs' | tr }}</span>
-            </div>
-            <div class="landing-app-main">
-              <small>{{ 'ILLUSTRATIVE PREVIEW' | tr }}</small>
-              <h3>{{ 'Your properties' | tr }}</h3>
-              <div class="landing-app-list">
-                <div>
-                  <span class="landing-app-list-icon"><kf-icon name="home" /></span
-                  ><span
-                    ><strong>{{ 'The Garden House' | tr }}</strong
-                    ><small>{{ 'Property overview' | tr }}</small></span
-                  ><kf-icon name="chevron" />
-                </div>
-                <div>
-                  <span class="landing-app-list-icon"><kf-icon name="building" /></span
-                  ><span
-                    ><strong>{{ 'Park View Apartment' | tr }}</strong
-                    ><small>{{ 'Lease and records' | tr }}</small></span
-                  ><kf-icon name="chevron" />
-                </div>
-                <div>
-                  <span class="landing-app-list-icon"><kf-icon name="home" /></span
-                  ><span
-                    ><strong>{{ 'Oak Street Studio' | tr }}</strong
-                    ><small>{{ 'Property overview' | tr }}</small></span
-                  ><kf-icon name="chevron" />
+            <div class="app-window">
+              <div class="app-bar" aria-hidden="true">
+                <span></span><span></span><span></span>
+                <small>{{ 'ILLUSTRATIVE PREVIEW' | tr }}</small>
+              </div>
+              <div class="app-body">
+                <aside class="app-side" aria-hidden="true">
+                  <strong><kf-icon name="home" /> kofutela.</strong>
+                  @for (t of tabs; track t.id; let i = $index) {
+                    <span [class.selected]="tab() === i"
+                      ><kf-icon [name]="t.icon" /> {{ t.title | tr }}</span
+                    >
+                  }
+                </aside>
+                <div class="app-main">
+                  @switch (tab()) {
+                    @case (0) {
+                      <div class="app-head">
+                        <div>
+                          <small>{{ 'Portfolio' | tr }}</small>
+                          <h3>{{ 'Your properties' | tr }}</h3>
+                        </div>
+                        <span class="app-chip"
+                          ><kf-icon name="plus" /> {{ 'Add property' | tr }}</span
+                        >
+                      </div>
+                      <div class="kpis">
+                        <div>
+                          <small>{{ 'Units' | tr }}</small
+                          ><strong>6</strong>
+                        </div>
+                        <div>
+                          <small>{{ 'Occupied' | tr }}</small
+                          ><strong>5</strong>
+                        </div>
+                        <div>
+                          <small>{{ 'Leases ending soon' | tr }}</small
+                          ><strong>1</strong>
+                        </div>
+                      </div>
+                      <ul class="rows">
+                        <li>
+                          <span class="row-icon"><kf-icon name="home" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'The Garden House' | tr }}</strong
+                            ><small>Gombe · {{ '3 units' | tr }}</small></span
+                          ><span class="pill ok">{{ 'Occupied' | tr }}</span>
+                        </li>
+                        <li>
+                          <span class="row-icon"><kf-icon name="building" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Park View Apartment' | tr }}</strong
+                            ><small>Limete · {{ '2 units' | tr }}</small></span
+                          ><span class="pill ok">{{ 'Occupied' | tr }}</span>
+                        </li>
+                        <li>
+                          <span class="row-icon"><kf-icon name="home" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Oak Street Studio' | tr }}</strong
+                            ><small>Ngaliema · {{ '1 unit' | tr }}</small></span
+                          ><span class="pill warn">{{ 'Lease ends in 30 days' | tr }}</span>
+                        </li>
+                      </ul>
+                    }
+                    @case (1) {
+                      <div class="app-head">
+                        <div>
+                          <small>{{ 'October 2026' | tr }}</small>
+                          <h3>{{ 'Rent records' | tr }}</h3>
+                        </div>
+                        <span class="app-chip"
+                          ><kf-icon name="download" /> {{ 'Export' | tr }}</span
+                        >
+                      </div>
+                      <div class="kpis">
+                        <div>
+                          <small>{{ 'Recorded' | tr }}</small
+                          ><strong>$450</strong>
+                        </div>
+                        <div>
+                          <small>{{ 'Outstanding' | tr }}</small
+                          ><strong>$350</strong>
+                        </div>
+                        <div>
+                          <small>{{ 'Recorded in CDF' | tr }}</small
+                          ><strong>650k FC</strong>
+                        </div>
+                      </div>
+                      <ul class="rows">
+                        <li>
+                          <span class="row-icon"><kf-icon name="wallet" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'The Garden House' | tr }}</strong
+                            ><small>{{ 'Mobile money · Oct 2' | tr }}</small></span
+                          ><span class="amount">$450</span
+                          ><span class="pill ok">{{ 'Recorded' | tr }}</span>
+                        </li>
+                        <li>
+                          <span class="row-icon"><kf-icon name="wallet" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Park View Apartment' | tr }}</strong
+                            ><small>{{ 'Bank transfer · Oct 4' | tr }}</small></span
+                          ><span class="amount">650,000 FC</span
+                          ><span class="pill">{{ 'Partial' | tr }}</span>
+                        </li>
+                        <li>
+                          <span class="row-icon"><kf-icon name="wallet" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Oak Street Studio' | tr }}</strong
+                            ><small>{{ 'Due Nov 1' | tr }}</small></span
+                          ><span class="amount">$350</span
+                          ><span class="pill warn">{{ 'Due' | tr }}</span>
+                        </li>
+                      </ul>
+                    }
+                    @case (2) {
+                      <div class="app-head">
+                        <div>
+                          <small>{{ 'Maintenance' | tr }}</small>
+                          <h3>{{ 'Repairs' | tr }}</h3>
+                        </div>
+                        <span class="app-chip"
+                          ><kf-icon name="plus" /> {{ 'New request' | tr }}</span
+                        >
+                      </div>
+                      <div class="steps-track" aria-hidden="true">
+                        <span class="done">{{ 'Reported' | tr }}</span
+                        ><span class="done">{{ 'In progress' | tr }}</span
+                        ><span>{{ 'Resolved' | tr }}</span>
+                      </div>
+                      <ul class="rows">
+                        <li>
+                          <span class="row-icon"><kf-icon name="tool" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Kitchen tap leaking' | tr }}</strong
+                            ><small>{{ 'Park View Apartment' | tr }}</small></span
+                          ><span class="pill">{{ 'In progress' | tr }}</span>
+                        </li>
+                        <li>
+                          <span class="row-icon"><kf-icon name="tool" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Water heater check' | tr }}</strong
+                            ><small>{{ 'The Garden House' | tr }}</small></span
+                          ><span class="pill warn">{{ 'Reported' | tr }}</span>
+                        </li>
+                        <li>
+                          <span class="row-icon"><kf-icon name="check" /></span
+                          ><span class="row-text"
+                            ><strong>{{ 'Front gate lock replaced' | tr }}</strong
+                            ><small>{{ 'Oak Street Studio' | tr }}</small></span
+                          ><span class="pill ok">{{ 'Resolved' | tr }}</span>
+                        </li>
+                      </ul>
+                    }
+                    @case (3) {
+                      <div class="app-head">
+                        <div>
+                          <small>{{ 'Park View Apartment' | tr }}</small>
+                          <h3>{{ 'Conversations' | tr }}</h3>
+                        </div>
+                        <span class="app-chip"><span class="live"></span> {{ 'Tenant' | tr }}</span>
+                      </div>
+                      <div class="chat">
+                        <p class="in">
+                          {{ 'Good morning. The plumber came today, the tap is fixed.' | tr }}
+                        </p>
+                        <p class="out">{{ 'Thank you. I marked the repair as resolved.' | tr }}</p>
+                        <span class="chat-event"
+                          ><kf-icon name="check" /> {{ 'Repair resolved' | tr }}</span
+                        >
+                        <p class="in">{{ 'October rent sent by mobile money.' | tr }}</p>
+                        <p class="out">{{ 'Received. Recorded for October.' | tr }}</p>
+                      </div>
+                    }
+                  }
                 </div>
               </div>
             </div>
           </div>
-          <div class="landing-app-card-footer">
-            <span><kf-icon name="check" /> {{ ' The important details, connected.' | tr }}</span>
-            <a class="text-link" routerLink="/demo"
-              >{{ 'Explore the demo ' | tr }}<kf-icon name="arrow"
-            /></a>
-          </div>
-        </article>
-        <article class="landing-people-card">
-          <img
-            src="/landing-people.webp"
-            alt="{{ 'A property manager checking an update on his phone outside a home' | tr }}"
-            width="800"
-            height="600"
-            loading="lazy"
-          />
-          <div>
-            <h3>{{ 'Stay close to your people.' | tr }}</h3>
-            <p>{{ 'Keep conversations and repair updates with the right home.' | tr }}</p>
-          </div>
-        </article>
+        </div>
       </section>
 
-      <section class="landing-details wrap">
-        <div>
-          <span class="eyebrow">{{ 'A little structure. A lighter day.' | tr }}</span>
-          <h2>
-            {{ 'The details are handled.' | tr }}<br /><em>{{
-              'The relationships stay human.' | tr
-            }}</em>
-          </h2>
-          <p>
-            {{
-              ' From the first lease to the next repair, give every important detail a place of its own. '
-                | tr
-            }}
-          </p>
+      <section class="bento-section wrap" aria-labelledby="bento-title">
+        <div class="section-head" data-reveal>
+          <div>
+            <span class="eyebrow">{{ 'A little structure. A lighter day.' | tr }}</span>
+            <h2 id="bento-title">
+              {{ 'The details are handled.' | tr }}<br /><em>{{
+                'The relationships stay human.' | tr
+              }}</em>
+            </h2>
+          </div>
           <a class="text-link" routerLink="/features"
             >{{ 'Discover the platform ' | tr }}<kf-icon name="arrow"
           /></a>
         </div>
-        <div class="landing-detail-list">
-          <div>
-            <span>01</span>
+        <div class="bento">
+          <article class="bento-card bento-photo tall" data-reveal>
+            <img
+              src="/landing-home.webp"
+              alt="{{ 'A welcoming home entrance surrounded by greenery' | tr }}"
+              width="980"
+              height="735"
+              loading="lazy"
+            />
             <div>
-              <h3>{{ 'Know what is happening.' | tr }}</h3>
-              <p>{{ 'Find your properties, leases and rent records together.' | tr }}</p>
+              <h3>{{ 'See the whole picture.' | tr }}</h3>
+              <p>{{ 'Homes, leases and the details that make each one yours.' | tr }}</p>
             </div>
-          </div>
-          <div>
-            <span>02</span>
+          </article>
+          <article class="bento-card bento-docs" data-reveal>
+            <span class="bento-icon"><kf-icon name="lock" /></span>
+            <h3>{{ 'Documents where they belong.' | tr }}</h3>
+            <p>{{ 'Leases and receipts, stored privately with the right home.' | tr }}</p>
+            <div class="file-chips" aria-hidden="true">
+              <span><kf-icon name="file" /> {{ 'Lease · Unit A.pdf' | tr }}</span>
+              <span><kf-icon name="file" /> {{ 'Receipt · October.jpg' | tr }}</span>
+            </div>
+          </article>
+          <article class="bento-card bento-chart" data-reveal>
+            <span class="bento-icon"><kf-icon name="chart" /></span>
+            <h3>{{ 'A clearer picture, month by month' | tr }}</h3>
+            <p>{{ 'Export monthly records for your own bookkeeping.' | tr }}</p>
+            <div class="bars" aria-hidden="true">
+              <span style="--h: 46%"></span><span style="--h: 62%"></span
+              ><span style="--h: 55%"></span><span style="--h: 78%"></span
+              ><span style="--h: 70%"></span><span class="now" style="--h: 92%"></span>
+            </div>
+          </article>
+          <article class="bento-card bento-photo wide" data-reveal>
+            <img
+              src="/landing-people.webp"
+              alt="{{ 'A property manager checking an update on his phone outside a home' | tr }}"
+              width="800"
+              height="600"
+              loading="lazy"
+            />
             <div>
-              <h3>{{ 'Make the next step clearer.' | tr }}</h3>
-              <p>{{ 'Follow repairs and keep documents where they belong.' | tr }}</p>
+              <h3>{{ 'Stay close to your people.' | tr }}</h3>
+              <p>{{ 'Keep conversations and repair updates with the right home.' | tr }}</p>
             </div>
-          </div>
-          <div>
-            <span>03</span>
-            <div>
-              <h3>{{ 'Keep people in the loop.' | tr }}</h3>
-              <p>{{ 'Give tenants a private space for their lease and conversations.' | tr }}</p>
-            </div>
-          </div>
+          </article>
         </div>
       </section>
 
-      <section class="distance-section wrap">
-        <span class="eyebrow">{{ 'Home is more than an address' | tr }}</span>
-        <h2>
-          {{ 'Across the street.' | tr }}<br />{{ 'Across the world.' | tr }}<br /><em>{{
-            'You’re still connected.' | tr
-          }}</em>
-        </h2>
-        <p>
-          {{
-            'Created from a family’s experience looking after rental homes from a distance.' | tr
-          }}
-        </p>
-        <a class="text-link" routerLink="/about"
-          >{{ 'The story behind Kofutela ' | tr }}<kf-icon name="arrow"
-        /></a>
-        <span class="orbit one" aria-hidden="true"></span
-        ><span class="orbit two" aria-hidden="true"></span>
-        <span class="orbit-home" aria-hidden="true"><kf-icon name="home" /></span>
+      <section class="how wrap" aria-labelledby="how-title">
+        <div class="section-head centered" data-reveal>
+          <span class="eyebrow">{{ 'How it works' | tr }}</span>
+          <h2 id="how-title">
+            {{ 'Three steps' | tr }}<br /><em>{{ 'to a calmer month.' | tr }}</em>
+          </h2>
+        </div>
+        <ol class="how-steps">
+          <li data-reveal>
+            <span class="how-num">01</span>
+            <span class="how-icon"><kf-icon name="building" /></span>
+            <h3>{{ 'Start with the homes you have' | tr }}</h3>
+            <p>{{ 'Add your properties, units and active leases in a few minutes.' | tr }}</p>
+          </li>
+          <li data-reveal>
+            <span class="how-num">02</span>
+            <span class="how-icon"><kf-icon name="people" /></span>
+            <h3>{{ 'Give tenants their own space' | tr }}</h3>
+            <p>{{ 'Send a private invitation. Each tenant sees only their own lease.' | tr }}</p>
+          </li>
+          <li data-reveal>
+            <span class="how-num">03</span>
+            <span class="how-icon"><kf-icon name="check" /></span>
+            <h3>{{ 'Keep a record. Keep the relationship.' | tr }}</h3>
+            <p>{{ 'Record rent, follow repairs and keep every conversation in place.' | tr }}</p>
+          </li>
+        </ol>
       </section>
-      <section class="trust-row wrap">
-        <kf-icon name="shield" />
-        <div>
-          <h2>{{ 'Your records. Your control.' | tr }}</h2>
+
+      <section class="distance-section wrap" aria-labelledby="distance-title">
+        <div class="distance-copy" data-reveal>
+          <span class="eyebrow">{{ 'Home is more than an address' | tr }}</span>
+          <h2 id="distance-title">
+            {{ 'Across the street.' | tr }}<br />{{ 'Across the world.' | tr }}<br /><em>{{
+              'You’re still connected.' | tr
+            }}</em>
+          </h2>
           <p>
             {{
-              'Private access, clear permissions. We track rent records; we never move your money.'
-                | tr
+              'Created from a family’s experience looking after rental homes from a distance.' | tr
             }}
           </p>
+          <a class="text-link" routerLink="/about"
+            >{{ 'The story behind Kofutela ' | tr }}<kf-icon name="arrow"
+          /></a>
         </div>
-        <a class="text-link" routerLink="/security"
-          >{{ 'Our approach to trust ' | tr }}<kf-icon name="arrow"
-        /></a>
+        <div class="distance-map" aria-hidden="true">
+          <img src="/diaspora-map.svg" alt="" width="700" height="400" loading="lazy" />
+          <svg viewBox="0 0 700 400">
+            <g class="arcs">
+              <path d="M60 103 Q330 30 581 265" />
+              <path d="M226 66 Q440 70 581 265" />
+              <path d="M529 53 Q470 170 581 265" />
+              <path d="M537 45 Q640 150 581 265" />
+              <path d="M632 353 Q655 290 581 265" />
+            </g>
+            <g class="cities">
+              <circle cx="60" cy="103" r="4" />
+              <text x="60" y="88" text-anchor="middle">Las Vegas</text>
+              <circle cx="226" cy="66" r="4" />
+              <text x="226" y="51" text-anchor="middle">Montréal</text>
+              <circle cx="529" cy="53" r="4" />
+              <text x="518" y="58" text-anchor="end">Paris</text>
+              <circle cx="537" cy="45" r="4" />
+              <text x="548" y="38">Bruxelles</text>
+              <circle cx="632" cy="353" r="4" />
+              <text x="620" y="372" text-anchor="end">Johannesburg</text>
+            </g>
+            <g class="hub">
+              <circle class="ring" cx="581" cy="265" r="10" />
+              <circle cx="581" cy="265" r="6" />
+              <text x="566" y="270" text-anchor="end">Kinshasa</text>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="trust wrap" aria-labelledby="trust-title">
+        <div class="section-head" data-reveal>
+          <div>
+            <span class="eyebrow">{{ 'Security & trust' | tr }}</span>
+            <h2 id="trust-title">{{ 'Your records. Your control.' | tr }}</h2>
+          </div>
+          <a class="text-link" routerLink="/security"
+            >{{ 'Our approach to trust ' | tr }}<kf-icon name="arrow"
+          /></a>
+        </div>
+        <div class="trust-grid">
+          <article data-reveal>
+            <span class="bento-icon"><kf-icon name="lock" /></span>
+            <h3>{{ 'Access follows the lease' | tr }}</h3>
+            <p>{{ 'Landlords see their own portfolio. Tenants see only their own lease.' | tr }}</p>
+          </article>
+          <article data-reveal>
+            <span class="bento-icon"><kf-icon name="shield" /></span>
+            <h3>{{ 'Important changes are checked on the server' | tr }}</h3>
+            <p>{{ 'Every rent entry is validated, and corrections keep the original.' | tr }}</p>
+          </article>
+          <article data-reveal>
+            <span class="bento-icon"><kf-icon name="wallet" /></span>
+            <h3>{{ 'We never move your money' | tr }}</h3>
+            <p>
+              {{ 'Kofutela keeps the record. Payments stay between you and your tenant.' | tr }}
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-faq wrap" aria-labelledby="faq-title">
+        <div data-reveal>
+          <span class="eyebrow">{{ 'Help center' | tr }}</span>
+          <h2 id="faq-title">
+            {{ 'Questions,' | tr }}<br /><em>{{ 'answered.' | tr }}</em>
+          </h2>
+          <a class="text-link" routerLink="/help"
+            >{{ 'Visit the help center ' | tr }}<kf-icon name="arrow"
+          /></a>
+        </div>
+        <div class="faq-list" data-reveal>
+          @for (faq of faqs.slice(0, 4); track faq.q) {
+            <details>
+              <summary>{{ faq.q | tr }}<span>+</span></summary>
+              <p>{{ faq.a | tr }}</p>
+            </details>
+          }
+        </div>
       </section>
     } @else if (page === 'help') {
       <section class="page-heading wrap">

@@ -733,4 +733,69 @@ export const FRENCH: Record<string, string> = {
   'lease records': 'données du bail',
   '· Keep the whole picture in view.': '· Gardez une vue d’ensemble.',
   '· selected month only': '· mois sélectionné seulement',
+  // Landing page refresh
+  'Just now': 'À l’instant',
+  'Repair resolved': 'Réparation terminée',
+  Today: 'Aujourd’hui',
+  'New message from your tenant': 'Nouveau message de votre locataire',
+  'Kofutela at a glance': 'Kofutela en bref',
+  'Two currencies, always kept separate.': 'Deux devises, toujours séparées.',
+  'English and French, from the first screen.': 'Anglais et français, dès le premier écran.',
+  'Place for every lease, receipt and repair.': 'Seul espace pour chaque bail, reçu et réparation.',
+  'Of your money ever held by us.': 'De votre argent n’est jamais détenu par nous.',
+  'Platform features': 'Fonctionnalités de la plateforme',
+  Portfolio: 'Portefeuille',
+  Units: 'Logements',
+  'Leases ending soon': 'Baux bientôt échus',
+  '3 units': '3 logements',
+  '2 units': '2 logements',
+  '1 unit': '1 logement',
+  'Lease ends in 30 days': 'Fin du bail dans 30 jours',
+  'October 2026': 'Octobre 2026',
+  'Recorded in CDF': 'Enregistré en CDF',
+  'Mobile money · Oct 2': 'Mobile money · 2 oct.',
+  'Bank transfer · Oct 4': 'Virement bancaire · 4 oct.',
+  'Due Nov 1': 'Échéance le 1er nov.',
+  Reported: 'Signalée',
+  'In progress': 'En cours',
+  'Kitchen tap leaking': 'Fuite du robinet de cuisine',
+  'Water heater check': 'Contrôle du chauffe-eau',
+  'Front gate lock replaced': 'Serrure du portail remplacée',
+  'Good morning. The plumber came today, the tap is fixed.':
+    'Bonjour. Le plombier est passé aujourd’hui, le robinet est réparé.',
+  'Thank you. I marked the repair as resolved.': 'Merci. J’ai marqué la réparation comme terminée.',
+  'October rent sent by mobile money.': 'Loyer d’octobre envoyé par mobile money.',
+  'Received. Recorded for October.': 'Bien reçu. Enregistré pour octobre.',
+  'Documents where they belong.': 'Chaque document à sa place.',
+  'Leases and receipts, stored privately with the right home.':
+    'Baux et reçus, conservés en privé avec le bon logement.',
+  'Lease · Unit A.pdf': 'Bail · Logement A.pdf',
+  'Receipt · October.jpg': 'Reçu · Octobre.jpg',
+  'Export monthly records for your own bookkeeping.':
+    'Exportez vos relevés mensuels pour votre comptabilité.',
+  'How it works': 'Comment ça marche',
+  'Three steps': 'Trois étapes',
+  'to a calmer month.': 'vers un mois plus serein.',
+  'Add your properties, units and active leases in a few minutes.':
+    'Ajoutez vos biens, logements et baux en cours en quelques minutes.',
+  'Send a private invitation. Each tenant sees only their own lease.':
+    'Envoyez une invitation privée. Chaque locataire ne voit que son propre bail.',
+  'Record rent, follow repairs and keep every conversation in place.':
+    'Enregistrez les loyers, suivez les réparations et gardez chaque échange au bon endroit.',
+  'Landlords see their own portfolio. Tenants see only their own lease.':
+    'Les propriétaires voient leur portefeuille. Les locataires ne voient que leur bail.',
+  'Every rent entry is validated, and corrections keep the original.':
+    'Chaque loyer saisi est vérifié, et les corrections conservent l’original.',
+  'Kofutela keeps the record. Payments stay between you and your tenant.':
+    'Kofutela tient le registre. Les paiements restent entre vous et votre locataire.',
+  'Questions,': 'Vos questions,',
+  'answered.': 'nos réponses.',
+  'Every home, unit and lease date, in order.':
+    'Chaque bien, logement et date de bail, bien rangés.',
+  'See what is due and what has been recorded, in USD or CDF.':
+    'Voyez ce qui est dû et ce qui a été enregistré, en USD ou en CDF.',
+  'Follow every request from reported to resolved.':
+    'Suivez chaque demande, du signalement à la résolution.',
+  'Keep messages with the right home and the right tenant.':
+    'Gardez les messages avec le bon logement et le bon locataire.',
 };

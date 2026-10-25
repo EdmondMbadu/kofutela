@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Seo } from '../core/seo';
 import { I18n, TrPipe } from '../core/i18n';
@@ -159,8 +159,42 @@ export class Marketing {
   readonly i18n = inject(I18n);
   private route = inject(ActivatedRoute);
   private seo = inject(Seo);
+  private host = inject(ElementRef<HTMLElement>);
   page = '';
   menu = signal(false);
+  scrolled = signal(false);
+  tab = signal(0);
+  private autoplay = true;
+  readonly tabs = [
+    {
+      id: 'properties',
+      icon: 'building',
+      title: 'Properties',
+      body: 'Every home, unit and lease date, in order.',
+    },
+    {
+      id: 'rent',
+      icon: 'wallet',
+      title: 'Rent records',
+      body: 'See what is due and what has been recorded, in USD or CDF.',
+    },
+    {
+      id: 'repairs',
+      icon: 'tool',
+      title: 'Repairs',
+      body: 'Follow every request from reported to resolved.',
+    },
+    {
+      id: 'messages',
+      icon: 'message',
+      title: 'Conversations',
+      body: 'Keep messages with the right home and the right tenant.',
+    },
+  ];
+  pickTab(i: number) {
+    this.autoplay = false;
+    this.tab.set(i);
+  }
   story?: Story;
   readonly faqs = [
     {
@@ -189,6 +223,43 @@ export class Marketing {
     },
   ];
   constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const root = this.host.nativeElement as HTMLElement;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const onScroll = () => this.scrolled.set(window.scrollY > 8);
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      const timer = window.setInterval(() => {
+        if (this.autoplay && !reduce && !document.hidden && !this.page)
+          this.tab.set((this.tab() + 1) % this.tabs.length);
+      }, 6000);
+      let observer: IntersectionObserver | undefined;
+      const observe = () => {
+        if (reduce || !('IntersectionObserver' in window)) return;
+        root.classList.add('reveal-ready');
+        observer?.disconnect();
+        observer = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('in');
+                observer?.unobserve(e.target);
+              }
+            }),
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+        );
+        root.querySelectorAll('[data-reveal]:not(.in)').forEach((el) => observer!.observe(el));
+      };
+      observe();
+      const sub = this.route.url.subscribe(() => setTimeout(observe));
+      destroyRef.onDestroy(() => {
+        window.removeEventListener('scroll', onScroll);
+        window.clearInterval(timer);
+        observer?.disconnect();
+        sub.unsubscribe();
+      });
+    });
     this.route.url.subscribe((parts) => {
       this.page = parts.map((x) => x.path).join('/');
       this.story = stories[this.page];
