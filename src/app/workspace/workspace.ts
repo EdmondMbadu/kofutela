@@ -438,7 +438,8 @@ export class Workspace implements OnDestroy {
     this.loading.set(true);
     this.error.set('');
     try {
-      const path = `organizations/${this.org().id}`;
+      const orgId = this.org().id;
+      const path = `organizations/${orgId}`;
       const [properties, units, leases] = await Promise.all([
         this.owner ? this.cloud.rows(`${path}/properties`) : [],
         this.owner ? this.cloud.rows(`${path}/units`) : [],
@@ -447,6 +448,7 @@ export class Workspace implements OnDestroy {
           this.owner ? [] : [['tenantUid', this.cloud.user()!.uid]],
         ),
       ]);
+      if (generation !== this.generation) return;
       const selected =
         leases.find((l) => l.id === this.leaseId) ||
         leases.find((l) => l.status === 'active') ||
@@ -454,6 +456,8 @@ export class Workspace implements OnDestroy {
       this.leaseId = selected?.id || '';
       const scope: [string, unknown][] = this.owner ? [] : [['leaseId', this.leaseId]];
       const noLease = !this.owner && !selected;
+      if (!noLease)
+        await this.cloud.syncRent(orgId, this.month, this.owner ? undefined : selected.id);
       const [charges, receipts, maintenance, documents, messages, activity, support] =
         await Promise.all([
           noLease ? [] : this.cloud.rows(`${path}/charges`, [...scope, ['period', this.month]]),
@@ -551,6 +555,8 @@ export class Workspace implements OnDestroy {
       type: 'house',
       unitCount: 1,
       dueDay: 5,
+      termType: 'ongoing',
+      guaranteeMonths: 0,
       method: 'cash',
       priority: 'normal',
       leaseId: this.leaseId,
@@ -572,7 +578,7 @@ export class Workspace implements OnDestroy {
       if (action === 'updateMaintenance') this.form.ticketId = row.id;
       if (action === 'endLease') {
         this.form.leaseId = row.id;
-        this.form.endDate = [row.endDate, this.form.receivedOn].sort()[0];
+        this.form.endDate = [row.endDate || this.form.receivedOn, this.form.receivedOn].sort()[0];
       }
       if (row.rentMinor) this.form.rent = row.rentMinor / 100;
       if (action === 'recordReceipt')
@@ -599,6 +605,26 @@ export class Workspace implements OnDestroy {
       this.form.rent = unit.rentMinor / 100;
       this.form.currency = unit.currency;
     }
+  }
+  guaranteeTotal() {
+    const rent = Math.round(Number(this.form.rent) * 100);
+    const months = Number(this.form.guaranteeMonths);
+    const total = rent * months;
+    return Number.isSafeInteger(rent) &&
+      rent > 0 &&
+      Number.isSafeInteger(months) &&
+      months >= 0 &&
+      Number.isSafeInteger(total) &&
+      total <= 100_000_000_000
+      ? total
+      : null;
+  }
+  rentalEnd(lease: Row) {
+    return lease.endDate ? this.date(lease.endDate) : this.i18n.t('Ongoing — no end date');
+  }
+  guaranteeSummary(lease: Row) {
+    if (lease.guaranteeTotalMinor === undefined) return this.i18n.t('Guarantee not recorded');
+    return `${this.i18n.t('Guarantee')}${this.i18n.language() === 'fr' ? ' ' : ''}: ${lease.guaranteeMonths} ${this.i18n.t('months')} · ${this.money(lease.guaranteeTotalMinor, lease.currency)}`;
   }
   async submit() {
     if (!this.spec || this.busy()) return;
@@ -830,7 +856,8 @@ export class Workspace implements OnDestroy {
       const unit = d['units'].find((r) => r.id === p.unitId);
       if (!unit || unit.deletedAt || unit.activeLeaseId)
         throw new Error('Choose an available unit.');
-      if (p.endDate < p.startDate) throw new Error('The end date must follow the start date.');
+      if (p.endDate && p.endDate < p.startDate)
+        throw new Error('The end date must follow the start date.');
       unit.activeLeaseId = id;
       const property = d['properties'].find((r) => r.id === unit.propertyId);
       const lease = {
@@ -839,10 +866,15 @@ export class Workspace implements OnDestroy {
         propertyId: property.id,
         unitLabel: unit.label,
         status: 'active',
+        guaranteeTotalMinor: p.guaranteeMonths * p.rentMinor,
+        guaranteeAppliedMinor: 0,
         tenantUid: null,
       };
       add('leases', lease);
-      if (p.startDate.slice(0, 7) <= this.month && p.endDate.slice(0, 7) >= this.month)
+      if (
+        p.startDate.slice(0, 7) <= this.month &&
+        (!p.endDate || p.endDate.slice(0, 7) >= this.month)
+      )
         d['charges'].push({
           ...lease,
           id: `charge-${id}`,

@@ -21,6 +21,7 @@ describe('Portfolio setup', () => {
             user: signal({ emailVerified: true, displayName: 'Test Owner' }),
             session: signal(null),
             command: jasmine.createSpy('command').and.resolveTo({ id: 'saved-record' }),
+            syncRent: jasmine.createSpy('syncRent').and.resolveTo(),
             rows: jasmine.createSpy('rows').and.resolveTo([]),
             document: jasmine.createSpy('document'),
           },
@@ -237,5 +238,23 @@ describe('Portfolio setup', () => {
     page.open('restoreUnit', units[0]);
     await page.submit();
     expect(page.rows('units').length).toBe(2);
+  });
+  it('defaults to an ongoing rental and calculates the guarantee in minor currency units', async () => {
+    const page = await setup();
+    page.data.set({
+      properties: [{ id: 'home', name: 'House' }],
+      units: [{ id: 'one', propertyId: 'home', label: 'One', rentMinor: 10025, currency: 'USD' }],
+    });
+    page.open('createLease');
+    expect(page.form.termType).toBe('ongoing');
+    expect(page.guaranteeTotal()).toBe(0);
+    page.form.guaranteeMonths = 3;
+    expect(page.guaranteeTotal()).toBe(30075);
+    page.form.rent = 200;
+    expect(page.guaranteeTotal()).toBe(60000);
+    page.form.guaranteeMonths = 0.5;
+    expect(page.guaranteeTotal()).toBeNull();
+    page.open('endLease', { id: 'ongoing', endDate: null, startDate: '2020-01-01' });
+    expect(page.form.endDate).toBe(page.form.receivedOn);
   });
 });

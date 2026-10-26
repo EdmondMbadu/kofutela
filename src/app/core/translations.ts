@@ -1,5 +1,23 @@
 // English interface text is the lookup key. Stored names, addresses and messages are never translated.
 export const FRENCH: Record<string, string> = {
+  'Choose a valid rent month.': 'Choisissez un mois valide pour les loyers.',
+  'The guarantee total is too large. Check the rent and number of months.':
+    'Le montant de la garantie est trop élevé. Vérifiez le loyer et le nombre de mois.',
+  'Enter a whole number of guarantee months, zero or more.':
+    'Indiquez un nombre entier de mois de garantie, à partir de 0.',
+  'Guarantee not recorded': 'Garantie non renseignée',
+  months: 'mois',
+  Guarantee: 'Garantie',
+  'The guarantee is recorded separately from paid rent.':
+    'La garantie est enregistrée séparément des loyers payés.',
+  'Total rental guarantee': 'Montant total de la garantie',
+  'Enter 0 if there is no guarantee.': 'Indiquez 0 s’il n’y a pas de garantie.',
+  'Rental guarantee (months)': 'Nombre de mois de garantie',
+  'With an end date': 'Avec une date de fin',
+  'Ongoing — no end date': 'En cours — sans date de fin',
+  'Rental duration': 'Durée de la location',
+  'Choose an ongoing rental or an end date. Each calendar month counts as a full month of rent, without automatic prorating. Enter the guarantee in months; its total is calculated from the monthly rent.':
+    'Choisissez une location en cours, sans date de fin, ou précisez une date de fin. Chaque mois compte pour un loyer complet, sans calcul au prorata. Indiquez le nombre de mois de garantie : le total est calculé à partir du loyer mensuel.',
   'Property restored': 'Propriété restaurée',
   'Property deleted': 'Propriété supprimée',
   'Rental unit restored': 'Logement ou local restauré',
@@ -506,8 +524,8 @@ export const FRENCH: Record<string, string> = {
   'Kofutela is a responsive web app. Use it directly in your mobile browser; there is no native app to install yet.':
     'Kofutela est une application web adaptée au mobile. Utilisez-la directement dans votre navigateur ; il n’y a pas encore d’application native à installer.',
   'What are the current pilot limits?': 'Quelles sont les limites du projet pilote ?',
-  'One owned portfolio per account, leases up to 24 months, and private PDF or image documents up to 10 MB. Monthly rent is entered as a full amount, without automatic prorating. This is an early pilot, not a payment or accounting service.':
-    'Un parc immobilier par propriétaire, des locations de 24 mois maximum et des documents privés PDF ou image de 10 Mo maximum. Chaque mois compte pour un loyer complet, sans calcul automatique au prorata. Cette version pilote ne propose ni service de paiement ni comptabilité complète.',
+  'One owned portfolio per account, ongoing or fixed-term rentals, and private PDF or image documents up to 10 MB. Monthly rent is entered as a full amount, without automatic prorating. This is an early pilot, not a payment or accounting service.':
+    'Un parc immobilier par propriétaire, des locations avec ou sans date de fin et des documents privés PDF ou image de 10 Mo maximum. Chaque mois compte pour un loyer complet, sans calcul automatique au prorata. Cette version pilote ne propose ni service de paiement ni comptabilité complète.',
   'Privacy · Pilot notice · 22 September 2026':
     'Confidentialité · Avis du projet pilote · 22 septembre 2026',
   'A clear view of your data.': 'Une vue claire de vos données.',
@@ -616,8 +634,6 @@ export const FRENCH: Record<string, string> = {
   'Make room for a property.': 'Ajouter une propriété',
   'Make yourself known.': 'Modifier votre nom',
   'Mobile money': 'Mobile Money',
-  'Monthly charges cover every calendar month in the term, at the full rent amount. No automatic prorating. Maximum 24 months; due day 1–28.':
-    'Chaque mois de location compte pour un loyer complet, même si la location commence ou se termine en cours de mois. La durée maximale est de 24 mois. Choisissez un jour de paiement entre le 1er et le 28 du mois.',
   'Next status': 'État de la demande',
   Normal: 'Normale',
   'Number of units': 'Nombre de logements ou locaux',
@@ -1024,8 +1040,6 @@ export const FRENCH: Record<string, string> = {
   'The lease end must follow its start.': 'La fin de la location ne peut pas être avant son début.',
   'Due day must be between 1 and 28.':
     'Le jour de paiement du loyer doit être compris entre le 1er et le 28 du mois.',
-  'For the pilot, enter a lease of no more than 24 calendar months.':
-    'Dans cette version pilote, la période de location ne peut pas dépasser 24 mois.',
   'The receipt is larger than the outstanding rent. Record only the amount due.':
     'Le paiement dépasse le loyer restant à payer. Saisissez uniquement le montant encore dû.',
   'Kitchen tap needs attention': 'Fuite au robinet de la cuisine',

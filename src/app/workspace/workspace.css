@@ -2643,3 +2643,25 @@ a.home-line:hover {
     padding: 12px;
   }
 }
+
+.guarantee-total {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--green-mist);
+  border-radius: 12px;
+  font-size: 14px;
+}
+.guarantee-total output {
+  font-weight: 650;
+}
+.guarantee-total small {
+  grid-column: 1 / -1;
+  color: var(--text-2);
+}
+.guarantee-detail {
+  max-width: 230px;
+  white-space: normal;
+}

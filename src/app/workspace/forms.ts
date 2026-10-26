@@ -10,6 +10,7 @@ export type Field = {
   options?: { value: string; label: string; translate?: boolean }[];
   context?: TranslationContext;
   hint?: string;
+  when?: { key: string; equals: string };
 };
 export type FormSpec = {
   title: string;
@@ -155,7 +156,7 @@ export function formSpec(
     createLease: {
       title: 'Start a new chapter.',
       description:
-        'Monthly charges cover every calendar month in the term, at the full rent amount. No automatic prorating. Maximum 24 months; due day 1–28.',
+        'Choose an ongoing rental or an end date. Each calendar month counts as a full month of rent, without automatic prorating. Enter the guarantee in months; its total is calculated from the monthly rent.',
       fields: [
         t('unitId', 'Available unit', {
           type: 'select',
@@ -170,9 +171,22 @@ export function formSpec(
         t('tenantName', 'Tenant name'),
         t('tenantEmail', 'Tenant email', { type: 'email', max: 254 }),
         t('startDate', 'Lease start', { type: 'date' }),
-        t('endDate', 'Lease end', { type: 'date' }),
+        t('termType', 'Rental duration', {
+          type: 'select',
+          options: [
+            { value: 'ongoing', label: 'Ongoing — no end date' },
+            { value: 'fixed', label: 'With an end date' },
+          ],
+        }),
+        t('endDate', 'Lease end', { type: 'date', when: { key: 'termType', equals: 'fixed' } }),
         t('dueDay', 'Rent due day', { type: 'number', min: 1, max: 28, step: '1' }),
         ...money,
+        t('guaranteeMonths', 'Rental guarantee (months)', {
+          type: 'number',
+          min: 0,
+          step: '1',
+          hint: 'Enter 0 if there is no guarantee.',
+        }),
       ],
     },
     endLease: {
@@ -287,7 +301,8 @@ export function formPayload(action: string, spec: FormSpec, values: Record<strin
     throw new Error('Confirm deletion to continue.');
   const payload: Record<string, any> = {};
   for (const field of spec.fields) {
-    if (field.type === 'file') continue;
+    if (field.type === 'file' || (field.when && values[field.when.key] !== field.when.equals))
+      continue;
     const raw = values[field.key] ?? '';
     if (field.required && !String(raw).trim()) throw new Error(`Please complete: ${field.label}.`);
     const value = field.type === 'number' ? Number(raw) : raw;
@@ -327,6 +342,15 @@ export function formPayload(action: string, spec: FormSpec, values: Record<strin
       payload[commandField] = Math.round(Number(payload[field]) * 100);
       delete payload[field];
     }
+  }
+  if (action === 'createLease') {
+    if (payload['termType'] === 'ongoing') payload['endDate'] = null;
+    delete payload['termType'];
+    if (payload['endDate'] && payload['endDate'] < payload['startDate'])
+      throw new Error('The end date must follow the start date.');
+    const total = payload['rentMinor'] * payload['guaranteeMonths'];
+    if (!Number.isSafeInteger(total) || total > 100_000_000_000)
+      throw new Error('The guarantee total is too large. Check the rent and number of months.');
   }
   return payload;
 }

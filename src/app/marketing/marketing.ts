@@ -219,7 +219,7 @@ export class Marketing {
     },
     {
       q: 'What are the current pilot limits?',
-      a: 'One owned portfolio per account, leases up to 24 months, and private PDF or image documents up to 10 MB. Monthly rent is entered as a full amount, without automatic prorating. This is an early pilot, not a payment or accounting service.',
+      a: 'One owned portfolio per account, ongoing or fixed-term rentals, and private PDF or image documents up to 10 MB. Monthly rent is entered as a full amount, without automatic prorating. This is an early pilot, not a payment or accounting service.',
     },
   ];
   constructor() {

@@ -205,6 +205,18 @@ export class Cloud {
     this.session.set(null);
     localStorage.removeItem('kf-workspace');
   }
+  async syncRent(orgId: string, period: string, leaseId?: string) {
+    let after: string | null = null;
+    do {
+      const result: any = await this.call('syncRent', {
+        orgId,
+        period,
+        ...(leaseId ? { leaseId } : {}),
+        ...(after ? { after } : {}),
+      });
+      after = result.after;
+    } while (after);
+  }
   async rows(
     path: string,
     filters: [string, unknown][] = [],

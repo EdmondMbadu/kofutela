@@ -553,7 +553,11 @@
                       <dl class="lease-facts">
                         <div>
                           <dt>{{ 'Lease dates' | tr }}</dt>
-                          <dd>{{ date(lease.startDate) + ' — ' + date(lease.endDate) }}</dd>
+                          <dd>{{ date(lease.startDate) + ' — ' + rentalEnd(lease) }}</dd>
+                        </div>
+                        <div>
+                          <dt>{{ 'Guarantee' | tr }}</dt>
+                          <dd>{{ guaranteeSummary(lease) }}</dd>
                         </div>
                         <div>
                           <dt>{{ 'Monthly rent' | tr }}</dt>
@@ -980,11 +984,12 @@
                     >
                     <span class="li-text"
                       ><strong>{{ l.propertyName + ' · ' + l.unitLabel }}</strong
-                      ><small>{{ date(l.startDate) + ' — ' + date(l.endDate) }}</small></span
+                      ><small>{{ date(l.startDate) + ' — ' + rentalEnd(l) }}</small></span
                     >
                     <span class="li-amount"
                       ><strong>{{ money(l.rentMinor, l.currency) }}</strong
-                      ><small>{{ 'Due day' | tr }} {{ l.dueDay }}</small></span
+                      ><small>{{ 'Due day' | tr }} {{ l.dueDay }}</small
+                      ><small class="guarantee-detail">{{ guaranteeSummary(l) }}</small></span
                     >
                     <span class="li-status"
                       ><span [class]="'badge ' + (l.tenantUid ? 'green' : '')">{{
@@ -1374,69 +1379,80 @@
         <form ngNativeValidate #workspaceForm="ngForm" (ngSubmit)="workspaceForm.valid && submit()">
           <div class="field-grid">
             @for (field of spec.fields; track field.key) {
-              <label [class.full]="field.type === 'textarea' || field.type === 'file'"
-                >{{ field.label + '\n                ' | tr }}
-                @if (!field.required) {
-                  <span class="muted"> {{ ' (optional)' | tr }}</span>
-                }
-                @if (field.type === 'select') {
-                  <select
-                    [name]="field.key"
-                    [(ngModel)]="form[field.key]"
-                    (ngModelChange)="
-                      action === 'createLease' && field.key === 'unitId' && leaseUnitChanged()
-                    "
-                    [required]="!!field.required"
-                    [disabled]="busy()"
-                  >
-                    @for (option of field.options; track option.value) {
-                      <option [value]="option.value">
-                        {{
-                          option.translate === false
-                            ? option.label
-                            : i18n.t(field.context ? option.value : option.label, field.context)
-                        }}
-                      </option>
-                    }
-                  </select>
-                } @else if (field.type === 'textarea') {
-                  <textarea
-                    [name]="field.key"
-                    [(ngModel)]="form[field.key]"
-                    [required]="!!field.required"
-                    [disabled]="busy()"
-                    [attr.minlength]="field.min"
-                    [attr.maxlength]="field.max || 2000"
-                  ></textarea>
-                } @else if (field.type === 'file') {
-                  <input
-                    type="file"
-                    name="file"
-                    accept="application/pdf,image/jpeg,image/png,image/webp"
-                    required
-                    (change)="fileChosen($event)"
-                    [disabled]="busy()"
-                  />
-                } @else {
-                  <input
-                    [type]="field.type || 'text'"
-                    [name]="field.key"
-                    [(ngModel)]="form[field.key]"
-                    [required]="!!field.required"
-                    [disabled]="busy()"
-                    [attr.min]="field.type === 'number' ? field.min : null"
-                    [attr.max]="field.type === 'number' ? field.max : null"
-                    [attr.step]="field.step"
-                    [attr.minlength]="field.type !== 'number' ? field.min : null"
-                    [attr.maxlength]="field.type !== 'number' ? field.max || 160 : null"
-                  />
-                }
-                @if (field.hint) {
-                  <small>{{ field.hint | tr }}</small>
-                }
-              </label>
+              @if (!field.when || form[field.when.key] === field.when.equals) {
+                <label [class.full]="field.type === 'textarea' || field.type === 'file'"
+                  >{{ field.label + '\n                ' | tr }}
+                  @if (!field.required) {
+                    <span class="muted"> {{ ' (optional)' | tr }}</span>
+                  }
+                  @if (field.type === 'select') {
+                    <select
+                      [name]="field.key"
+                      [(ngModel)]="form[field.key]"
+                      (ngModelChange)="
+                        action === 'createLease' && field.key === 'unitId' && leaseUnitChanged()
+                      "
+                      [required]="!!field.required"
+                      [disabled]="busy()"
+                    >
+                      @for (option of field.options; track option.value) {
+                        <option [value]="option.value">
+                          {{
+                            option.translate === false
+                              ? option.label
+                              : i18n.t(field.context ? option.value : option.label, field.context)
+                          }}
+                        </option>
+                      }
+                    </select>
+                  } @else if (field.type === 'textarea') {
+                    <textarea
+                      [name]="field.key"
+                      [(ngModel)]="form[field.key]"
+                      [required]="!!field.required"
+                      [disabled]="busy()"
+                      [attr.minlength]="field.min"
+                      [attr.maxlength]="field.max || 2000"
+                    ></textarea>
+                  } @else if (field.type === 'file') {
+                    <input
+                      type="file"
+                      name="file"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      required
+                      (change)="fileChosen($event)"
+                      [disabled]="busy()"
+                    />
+                  } @else {
+                    <input
+                      [type]="field.type || 'text'"
+                      [name]="field.key"
+                      [(ngModel)]="form[field.key]"
+                      [required]="!!field.required"
+                      [disabled]="busy()"
+                      [attr.min]="field.type === 'number' ? field.min : null"
+                      [attr.max]="field.type === 'number' ? field.max : null"
+                      [attr.step]="field.step"
+                      [attr.minlength]="field.type !== 'number' ? field.min : null"
+                      [attr.maxlength]="field.type !== 'number' ? field.max || 160 : null"
+                    />
+                  }
+                  @if (field.hint) {
+                    <small>{{ field.hint | tr }}</small>
+                  }
+                </label>
+              }
             }
           </div>
+          @if (action === 'createLease') {
+            <div class="guarantee-total" aria-live="polite">
+              <span>{{ 'Total rental guarantee' | tr }}</span>
+              <output>{{
+                guaranteeTotal() === null ? '—' : money(guaranteeTotal()!, form.currency)
+              }}</output>
+              <small>{{ 'The guarantee is recorded separately from paid rent.' | tr }}</small>
+            </div>
+          }
           @if (spec.destructive) {
             <label class="delete-confirmation"
               ><input

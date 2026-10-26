@@ -43,6 +43,8 @@ const values = {
   tenantName: 'Test Tenant',
   tenantEmail: 'tenant@example.test',
   startDate: '2026-01-01',
+  termType: 'fixed',
+  guaranteeMonths: '3',
   endDate: '2026-12-31',
   dueDay: '5',
   leaseId: 'lease-1',
@@ -143,4 +145,32 @@ test('deletion needs explicit confirmation and sends only the selected record re
     );
     assert.deepEqual(formPayload(action, spec, values), { [reference]: values[reference] });
   }
+});
+
+test('ongoing rentals discard stale end dates and validate guarantee months and amounts', () => {
+  const spec = formSpec('createLease', options);
+  const ongoing = formPayload('createLease', spec, { ...values, termType: 'ongoing', endDate: '' });
+  schemas.createLease.strict().parse(ongoing);
+  assert.equal(ongoing.endDate, null);
+  assert.equal(ongoing.guaranteeMonths, 3);
+  assert.equal('termType' in ongoing, false);
+  assert.equal(
+    formPayload('createLease', spec, { ...values, termType: 'ongoing', endDate: '2020-01-01' })
+      .endDate,
+    null,
+  );
+  assert.equal(
+    formPayload('createLease', spec, { ...values, endDate: '2050-12-31' }).endDate,
+    '2050-12-31',
+  );
+  for (const guaranteeMonths of [-1, 1.5, NaN, Infinity])
+    assert.throws(() => formPayload('createLease', spec, { ...values, guaranteeMonths }));
+  assert.throws(
+    () => formPayload('createLease', spec, { ...values, rent: 1000000000, guaranteeMonths: 2 }),
+    /guarantee total/,
+  );
+  assert.throws(
+    () => formPayload('createLease', spec, { ...values, endDate: '2020-01-01' }),
+    /end date/,
+  );
 });

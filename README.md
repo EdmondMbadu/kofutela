@@ -52,7 +52,8 @@ Authenticated document downloads allow the four production origins and developme
 | --- | --- | --- |
 | Create portfolio | `createWorkspace` | Organization, owner membership, profile, saved setup progress |
 | Add/edit property; add unit | `createProperty`, `updateProperty`, `createUnit` | Persisted properties/units; refreshed list |
-| Add lease; end lease | `createLease`, `endLease` | Available unit only; rent/currency prefill; schedule or historical termination |
+| Add lease; end lease | `createLease`, `endLease` | Available unit; fixed or ongoing term; server-calculated guarantee months/total; historical termination |
+| Load a rent month | `syncRent`, scoped queries | Idempotent charges from saved terms, paginated by 100 leases; tenant limited to own selected rental |
 | Invite tenant; accept invitation | `createInvite`, `acceptInvite` | Private email-bound link; tenant membership |
 | Record/correct receipt | `recordReceipt`, `voidReceipt` | Integer minor units; correct charge/receipt ID; immutable history |
 | New/update maintenance | `createMaintenance`, `updateMaintenance` | Scoped lease and ticket; allowed status transition |
@@ -138,7 +139,8 @@ Public pages contain full static HTML, unique titles, descriptions, canonical/Op
 
 - English and French interfaces. No native mobile app, offline mutations or push/email notification system. Messages/replies are refreshed on demand.
 - One owned portfolio per account; tenant membership in other portfolios is supported. No delegated property-manager role yet.
-- Leases cover at most 24 calendar months, full monthly charges, due days 1–28, no automatic prorating. Future-dated lease terminations are not supported. Monthly reports are not a full accounting ledger.
+- Rentals support a fixed end date or an ongoing term (`endDate: null`), without a 24-month duration cap. Full monthly charges use due days 1–28, without automatic prorating. Creation stores the first year and current month; `syncRent` fills any later or historical month when the workspace loads it, without overwriting existing charges or receipts. There is no background billing scheduler. Future-dated terminations are not supported. Monthly reports are not a full accounting ledger.
+- Rental guarantees store `guaranteeMonths`, server-calculated `guaranteeTotalMinor` in the rental currency, and `guaranteeAppliedMinor: 0`. The guarantee does not count as rent received. Applying or refunding it is a separate future workflow; existing rentals without guarantee data show “Garantie non renseignée”.
 - Views are bounded at 500 records, with totals disabled if the limit is exceeded. Larger portfolio pagination/aggregate dashboards must be implemented before expanding beyond the pilot.
 - Document uploads support PDF/JPEG/PNG/WebP up to 10 MB. Failed uploads can leave a pending metadata record; retry as a new upload. No malware scanner, file removal UI, property photos or automated retention policy yet. Do not upload identity documents during the pilot.
 - Contact support is currently authenticated/in-app. Final operator identity, public contact details and jurisdiction-reviewed privacy/terms are required before broad commercial launch. Current pages disclose this.

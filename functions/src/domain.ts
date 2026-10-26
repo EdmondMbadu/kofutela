@@ -22,14 +22,68 @@ export function buildSchedule(startDate: string, endDate: string, dueDay: number
   const [sy, sm] = startDate.split('-').map(Number);
   const [ey, em] = endDate.split('-').map(Number);
   const count = (ey - sy) * 12 + em - sm + 1;
-  if (count > 24)
-    throw new Error('For the pilot, enter a lease of no more than 24 calendar months.');
   return Array.from({ length: count }, (_, i) => {
     const month = new Date(Date.UTC(sy, sm - 1 + i, 1)).toISOString().slice(0, 7);
     const candidate = `${month}-${String(dueDay).padStart(2, '0')}`;
     const dueDate = candidate < startDate ? startDate : candidate > endDate ? endDate : candidate;
     return { period: month, dueDate };
   });
+}
+
+/** Derive one month from saved rental terms; never from client-supplied charge amounts. */
+export function rentPeriod(
+  startDate: string,
+  endDate: string | null,
+  dueDay: number,
+  period: string,
+) {
+  date.parse(startDate);
+  if (endDate) date.parse(endDate);
+  if (!/^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(period))
+    throw new Error('Choose a valid rent month.');
+  if (endDate && endDate < startDate) throw new Error('The lease end must follow its start.');
+  if (period < startDate.slice(0, 7) || (endDate && period > endDate.slice(0, 7))) return null;
+  if (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 28)
+    throw new Error('Due day must be between 1 and 28.');
+  const candidate = `${period}-${String(dueDay).padStart(2, '0')}`;
+  return {
+    period,
+    dueDate:
+      candidate < startDate ? startDate : endDate && candidate > endDate ? endDate : candidate,
+  };
+}
+
+/** Keep creation bounded; later months are materialized idempotently when consulted. */
+export function initialSchedule(
+  startDate: string,
+  endDate: string | null,
+  dueDay: number,
+  currentDate: string,
+) {
+  date.parse(startDate);
+  const [year, month] = startDate.split('-').map(Number);
+  const firstYearEnd = [
+    new Date(Date.UTC(year, month + 11, 0)).toISOString().slice(0, 10),
+    '2199-12-31',
+  ].sort()[0];
+  const rows = buildSchedule(
+    startDate,
+    endDate && endDate < firstYearEnd ? endDate : firstYearEnd,
+    dueDay,
+  );
+  const current = rentPeriod(startDate, endDate, dueDay, currentDate.slice(0, 7));
+  if (current && !rows.some((r) => r.period === current.period)) rows.push(current);
+  return rows;
+}
+
+export function guaranteeTotal(rentMinor: number, months: number) {
+  money.parse(rentMinor);
+  if (!Number.isSafeInteger(months) || months < 0)
+    throw new Error('Enter a whole number of guarantee months, zero or more.');
+  const total = rentMinor * months;
+  if (!Number.isSafeInteger(total) || total > 100_000_000_000)
+    throw new Error('The guarantee total is too large. Check the rent and number of months.');
+  return total;
 }
 
 export function nextReceived(amountMinor: number, receivedMinor: number, receiptMinor: number) {
@@ -86,7 +140,8 @@ export const schemas = {
     tenantName: shortText,
     tenantEmail: z.string().trim().toLowerCase().email().max(254),
     startDate: date,
-    endDate: date,
+    endDate: date.nullable().optional().default(null),
+    guaranteeMonths: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).default(0),
     dueDay: z.number().int().min(1).max(28),
     rentMinor: money,
     currency,

@@ -241,6 +241,43 @@ describe('French screens preserve account data', () => {
     expect(dialog?.textContent).toContain('Pourquoi cette location se termine-t-elle ?');
     expect(dialog?.textContent).not.toContain('bail');
   });
+  it('shows the guarantee total in French and only asks for an end date when selected', async () => {
+    const { page, fixture, element } = await screen('tenants');
+    page.open('createLease');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const dialog = element.querySelector('dialog')!;
+    const control = (label: string, selector = 'input') =>
+      Array.from(dialog.querySelectorAll('label'))
+        .find((element) => element.textContent?.includes(label))
+        ?.querySelector<HTMLInputElement | HTMLSelectElement>(selector) ?? null;
+    const rent = control('Loyer mensuel')!;
+    const months = control('Nombre de mois de garantie')!;
+    rent.value = '100.25';
+    rent.dispatchEvent(new Event('input'));
+    months.value = '3';
+    months.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(dialog.textContent).toContain('Nombre de mois de garantie');
+    expect(dialog.textContent).toContain('Montant total de la garantie');
+    expect(dialog.querySelector('output')?.textContent).toContain('300,75');
+    expect(control('Fin de la location prévue')).toBeNull();
+    expect(dialog.textContent).not.toContain('24 mois');
+    const term = control('Durée de la location', 'select')!;
+    term.value = 'fixed';
+    term.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(control('Fin de la location prévue')).not.toBeNull();
+    const currency = control('Devise', 'select')!;
+    currency.value = 'CDF';
+    currency.dispatchEvent(new Event('change'));
+    rent.value = '8000';
+    rent.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(page.guaranteeTotal()).toBe(2400000);
+    expect(page.form.currency).toBe('CDF');
+    expect(dialog.querySelector('output')?.textContent).toMatch(/24\s*000/);
+  });
   it('translates authored demo examples while leaving edited demo content untouched', async () => {
     const { page } = await screen('messages');
     const sample = { body: 'Your landlord', sampleCopy: { body: 'Your landlord' } };

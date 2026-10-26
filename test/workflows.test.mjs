@@ -160,10 +160,6 @@ test(
           rentMinor: 65000,
           currency: 'USD',
         };
-        await rejected(
-          owner.command('createLease', { ...payload, endDate: '2028-12-31' }, org),
-          /24/,
-        );
         lease = (await owner.command('createLease', payload, org)).id;
         const charges = await getDocs(
           query(
@@ -622,6 +618,189 @@ test(
         );
         assert.equal(rentals.size, saved.deletedAt ? 0 : 1);
       });
+      await t.test(
+        'rental guarantee, unlimited terms and idempotent monthly rent for owners and tenants',
+        async () => {
+          const suffix = crypto.randomUUID().slice(0, 8);
+          const landlord = await client(`guarantee-owner-${suffix}`);
+          const renter = await client(`guarantee-tenant-${suffix}`);
+          await landlord.call('session', {});
+          await renter.call('session', {});
+          const portfolio = (
+            await landlord.command('createWorkspace', {
+              name: 'Guarantee fixtures',
+              displayName: 'Test landlord',
+              currency: 'USD',
+            })
+          ).id;
+          const home = (
+            await landlord.command(
+              'createProperty',
+              {
+                name: 'Test house',
+                address: 'Fictional',
+                city: 'Kinshasa',
+                type: 'house',
+                notes: '',
+                unitCount: 1,
+                rentMinor: 10025,
+                currency: 'USD',
+              },
+              portfolio,
+            )
+          ).id;
+          const adminDb = adminFirestore(admin);
+          const prefix = `organizations/${portfolio}`;
+          const room = (
+            await adminDb.collection(`${prefix}/units`).where('propertyId', '==', home).get()
+          ).docs[0].id;
+          const terms = {
+            unitId: room,
+            tenantName: 'Test tenant',
+            tenantEmail: renter.auth.currentUser.email,
+            startDate: '2020-01-15',
+            endDate: null,
+            dueDay: 5,
+            rentMinor: 10025,
+            currency: 'USD',
+            guaranteeMonths: 3,
+          };
+          const ongoing = (await landlord.command('createLease', terms, portfolio)).id;
+          const leaseRef = adminDb.doc(`${prefix}/leases/${ongoing}`);
+          const saved = (await leaseRef.get()).data();
+          assert.equal(saved.endDate, null);
+          assert.equal(saved.guaranteeMonths, 3);
+          assert.equal(saved.guaranteeTotalMinor, 30075);
+          assert.equal(saved.guaranteeAppliedMinor, 0);
+          const initial = await adminDb
+            .collection(`${prefix}/charges`)
+            .where('leaseId', '==', ongoing)
+            .get();
+          assert.ok(initial.size <= 13);
+          assert.ok(initial.docs.every((s) => s.data().receivedMinor === 0));
+          const sync = (period, extra = {}) =>
+            landlord.call('syncRent', { orgId: portfolio, period, ...extra });
+          assert.equal((await sync('2031-04')).created, 1);
+          assert.equal((await sync('2031-04')).created, 0);
+          const later = (await adminDb.doc(`${prefix}/charges/${ongoing}_2031-04`).get()).data();
+          assert.equal(later.amountMinor, 10025);
+          assert.equal(later.dueDate, '2031-04-05');
+          assert.equal(later.receivedMinor, 0);
+          const parallel = await Promise.all([sync('2032-05'), sync('2032-05')]);
+          assert.equal(
+            parallel.reduce((n, result) => n + result.created, 0),
+            1,
+          );
+          assert.equal((await sync('2019-12')).created, 0);
+          const invitation = await landlord.command(
+            'createInvite',
+            { leaseId: ongoing },
+            portfolio,
+          );
+          await renter.command('acceptInvite', {
+            token: invitation.token,
+            displayName: 'Test tenant',
+          });
+          assert.equal(
+            (
+              await renter.call('syncRent', {
+                orgId: portfolio,
+                period: '2033-08',
+                leaseId: ongoing,
+              })
+            ).created,
+            1,
+          );
+          await rejected(
+            renter.call('syncRent', { orgId: portfolio, period: '2033-09' }),
+            /access/i,
+          );
+          await rejected(
+            stranger.call('syncRent', { orgId: portfolio, period: '2033-09', leaseId: ongoing }),
+            /access/i,
+          );
+          await rejected(
+            unverified.call('syncRent', { orgId: portfolio, period: '2033-09' }),
+            /Verify/,
+          );
+          const other = (
+            await landlord.command(
+              'createUnit',
+              { propertyId: home, label: 'Long fixed term', rentMinor: 800000, currency: 'CDF' },
+              portfolio,
+            )
+          ).id;
+          const fixed = (
+            await landlord.command(
+              'createLease',
+              {
+                ...terms,
+                unitId: other,
+                endDate: '2050-12-31',
+                rentMinor: 800000,
+                currency: 'CDF',
+                guaranteeMonths: 6,
+              },
+              portfolio,
+            )
+          ).id;
+          assert.equal(
+            (await adminDb.doc(`${prefix}/leases/${fixed}`).get()).data().guaranteeTotalMinor,
+            4800000,
+          );
+          assert.equal((await sync('2035-07')).created, 2);
+          assert.equal((await sync('2051-01')).created, 1);
+          assert.equal(
+            (await adminDb.doc(`${prefix}/charges/${fixed}_2051-01`).get()).exists,
+            false,
+          );
+          await rejected(
+            renter.call('syncRent', { orgId: portfolio, period: '2035-07', leaseId: fixed }),
+            /access/i,
+          );
+          await landlord.command(
+            'endLease',
+            { leaseId: ongoing, endDate: '2026-09-20', reason: 'Test completion' },
+            portfolio,
+          );
+          assert.equal((await sync('2036-01', { leaseId: ongoing })).created, 0);
+          assert.equal((await sync('2021-04', { leaseId: ongoing })).created, 1);
+          assert.equal(
+            (await adminDb.doc(`${prefix}/charges/${ongoing}_2031-04`).get()).data().cancelled,
+            true,
+          );
+          assert.equal(
+            (await adminDb.doc(`${prefix}/charges/${ongoing}_2021-04`).get()).data().cancelled,
+            false,
+          );
+          assert.equal((await leaseRef.get()).data().guaranteeTotalMinor, 30075);
+          assert.equal((await leaseRef.get()).data().guaranteeAppliedMinor, 0);
+          assert.equal(
+            (await adminDb.doc(`${prefix}/units/${room}`).get()).data().activeLeaseId,
+            null,
+          );
+          // Page a larger saved portfolio without a transaction or duration limit.
+          const batch = adminDb.batch();
+          const fixedData = (await adminDb.doc(`${prefix}/leases/${fixed}`).get()).data();
+          for (let n = 0; n < 105; n++)
+            batch.set(
+              adminDb.doc(`${prefix}/leases/page_${String(n).padStart(3, '0')}`),
+              fixedData,
+            );
+          await batch.commit();
+          let after;
+          let generated = 0;
+          let pages = 0;
+          do {
+            const page = await sync('2040-11', after ? { after } : {});
+            generated += page.created;
+            after = page.after;
+            pages++;
+          } while (after);
+          assert.equal(pages, 2);
+          assert.equal(generated, 106);
+        },
+      );
     } finally {
       for (const c of clients) {
         await signOut(c.auth);

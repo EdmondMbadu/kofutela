@@ -3,6 +3,7 @@ import { getAuth } from 'firebase-admin/auth';
 import {
   DocumentReference,
   FieldValue,
+  FieldPath,
   getFirestore,
   Timestamp,
   Transaction,
@@ -12,7 +13,16 @@ import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
-import { Action, buildSchedule, id, maintenanceTransitions, nextReceived, schemas } from './domain';
+import {
+  Action,
+  initialSchedule,
+  rentPeriod,
+  guaranteeTotal,
+  id,
+  maintenanceTransitions,
+  nextReceived,
+  schemas,
+} from './domain';
 
 const app = initializeApp();
 // New Firebase buckets use firebasestorage.app; the emulator's legacy default
@@ -225,6 +235,95 @@ export const command = onCall(async (request) => {
 });
 
 type Identity = Awaited<ReturnType<typeof identity>>;
+// Generate only the requested month, in bounded pages. Existing charges and receipts are immutable here.
+// Both landlords and linked tenants can load their own rent records safely.
+export const syncRent = onCall(async (request) => {
+  try {
+    const who = await identity(request);
+    const input = z
+      .object({
+        orgId: id,
+        period: z.string().regex(/^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/),
+        after: id.optional(),
+        leaseId: id.optional(),
+      })
+      .parse(request.data);
+    await rateLimit(who.uid);
+    return await db.runTransaction(async (tx) => {
+      const ctx = await member(tx, input.orgId, who.uid);
+      let leases;
+      if (input.leaseId) {
+        const lease = await tx.get(ctx.org.collection('leases').doc(input.leaseId));
+        if (!lease.exists)
+          throw new HttpsError('not-found', 'This record no longer exists. Refresh and try again.');
+        if (ctx.role !== 'owner' && lease.data()!['tenantUid'] !== who.uid) deny();
+        leases = [lease];
+      } else {
+        if (ctx.role !== 'owner') deny();
+        let query = ctx.org.collection('leases').orderBy(FieldPath.documentId()).limit(100);
+        if (input.after) query = query.startAfter(input.after);
+        leases = (await tx.get(query)).docs;
+      }
+      const candidates = leases.flatMap((snapshot) => {
+        const lease = snapshot.data()!;
+        const row = rentPeriod(
+          lease['startDate'],
+          lease['endDate'] || null,
+          lease['dueDay'],
+          input.period,
+        );
+        return row
+          ? [
+              {
+                ref: ctx.org.collection('charges').doc(`${snapshot.id}_${row.period}`),
+                leaseId: snapshot.id,
+                lease,
+                row,
+              },
+            ]
+          : [];
+      });
+      const saved = candidates.length ? await tx.getAll(...candidates.map((c) => c.ref)) : [];
+      let created = 0;
+      for (let i = 0; i < candidates.length; i++) {
+        if (saved[i].exists) continue;
+        const { ref, leaseId, lease, row } = candidates[i];
+        // Early terminations retain their original due date for cancellation semantics.
+        const original =
+          lease['status'] === 'ended' && 'scheduledEndDate' in lease
+            ? rentPeriod(
+                lease['startDate'],
+                lease['scheduledEndDate'],
+                lease['dueDay'],
+                input.period,
+              )
+            : row;
+        tx.create(ref, {
+          ...row,
+          dueDate: original?.dueDate || row.dueDate,
+          leaseId,
+          unitId: lease['unitId'],
+          propertyId: lease['propertyId'],
+          propertyName: lease['propertyName'],
+          unitLabel: lease['unitLabel'],
+          tenantName: lease['tenantName'],
+          amountMinor: lease['rentMinor'],
+          receivedMinor: 0,
+          currency: lease['currency'],
+          cancelled:
+            lease['status'] === 'ended' && (original?.dueDate || row.dueDate) > lease['endDate'],
+          createdAt: now(),
+          updatedAt: now(),
+        });
+        created++;
+      }
+      return { created, after: !input.leaseId && leases.length === 100 ? leases.at(-1)!.id : null };
+    });
+  } catch (error) {
+    return mappedError(error);
+  }
+});
+
 async function perform(
   tx: Transaction,
   who: Identity,
@@ -536,21 +635,27 @@ async function perform(
       const priorLeases = await tx.get(org.collection('leases').where('unitId', '==', p.unitId));
       if (
         priorLeases.docs.some(
-          (s) => s.data()['startDate'] <= p.endDate && s.data()['endDate'] >= p.startDate,
+          (s) =>
+            s.data()['startDate'] <= (p.endDate || '9999-12-31') &&
+            (s.data()['endDate'] || '9999-12-31') >= p.startDate,
         )
       )
         fail(
           'This lease overlaps an existing lease for this unit. Choose dates after the previous lease ends.',
         );
       let schedule;
+      let guaranteeMinor;
       try {
-        schedule = buildSchedule(p.startDate, p.endDate, p.dueDay);
+        guaranteeMinor = guaranteeTotal(p.rentMinor, p.guaranteeMonths);
+        schedule = initialSchedule(p.startDate, p.endDate, p.dueDay, today());
       } catch (e) {
         fail((e as Error).message);
       }
       const ref = org.collection('leases').doc();
       tx.create(ref, {
         ...p,
+        guaranteeTotalMinor: guaranteeMinor!,
+        guaranteeAppliedMinor: 0,
         propertyId: unit['propertyId'],
         propertyName: property['name'],
         unitLabel: unit['label'],
@@ -594,7 +699,7 @@ async function perform(
         fail(
           'End a lease on or before today. Scheduled future terminations are not available in the pilot.',
         );
-      if (p.endDate < lease['startDate'] || p.endDate > lease['endDate'])
+      if (p.endDate < lease['startDate'] || (lease['endDate'] && p.endDate > lease['endDate']))
         fail('Choose an end date within the lease term.');
       const charges = await tx.get(org.collection('charges').where('leaseId', '==', p.leaseId));
       const later = charges.docs.filter((s) => s.data()['dueDate'] > p.endDate);
@@ -602,6 +707,7 @@ async function perform(
         fail('Future rent has receipts. Correct those receipts before shortening the lease.');
       tx.update(leaseRef, {
         status: 'ended',
+        scheduledEndDate: lease['endDate'] || null,
         endDate: p.endDate,
         endReason: p.reason,
         updatedAt: now(),
